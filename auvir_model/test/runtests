@@ -1,0 +1,6 @@
+cd build
+rm -fr ./*
+cmake ..
+make
+./runtests
+cd ..
