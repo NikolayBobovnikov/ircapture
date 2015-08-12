@@ -1,2 +1,6 @@
 build/
 auvir_model/build/
+auvir_embed/build/
+*.out
+*.exe
+*.obj
