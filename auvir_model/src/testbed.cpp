@@ -19,7 +19,16 @@
 
 void test_function()
 {
-    std::string s = oost::filesystem::current_path();
+    std::string s = boost::filesystem::current_path()::string();
     std::cout << "current_path: " << s << std::endl;
+}
+
+void convert_image(Mat1b& in, BinaryImage2048& out)
+{    
+}
+
+void convert_image(Mat1b& in, BinaryImage128& out)
+{
+    
 }
 
