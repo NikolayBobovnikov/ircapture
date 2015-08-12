@@ -1,6 +1,6 @@
 include (CMakeForceCompiler)
 
-set (TOOLCHAIN_PATH ~/distr/dev/gcc-arm-none-eabi-4_9-2015q2)
+set (TOOLCHAIN_PATH ~/work/dev/auvir/auvir_embed/toolchain/gcc-arm-none-eabi-4_9-2015q2)
 
 set (TOOLCHAIN_BIN_DIR  ${TOOLCHAIN_PATH}/bin)
 set (TOOLCHAIN_LIBC_DIR ${TOOLCHAIN_PATH}/arm-none-eabi/libs)
@@ -13,5 +13,5 @@ set (CMAKE_SYSTEM_PROCESSOR Arm)
 
 set (CMAKE_FIND_ROOT_PATH ${LIBC_DIR})
 
-set (CMAKE_C_COMPILER ${TOOLCHAIN_BIN_DIR}/arm-none-eabi-gcc)
-set (CMAKE_CXX_COMPILER ${TOOLCHAIN_BIN_DIR}/arm-none-eabi-g++)
+set (CMAKE_C_COMPILER ${TOOLCHAIN_BIN_DIR}/arm-none-eabi-gcc CACHE INTERNAL "")
+set (CMAKE_CXX_COMPILER ${TOOLCHAIN_BIN_DIR}/arm-none-eabi-g++ CACHE INTERNAL "" )
