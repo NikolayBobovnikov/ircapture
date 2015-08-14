@@ -1,5 +1,4 @@
 include(arm_toolchain.cmake)
 cmake_minimum_required( VERSION 2.8)
 project("stm32")
-set (cmake_c_compiler arm-none-eabi-gcc)
 add_executable(stm32 main.c)
