@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-
+#include "stdio.h"
 void _exit(void)
 {
     while(1)
@@ -25,6 +25,7 @@ void _exit(void)
 }
 int main()
 {
+    printf("HelloWorld!");
     return 0;
 }
 

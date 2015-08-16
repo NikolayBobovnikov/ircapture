@@ -1,6 +1,7 @@
 include (CMakeForceCompiler)
 
 set (TOOLCHAIN_PATH /home/nikolay/work/dev/auvir/auvir_embed/toolchain/gcc-arm-none-eabi-4_9-2015q2)
+set (STD_PERIPH_PATH /home/nikolay/work/dev/auvir/auvir_embed/toolchain/gcc-arm-none-eabi-4_9-2015q2)
 
 set (TOOLCHAIN_BIN_DIR  ${TOOLCHAIN_PATH}/bin)
 set (TOOLCHAIN_LIBC_DIR ${TOOLCHAIN_PATH}/arm-none-eabi/libs)
@@ -16,6 +17,3 @@ find_program(GNU_ARM_CXX arm-none-eabi-g++ ${TOOLCHAIN_BIN_DIR})
 
 CMAKE_FORCE_C_COMPILER(${GNU_ARM_C} GNU)
 CMAKE_FORCE_CXX_COMPILER(${GNU_ARM_CXX} GNU)
-message(STATUS "gcc:" ${GNU_ARM_C})
-#set (CMAKE_C_COMPILER ${GNU_ARM_C} CACHE INTERNAL "")
-#set (CMAKE_CXX_COMPILER ${GNU_ARM_CXX} CACHE INTERNAL "" )
