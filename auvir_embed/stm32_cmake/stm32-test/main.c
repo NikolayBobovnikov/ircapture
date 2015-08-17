@@ -1,78 +1,201 @@
-#include "stm32f10x_conf.h"
+#if defined STM32F1
+#include <stm32f1xx_hal.h>
+#elif defined STM32F2
+#include <stm32f2xx_hal.h>
+#elif defined STM32F4
+#include <stm32f4xx_hal.h>
+#endif
 
-/* led connected to a gpio pin */
-#define LED1_PIN    GPIO_Pin_0
-#define LED1_PORT   GPIOB
-#define LED2_PIN    GPIO_Pin_3
-#define LED2_PORT   GPIOC
-#define LED3_PIN    GPIO_Pin_0
-#define LED3_PORT   GPIOA
-#define LED4_PIN    GPIO_Pin_0
-#define LED4_PORT   GPIOE
-
-
-/* user functions */
-void delay(unsigned long count);
-
-int main()
+void initGPIO()
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitTypeDef GPIO_Config;
 
+    GPIO_Config.Mode = GPIO_MODE_AF_PP;
+    GPIO_Config.Pull = GPIO_NOPULL;
+    GPIO_Config.Speed = GPIO_SPEED_HIGH;
 
+#if defined STM32F1
+    __GPIOC_CLK_ENABLE();
+    __AFIO_CLK_ENABLE();
 
-    /* enable clock on GPIOB peripheral */
-    //RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-    RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOE | RCC_APB2Periph_GPIOA, ENABLE);                          
+    GPIO_Config.Pin = GPIO_PIN_8;
+    HAL_GPIO_Init(GPIOC, &GPIO_Config);
+#elif defined STM32F2
+    __GPIOD_CLK_ENABLE();
 
+    GPIO_Config.Alternate = GPIO_AF2_TIM4;
+    GPIO_Config.Pin = GPIO_PIN_12;
+    HAL_GPIO_Init(GPIOD, &GPIO_Config);
+#elif defined STM32F4
+    __GPIOA_CLK_ENABLE();
 
-    /* set pin output mode */
-    GPIO_InitStructure.GPIO_Pin = LED1_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(LED1_PORT, &GPIO_InitStructure);
-    //LED 2
-    GPIO_InitStructure.GPIO_Pin = LED2_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(LED2_PORT, &GPIO_InitStructure);
-    //LED 3
-    GPIO_InitStructure.GPIO_Pin = LED3_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(LED3_PORT, &GPIO_InitStructure);
-    //LED 4
-    GPIO_InitStructure.GPIO_Pin = LED4_PIN;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(LED4_PORT, &GPIO_InitStructure);
-    while(1)
-    {
-        GPIO_SetBits(LED1_PORT, LED1_PIN);  // set pin high
-        delay(2000000);
-        GPIO_ResetBits(LED1_PORT, LED1_PIN);    // set pin low
-        delay(2000000);
-
-        GPIO_SetBits(LED2_PORT, LED2_PIN);  // set pin high
-        delay(2000000);
-        GPIO_ResetBits(LED2_PORT, LED2_PIN);    // set pin low
-        delay(2000000);
-
-        GPIO_SetBits(LED3_PORT, LED3_PIN);  // set pin high
-        delay(2000000);
-        GPIO_ResetBits(LED3_PORT, LED3_PIN);    // set pin low
-        delay(2000000);
-
-        GPIO_SetBits(LED4_PORT, LED4_PIN);  // set pin high
-        delay(2000000);
-        GPIO_ResetBits(LED4_PORT, LED4_PIN);    // set pin low
-        delay(2000000);
-    }
-    //return 0;
+    GPIO_Config.Alternate = GPIO_AF2_TIM3;
+    GPIO_Config.Pin = GPIO_PIN_6;
+    HAL_GPIO_Init(GPIOA, &GPIO_Config);
+#endif
 }
 
-
-
-void delay(unsigned long count)
+void initTimers()
 {
-    while(count--);
+    TIM_HandleTypeDef TIM_Handle;
+
+    // 10 kHz timer.
+#if defined STM32F1
+    __TIM3_CLK_ENABLE();
+    TIM_Handle.Instance = TIM3;
+    TIM_Handle.Init.Prescaler = (uint16_t)(HAL_RCC_GetPCLK2Freq() / 10000) - 1;
+#elif defined STM32F2
+    __TIM4_CLK_ENABLE();
+    TIM_Handle.Instance = TIM4;
+    TIM_Handle.Init.Prescaler = (uint16_t)(HAL_RCC_GetPCLK2Freq() / 100000) - 1;
+#elif defined STM32F4
+    __TIM3_CLK_ENABLE();
+    TIM_Handle.Instance = TIM3;
+    // TIM3 Clocked from SYSCLK = 168 MHz
+    TIM_Handle.Init.Prescaler = (uint16_t)(HAL_RCC_GetSysClockFreq() / 10000) - 1;
+#endif
+    // 1 Hz blinking
+    TIM_Handle.Init.Period = 10000;
+    TIM_Handle.Init.ClockDivision = 0;
+    TIM_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+
+    HAL_TIM_Base_Init(&TIM_Handle);
+    HAL_TIM_PWM_Init(&TIM_Handle);
+
+    TIM_OC_InitTypeDef TIM_OCConfig;
+
+    TIM_OCConfig.OCMode = TIM_OCMODE_PWM1;
+    // 5000 / 10000 = 50% duty cycle.
+    TIM_OCConfig.Pulse = 4999;
+    TIM_OCConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+    TIM_OCConfig.OCFastMode = TIM_OCFAST_DISABLE;
+
+#if defined STM32F1
+    HAL_TIM_PWM_ConfigChannel(&TIM_Handle, &TIM_OCConfig, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&TIM_Handle, TIM_CHANNEL_3);
+#elif defined STM32F2
+    HAL_TIM_PWM_ConfigChannel(&TIM_Handle, &TIM_OCConfig, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&TIM_Handle, TIM_CHANNEL_1);
+#elif defined STM32F4
+    HAL_TIM_PWM_ConfigChannel(&TIM_Handle, &TIM_OCConfig, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&TIM_Handle, TIM_CHANNEL_1);
+#endif
+}
+
+static void initClock(void)
+{
+    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+    RCC_OscInitTypeDef RCC_OscInitStruct;
+
+#if defined STM32F1
+    __HAL_RCC_PWR_CLK_ENABLE();
+
+    uint8_t fLatency;
+
+    RCC_OscInitStruct.OscillatorType  = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+    RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
+    RCC_OscInitStruct.HSICalibrationValue = 0;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+
+# if (defined STM32F100xB) || (defined STM32F100xE)
+    // 8 MHz * 3 = 24 MHz SYSCLK
+    RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL3;
+    fLatency = FLASH_LATENCY_0;
+# elif (defined STM32F101x6) || (defined STM32F101xB) || (defined STM32F101xE) || (defined STM32F101xG)
+    // 8 MHz / 2 * 9 = 36 MHz SYSCLK
+    RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+    fLatency = FLASH_LATENCY_1;
+# elif (defined STM32F102x6) || (defined STM32F102xB)
+    // 8 MHz * 6 = 48 MHz SYSCLK
+    RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+    fLatency = FLASH_LATENCY_1;
+# elif (defined STM32F103x6) || (defined STM32F103xB) || (defined STM32F103xE) || (defined STM32F103xG)
+    // 8 MHz * 9 = 72 MHz SYSCLK
+    RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+    fLatency = FLASH_LATENCY_2;
+# elif (defined STM32F105xC) || (defined STM32F107xC)
+    // 8 MHz * 9 = 72 MHz SYSCLK
+    RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+    RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+    fLatency = FLASH_LATENCY_2;
+# endif
+
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, fLatency);
+#elif defined STM32F2
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 25;
+    RCC_OscInitStruct.PLL.PLLN = 240;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = 5;
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+    /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+     clocks dividers */
+    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
+#elif defined STM32F4
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+    // 8 MHz * 336 / 8 / 2 = 168 MHz SYSCLK
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 8;
+    RCC_OscInitStruct.PLL.PLLN = 336;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = 7;
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+
+    if (HAL_GetREVID() == 0x1001)
+    {
+        __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+    }
+#endif
+}
+
+void initAll(void)
+{
+    HAL_Init();
+
+    initClock();
+    initGPIO();
+    initTimers();
+}
+
+int main(void)
+{
+    initAll();
+    for (;;);
+    return 0;
 }
