@@ -2,6 +2,13 @@ build/
 auvir_model/build/
 auvir_embed/build/
 auvir_embed/toolchain/
+*build/*
+*debug/*
+*release/*
 *.out
 *.exe
 *.obj
+*.o
+*.a
+*.lib
+*.dll
