@@ -7,5 +7,6 @@ cd build
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 make
 
+st-flash write v1 stm32test  0x08000000
 
-
+#openocd -f ../openocd.cfg

@@ -1,4 +1,5 @@
 #include "stm32f10x.h" 
+#include "stm32f10x_conf.h" 
 
 void _exit(void)
 {
@@ -6,6 +7,16 @@ void _exit(void)
     {
         ;
     }
+}
+void delay(unsigned int ms)
+{
+    unsigned int i;
+  for (i = 0; i < ms; ++i)
+  {
+      ;
+  }
+
+ 
 }
 int main(void)
 {
@@ -18,34 +29,20 @@ int main(void)
  gpio.GPIO_Speed = GPIO_Speed_2MHz;
  GPIO_Init(GPIOC, &gpio);
  gpio.GPIO_Pin = GPIO_Pin_8; // Blue LED
+ gpio.GPIO_Mode = GPIO_Mode_Out_PP;
+ gpio.GPIO_Speed = GPIO_Speed_2MHz;
  GPIO_Init(GPIOC, &gpio);
 
  while(1)
 
  {
 
-  static int count=0;
-
-  static int i;
-
-  static int led_state=0;
-
-
-
-  for (i=0; i<1000000; ++i)
-  {
-      ;
-  }
-
-  GPIO_WriteBit(GPIOC, GPIO_Pin_9, led_state ? Bit_SET : Bit_RESET);
-
-     led_state = !led_state;
-
-     GPIO_WriteBit(GPIOC, GPIO_Pin_8, led_state ? Bit_SET : Bit_RESET);
-
-
-
-
+  GPIO_WriteBit(GPIOC, GPIO_Pin_9, Bit_SET );
+  GPIO_WriteBit(GPIOC, GPIO_Pin_8, Bit_RESET);
+  delay(1000000);
+  GPIO_WriteBit(GPIOC, GPIO_Pin_9, Bit_RESET );
+  GPIO_WriteBit(GPIOC, GPIO_Pin_8, Bit_SET);
+  delay(1000000);
  }
 
 }
