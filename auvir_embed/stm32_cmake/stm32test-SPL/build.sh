@@ -11,3 +11,6 @@ make
 
 #openocd -f ../openocd.cfg
 openocd -f board/stm32vldiscovery.cfg -f interface/stlink-v1.cfg -c "init" -c "reset halt" -c "flash write_image erase stm32test" -c "reset run" -c "shutdown"
+
+cp stm32test* ~/Yandex.Disk/dev/auvir/build
+
