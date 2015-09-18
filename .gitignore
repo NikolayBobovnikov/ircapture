@@ -5,6 +5,7 @@ auvir_embed/toolchain/
 *build/*
 *debug/*
 *release/*
+*.autosave
 *.out
 *.exe
 *.obj
@@ -12,3 +13,4 @@ auvir_embed/toolchain/
 *.a
 *.lib
 *.dll
+CMakeLists.txt.user

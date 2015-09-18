@@ -57,9 +57,13 @@ SET(STM32_WWDG_SOURCE ${SPL_DIR}/src/stm32f10x_wwdg.c)
 #=======================================================================================================
 
 PROJECT(stm32test)
-
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 ENABLE_LANGUAGE(ASM)
+
+SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# TODO: set to RELEASE in production
+message(STATUS "Setting build type to debug")
+SET(CMAKE_BUILD_TYPE DEBUG)
 
 ## Preprocessor definitions. required by STM library.
 ADD_DEFINITIONS(
