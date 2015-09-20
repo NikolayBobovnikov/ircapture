@@ -2,7 +2,8 @@ AuViR Solutions:
 
 --- auvir_model: reconstructs 3D models of scenes and objects
 --- auvir_embed: 
-    --- auvir_suite: wearing IR marker suite which provides accel measurements via wifi
+    --- auvir_suite: wearing IR marker/receiver mocap suite which provides accel measurements/decoded positions via wifi
+    --- auvir_input_controller: receiving and interpreting stuff from the mocap suite
     --- auvir_picam: wifi Raspberry Pi camera with realtime onboard image preprocessing (thresholding and packing)
 --- auvir_motion (depends on: auvir_suite): real time motion capture (for omnimotion controller)
 --- auvir_openscene (depends_on: auvir: picam): calculate player's positions in realtime based on collected data from PIDetectors around the scene

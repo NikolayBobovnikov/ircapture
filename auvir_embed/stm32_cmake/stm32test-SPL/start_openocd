@@ -1,1 +1,1 @@
-openocd -f board/stm32vldiscovery.cfg -f interface/stlink-v1.cfg -c "init" -c "reset halt" -c "flash write_image erase build/stm32test.elf" -c "reset run" -c "shutdown"
+openocd -f board/stm32vldiscovery.cfg -f interface/stlink-v1.cfg -c "init" -c "reset halt"
