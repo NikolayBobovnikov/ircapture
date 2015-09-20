@@ -17,9 +17,9 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 
 # boost
 set (Boost_NO_SYSTEM_PATHS ON)
-set (BOOST_ROOT "~/work/dev/thirdparty/boost/boost_1_59_0" )
-set (BOOST_INCLUDEDIR "~/work/dev/thirdparty/boost/boost_1_59_0/boost_library/include")
-set (BOOST_LIBRARYDIR "~/work/dev/thirdparty/boost/boost_1_59_0/boost_library/bin/lib")
+set (BOOST_ROOT "../../thirdparty/boost/boost_1_59_0" )
+set (BOOST_INCLUDEDIR "../../thirdparty/boost/boost_1_59_0/boost_library/include")
+set (BOOST_LIBRARYDIR "../../thirdparty/boost/boost_1_59_0/boost_library/bin/lib")
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
