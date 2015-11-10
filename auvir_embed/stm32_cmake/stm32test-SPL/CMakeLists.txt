@@ -53,6 +53,31 @@ SET(STM32_USART_SOURCE ${SPL_DIR}/src/stm32f10x_usart.c)
 SET(STM32_WWDG_SOURCE ${SPL_DIR}/src/stm32f10x_wwdg.c)
 
 
+# redundant
+# SPL module HEADERS
+SET(STM32_MISC_HEADER ${SPL_DIR}/src/misc.h)
+SET(STM32_ADC_HEADER ${SPL_DIR}/src/stm32f10x_adc.h)
+SET(STM32_BKP_HEADER ${SPL_DIR}/src/stm32f10x_bkp.h)
+SET(STM32_CAN_HEADER ${SPL_DIR}/src/stm32f10x_can.h)
+SET(STM32_CEC_HEADER ${SPL_DIR}/src/stm32f10x_cec.h)
+SET(STM32_CRC_HEADER ${SPL_DIR}/src/stm32f10x_crc.h)
+SET(STM32_DAC_HEADER ${SPL_DIR}/src/stm32f10x_dac.h)
+SET(STM32_DBGMCU_HEADER ${SPL_DIR}/src/stm32f10x_dbgmcu.h)
+SET(STM32_DMA_HEADER ${SPL_DIR}/src/stm32f10x_dma.h)
+SET(STM32_EXTI_HEADER ${SPL_DIR}/src/stm32f10x_exti.h)
+SET(STM32_FLASH_HEADER ${SPL_DIR}/src/stm32f10x_flash.h)
+SET(STM32_FSMC_HEADER ${SPL_DIR}/src/stm32f10x_fsmc.h)
+SET(STM32_GPIO_HEADER ${SPL_DIR}/src/stm32f10x_gpio.h)
+SET(STM32_I2C_HEADER ${SPL_DIR}/src/stm32f10x_i2c.h)
+SET(STM32_IWDG_HEADER ${SPL_DIR}/src/stm32f10x_iwdg.h)
+SET(STM32_PWR_HEADER ${SPL_DIR}/src/stm32f10x_pwr.h)
+SET(STM32_RCC_HEADER ${SPL_DIR}/src/stm32f10x_rcc.h)
+SET(STM32_RTC_HEADER ${SPL_DIR}/src/stm32f10x_rtc.h)
+SET(STM32_SDIO_HEADER ${SPL_DIR}/src/stm32f10x_sdio.h)
+SET(STM32_SPI_HEADER ${SPL_DIR}/src/stm32f10x_spi.h)
+SET(STM32_TIM_HEADER ${SPL_DIR}/src/stm32f10x_tim.h)
+SET(STM32_USART_HEADER ${SPL_DIR}/src/stm32f10x_usart.h)
+SET(STM32_WWDG_HEADER ${SPL_DIR}/src/stm32f10x_wwdg.h)
 
 #=======================================================================================================
 
@@ -85,12 +110,12 @@ SET(MOD_SOURCES
 #  ${STM32_CRC_SOURCE}
 #  ${STM32_DAC_SOURCE}
 #  ${STM32_DBGMCU_SOURCE}
-#  ${STM32_DMA_SOURCE}
+  ${STM32_DMA_SOURCE}
 #  ${STM32_EXTI_SOURCE}
 #  ${STM32_FLASH_SOURCE}
 #  ${STM32_FSMC_SOURCE}
   ${STM32_GPIO_SOURCE}
-#  ${STM32_I2C_SOURCE}
+  ${STM32_I2C_SOURCE}
 #  ${STM32_IWDG_SOURCE}
 #  ${STM32_PWR_SOURCE}
   ${STM32_RCC_SOURCE}
@@ -98,7 +123,7 @@ SET(MOD_SOURCES
 #  ${STM32_SDIO_SOURCE}
 #  ${STM32_SPI_SOURCE}
 #  ${STM32_TIM_SOURCE}
-#  ${STM32_USART_SOURCE}
+  ${STM32_USART_SOURCE}
 #  ${STM32_WWDG_SOURCE}
 )
 # sources of standard interrupt handlers and CMSIS
@@ -112,9 +137,28 @@ INCLUDE_DIRECTORIES(
   ${SPL_INCLUDE_DIRS}
 )
 
+SET(SRC_DIR ${CMAKE_SOURCE_DIR})
+
+# include source/include files recursively
+file(GLOB_RECURSE ALL_PROJECT_SOURCES "${SRC_DIR}/*.c")
+file(GLOB_RECURSE ALL_PROJECT_HEADERS "${SRC_DIR}/*.h" "${SRC_DIR}/*.hpp")
+
+set (INCLUDE_DIRS "")
+foreach (_headerFile ${ALL_PROJECT_HEADERS})
+    get_filename_component(_dir ${_headerFile} PATH)
+    list (APPEND INCLUDE_DIRS ${_dir})
+endforeach()
+list(REMOVE_DUPLICATES INCLUDE_DIRS)
+include_directories(${INCLUDE_DIRS})
+
+message(STATUS "INCLUDE_DIRS: ${INCLUDE_DIRS}")
+
 SET(PROJECT_SOURCES
     main.c
     )
+SeT(PROJECT_HEADERS
+    mpu6050.h
+)
 
 #SET(STM32_LINKER_SCRIPT ${CMSIS_LINKER_SCRIPT})
 # Build everything into elf
@@ -122,7 +166,10 @@ ADD_EXECUTABLE(
     ${CMAKE_PROJECT_NAME}
     ${STARTUP_SOURCE}
     ${SERVICE_SOURCES}
-    ${PROJECT_SOURCES}
+    ${ALL_PROJECT_SOURCES}
+    ${ALL_PROJECT_HEADERS}
+    #${PROJECT_SOURCES}
+    #${PROJECT_HEADERS}
     ${MOD_SOURCES}
     )
 

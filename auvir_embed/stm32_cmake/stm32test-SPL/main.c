@@ -1,5 +1,5 @@
 #include "stm32f10x.h"
-//#include "stm32f10x_conf.h"
+#include "mpu6050.h"
 
 const char* const example_string = "Hello World!\r\n\0";
 
@@ -160,6 +160,82 @@ void button_led()
     }
 }
 
+void MPU6050_Initialize(void)
+{
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, 1<<7);//reset the whole module first
+
+delay(50);	//wait for 50ms for the gyro to stable
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_ZGYRO);//PLL with Z axis gyroscope reference
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_CONFIG, 0x01);		//DLPF_CFG = 1: Fs=1khz; bandwidth=42hz
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_SMPLRT_DIV, 0x01);	//500Hz sample rate ~ 2ms
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_2000);	//Gyro full scale setting
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_16);	//Accel full scale setting
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_INT_PIN_CFG, 1<<4);		//interrupt status bits are cleared on any read operation
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_INT_ENABLE, 1<<0);		//interupt occurs when data is ready. The interupt routine is in the receiver.c file.
+
+MPU6050_Write(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_SIGNAL_PATH_RESET, 0x07);//reset gyro and accel sensor
+}
+void MPU6050_Write(uint8_t slaveAddr, uint8_t regAddr, uint8_t data)
+{
+    uint8_t tmp;
+    tmp = data;
+    MPU6050_I2C_ByteWrite(slaveAddr,&tmp,regAddr);
+}
+//------------------------------------------------------------------
+void MPU6050_I2C_ByteWrite(u8 slaveAddr, u8* pBuffer, u8 writeAddr)
+{
+
+/* Send START condition */
+I2C_GenerateSTART(MPU6050_I2C, ENABLE);
+/* Test on EV5 and clear it */
+while(!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_MODE_SELECT));
+/* Send MPU6050 address for write */
+I2C_Send7bitAddress(MPU6050_I2C, slaveAddr, I2C_Direction_Transmitter);
+/* Test on EV6 and clear it */
+while(!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
+/* Send the MPU6050's internal address to write to */
+I2C_SendData(MPU6050_I2C, writeAddr);
+/* Test on EV8 and clear it */
+//while(!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_BYTE_TRANSMITTING));
+/* Send the byte to be written */
+if (pBuffer!=0) I2C_SendData(MPU6050_I2C, pBuffer);
+/* Test on EV8_2 and clear it */
+while(!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+/* Send STOP condition */
+I2C_GenerateSTOP(MPU6050_I2C, ENABLE);
+
+}
+NVIC_InitTypeDef NVIC_InitStructure;
+DMA_InitTypeDef  DMA_InitStructure;
+
+DMA_DeInit(MPU6050_DMA_Channel); //reset DMA1 channe1 to default values;
+
+DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)I2C_DR_Address; //=0x40005410 : address of data reading register of I2C1
+DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)I2C_Rx_Buffer; //variable to store data
+DMA_InitStructure.DMA_M2M = DMA_M2M_Disable; //channel will be used for peripheral to memory transfer
+DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;	//setting normal mode (non circular)
+DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;	//medium priority
+DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;	//Location assigned to peripheral register will be source
+DMA_InitStructure.DMA_BufferSize = 14;	//number of data to be transfered
+DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable; //automatic memory increment disable for peripheral
+DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;	//automatic memory increment enable for memory
+DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;	//source peripheral data size = 8bit
+DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;	//destination memory data size = 8bit
+DMA_Init(MPU6050_DMA_Channel, &DMA_InitStructure);
+DMA_ITConfig(MPU6050_DMA_Channel, DMA_IT_TC, ENABLE);
+
+NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel7_IRQn; //I2C1 connect to channel 7 of DMA1
+NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x05;
+NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x05;
+NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+NVIC_Init(&NVIC_InitStructure);
 
 int main()
 {
