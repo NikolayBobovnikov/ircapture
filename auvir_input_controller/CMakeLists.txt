@@ -1,7 +1,7 @@
-set(CMAKE_CXX_COMPILER /usr/bin/clang++)
-message(STATUS "Compiler: ${CMAKE_CXX_COMPILER}")
+#set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 cmake_minimum_required(VERSION 2.8)
 project(auvir_input_controller)
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER}")
 #save build information
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # TODO: set to RELEASE in production
@@ -9,6 +9,7 @@ set(CMAKE_BUILD_TYPE DEBUG)
 # set cmake modules path
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 add_definitions(-std=c++11)
+#add_definitions(-DBOOST_ALL_DYN_LINK)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 # C++14: set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
 
@@ -16,15 +17,20 @@ add_definitions(-std=c++11)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 
 # boost
-set (Boost_NO_SYSTEM_PATHS ON)
-set (BOOST_ROOT "../../thirdparty/boost/boost_1_59_0" )
-set (BOOST_INCLUDEDIR "../../thirdparty/boost/boost_1_59_0/boost_library/include")
-set (BOOST_LIBRARYDIR "../../thirdparty/boost/boost_1_59_0/boost_library/bin/lib")
+#set (Boost_DEBUG ON)
+#set (Boost_NO_SYSTEM_PATHS ON)
+set (BOOST_ROOT "..\\..\\thirdparty\\boost\\boost_1_59_0" )
+#set (BOOST_INCLUDEDIR "..\\..\\thirdparty\\boost\\boost_1_59_0\\")
+set (BOOST_LIBRARYDIR "..\\..\\thirdparty\\boost\\boost_1_59_0\\stage\\lib")
+#set (BOOST_LIBRARYDIR "..\\..\\thirdparty\\boost\\boost_1_59_0\\lib")
 
+add_definitions( -DBOOST_ALL_NO_LIB )
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost COMPONENTS system regex filesystem REQUIRED)
+
+message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 include_directories(${Boost_INCLUDE_DIRS})
 
 # include source/include files recursively
