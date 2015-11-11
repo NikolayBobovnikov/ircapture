@@ -1,6 +1,6 @@
 #include "stm32f10x.h"
 #include "stm32f10x_i2c.h"
-#include "mpu6050.h"
+#include "MPU6050.h"
 
 const char* const example_string = "Hello World!\r\n\0";
 
@@ -51,19 +51,19 @@ void blue_led_off()
 
 void init_button()
 {
-	// enable clock for port A (where button is located)
+    // enable clock for port A (where button is located)
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-	// setup button
-	// input push/pull
-	GPIOA->CRL &= (~GPIO_CRL_MODE0);
-	GPIOA->CRL &= (~GPIO_CRL_CNF0);
-	GPIOA->CRL |= GPIO_CRL_CNF0_1;
+    // setup button
+    // input push/pull
+    GPIOA->CRL &= (~GPIO_CRL_MODE0);
+    GPIOA->CRL &= (~GPIO_CRL_CNF0);
+    GPIOA->CRL |= GPIO_CRL_CNF0_1;
 }
 
 void init_uart()
 {
 
-	/* Initialize GPIO for transmit/receive pin */
+    /* Initialize GPIO for transmit/receive pin */
 
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
 
@@ -100,10 +100,6 @@ void init_uart()
     //6. Set the TE bit in USART_CR1 to send an idle frame as first transmission.
         USART1->CR1 |= USART_CR1_TE;
 
-
-        USART1->CR1 |= USART_CR1_RE;
-
-
 }
 
 void usart_sent_byte(uint8_t ch)
@@ -132,11 +128,11 @@ transmission.*/
 
 void usart_send_str(uint8_t * str)
 {
-	while(*str != '\0')
-	{
-		usart_sent_byte(*str);
-		str++;
-	}
+    while(*str != '\0')
+    {
+        usart_sent_byte(*str);
+        str++;
+    }
 }
 
 void button_led()
@@ -324,6 +320,8 @@ errReturn:
 int main()
 {
     //button_led();
+    init_led();
+    init_button();
     init_uart();
 
     // wait to press button
@@ -336,13 +334,6 @@ int main()
             button_pressed = true;
         }
     }
-
-    usart_send_str("Initialize led\r\n\0");
-    init_led();
-
-    usart_send_str("Initialize button\r\n\0");
-    init_button();
-
 
     /*
     // Init
@@ -359,10 +350,10 @@ int main()
     I2C_Read(I2C1 , data , 6, MPU6050_ADDRESS);
     */
 
-    usart_send_str("MPU6050_I2C_Init\r\n\0");
+    //usart_send_str("MPU6050_I2C_Init\r\n\0");
     //MPU6050_I2C_Init();
 
-    usart_send_str("MPU6050_Initialize\r\n\0");
+    //usart_send_str("MPU6050_Initialize\r\n\0");
     //MPU6050_Initialize();
     //MPU6050_Write();
     //MPU6050_Read();
@@ -378,11 +369,11 @@ int main()
         bool message_sent = false;
         if( is_button_off == 0)
         {
-            blue_led_on();
+            blue_led_off();
         }
         else
         {
-            blue_led_off();
+            blue_led_on();
             usart_send_str((uint8_t *)example_string);
             /*
             if(!message_sent)

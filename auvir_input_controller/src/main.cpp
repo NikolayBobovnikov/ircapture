@@ -7,6 +7,7 @@ int main(void)
     try
     {
         SimpleSerial serial("/dev/ttyUSB0",115200);
+        std::cout << "Opened /dev/ttyUSB0" << std::endl;
         std::cout << serial.readLine()<< std::endl;
     }
 
