@@ -13,4 +13,7 @@ auvir_embed/toolchain/
 *.a
 *.lib
 *.dll
+*.bin
+*.hex
+*.elf
 CMakeLists.txt.user
