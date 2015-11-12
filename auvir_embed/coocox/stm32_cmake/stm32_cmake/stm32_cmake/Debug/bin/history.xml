@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<history>
+   <processor signature="arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -g2 -Map=stm32_cmake.map -O0 --gc-sections -LC:\Users\nbobovnikov\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\stm32_cmake -TC:\Users\nbobovnikov\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\stm32_cmake/arm-gcc-link.ld -g">
+      <target file="stm32_cmake.elf" lastModified="150fabc1a2e">
+         <source file="..\obj\stm32f10x_it.o" lastModified="150fabc1812"/>
+         <source file="..\obj\MPU6050.o" lastModified="150fabc186c"/>
+         <source file="..\obj\main.o" lastModified="150fabc17d6"/>
+      </target>
+   </processor>
+</history>

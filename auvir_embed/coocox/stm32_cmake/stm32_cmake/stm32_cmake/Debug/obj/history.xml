@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<history>
+   <processor signature="arm-none-eabi-gcc noversion nomachine -mcpu=cortex-m3 -mthumb -g2 -Wall -O0 -std=c99 -c -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\SPL\src -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\CoreSupport -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\SPL\inc -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x -ID:\nbobovnikov\home\dev\auvir\auvir_embed -ID:\nbobovnikov\home\dev\auvir\auvir_embed\coocox\stm32_cmake\stm32_cmake -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\gcc_ride7">
+      <target file="stm32f10x_it.o" lastModified="150fabc1812">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\stm32f10x_it.c" lastModified="14fd0398c6f"/>
+      </target>
+      <target file="main.o" lastModified="150fabc17d6">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\main.c" lastModified="150fab7b789"/>
+      </target>
+      <target file="MPU6050.o" lastModified="150fabc186c">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\MPU6050.c" lastModified="150f71e28ae"/>
+      </target>
+   </processor>
+</history>

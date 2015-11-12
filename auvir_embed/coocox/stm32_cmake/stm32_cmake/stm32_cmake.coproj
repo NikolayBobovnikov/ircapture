@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Project version="2G - 2.0.3" name="stm32_cmake">
+  <Target name="stm32_cmake" isCurrent="1">
+    <Device manufacturerId="9" manufacturerName="ST" chipId="508" chipName="STM32F100RBT6B" boardId="" boardName="" boardUrl="" coreId="3" coreName="Cortex M3"/>
+    <BuildOption>
+      <Compile>
+        <Option name="OptimizationLevel" value="0"/>
+        <Option name="UseFPU" value="0"/>
+        <Option name="UserEditCompiler" value=""/>
+        <Option name="SupportCPlusplus" value="0"/>
+        <Option name="DEBUG" value="2"/>
+        <Option name="WARNING" value="1"/>
+        <Option name="STANDARD" value="1"/>
+        <Includepaths>
+          <Includepath path="."/>
+          <Includepath path="../../../stm32_cmake/stm32test-spl/libraries/spl/inc"/>
+          <Includepath path="../../../stm32_cmake/stm32test-spl/libraries/spl/src"/>
+          <Includepath path="../../../stm32_cmake/stm32test-spl/libraries/cmsis/cm3/devicesupport/st/stm32f10x"/>
+          <Includepath path="../../../stm32_cmake/stm32test-spl/libraries/cmsis/cm3/devicesupport/st/stm32f10x/startup/gcc_ride7"/>
+          <Includepath path="../../../stm32_cmake/stm32test-spl/libraries/cmsis/cm3/coresupport"/>
+        </Includepaths>
+        <DefinedSymbols>
+          <Define name="STM32F10X_MD_VL"/>
+          <Define name="USE_STDPERIPH_DRIVER"/>
+        </DefinedSymbols>
+      </Compile>
+      <Link useDefault="0">
+        <Option name="DiscardUnusedSection" value="0"/>
+        <Option name="UserEditLinkder" value=""/>
+        <Option name="UseMemoryLayout" value="1"/>
+        <Option name="nostartfiles" value="0"/>
+        <Option name="LTO" value="0"/>
+        <Option name="IsNewStartupCode" value="1"/>
+        <LinkedLibraries/>
+        <MemoryAreas debugInFlashNotRAM="1">
+          <Memory name="IROM1" type="ReadOnly" size="0x00020000" startValue="0x08000000"/>
+          <Memory name="IRAM1" type="ReadWrite" size="0x00002000" startValue="0x20000000"/>
+          <Memory name="IROM2" type="ReadOnly" size="" startValue=""/>
+          <Memory name="IRAM2" type="ReadWrite" size="" startValue=""/>
+        </MemoryAreas>
+        <LocateLinkFile path="c:/users/nbobovnikov/appdata/roaming/coocox/coide/configuration/programdata/stm32_cmake/arm-gcc-link.ld" type="0"/>
+      </Link>
+      <Output>
+        <Option name="OutputFileType" value="0"/>
+        <Option name="Path" value="./"/>
+        <Option name="Name" value="stm32_cmake"/>
+        <Option name="HEX" value="1"/>
+        <Option name="BIN" value="1"/>
+      </Output>
+      <User>
+        <UserRun name="Run#1" type="Before" checked="0" value=""/>
+        <UserRun name="Run#1" type="After" checked="0" value=""/>
+      </User>
+    </BuildOption>
+    <DebugOption>
+      <Option name="org.coocox.codebugger.gdbjtag.core.adapter" value="ST-Link"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.debugMode" value="SWD"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.clockDiv" value="1M"/>
+      <Option name="org.coocox.codebugger.gdbjtag.corerunToMain" value="1"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.jlinkgdbserver" value=""/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.userDefineGDBScript" value=""/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.targetEndianess" value="0"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.jlinkResetMode" value="Type 0: Normal"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.resetMode" value="SYSRESETREQ"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.ifSemihost" value="0"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.ifCacheRom" value="1"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.ipAddress" value="127.0.0.1"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.portNumber" value="2009"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.autoDownload" value="1"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.verify" value="1"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.downloadFuction" value="Erase Effected"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.defaultAlgorithm" value="C:\Users\nbobovnikov\AppData\Roaming\CooCox\CoIDE\config\flash\CooCox-Flash\CoIDE_STM32F1xx_MD_128K\STM32F10x_MD_128.elf"/>
+    </DebugOption>
+    <ExcludeFile/>
+  </Target>
+  <Components path="./"/>
+  <LocalComponents/>
+  <Files>
+    <File name="stm32f10x_it.c" path="../../../stm32_cmake/stm32test-SPL/stm32f10x_it.c" type="1"/>
+    <File name="mpu6050.h" path="../../../stm32_cmake/stm32test-SPL/mpu6050.h" type="1"/>
+    <File name="MPU6050.c" path="../../../stm32_cmake/stm32test-SPL/MPU6050.c" type="1"/>
+    <File name="stm32f10x_it.h" path="../../../stm32_cmake/stm32test-SPL/stm32f10x_it.h" type="1"/>
+    <File name="HAL_MPU6050.h" path="../../../stm32_cmake/stm32test-SPL/HAL_MPU6050.h" type="1"/>
+    <File name="main.c" path="../../../stm32_cmake/stm32test-SPL/main.c" type="1"/>
+    <File name="stm32f10x_conf.h" path="../../../stm32_cmake/stm32test-SPL/stm32f10x_conf.h" type="1"/>
+  </Files>
+  <Bookmarks/>
+</Project>
