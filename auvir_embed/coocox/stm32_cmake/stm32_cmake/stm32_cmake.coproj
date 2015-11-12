@@ -6,11 +6,11 @@
       <Compile>
         <Option name="OptimizationLevel" value="0"/>
         <Option name="UseFPU" value="0"/>
-        <Option name="UserEditCompiler" value=""/>
+        <Option name="UserEditCompiler" value="-g;"/>
         <Option name="SupportCPlusplus" value="0"/>
         <Option name="DEBUG" value="2"/>
         <Option name="WARNING" value="1"/>
-        <Option name="STANDARD" value="1"/>
+        <Option name="STANDARD" value="100000"/>
         <Includepaths>
           <Includepath path="."/>
           <Includepath path="../../../stm32_cmake/stm32test-spl/libraries/spl/inc"/>
@@ -22,13 +22,14 @@
         <DefinedSymbols>
           <Define name="STM32F10X_MD_VL"/>
           <Define name="USE_STDPERIPH_DRIVER"/>
+          <Define name="STM32F100RBT6B"/>
         </DefinedSymbols>
       </Compile>
       <Link useDefault="0">
         <Option name="DiscardUnusedSection" value="0"/>
         <Option name="UserEditLinkder" value=""/>
         <Option name="UseMemoryLayout" value="1"/>
-        <Option name="nostartfiles" value="0"/>
+        <Option name="nostartfiles" value="1"/>
         <Option name="LTO" value="0"/>
         <Option name="IsNewStartupCode" value="1"/>
         <LinkedLibraries/>
@@ -76,9 +77,15 @@
   <Components path="./"/>
   <LocalComponents/>
   <Files>
+    <File name="system_stm32f10x.h" path="../../../stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.h" type="1"/>
+    <File name="core_cm3.h" path="../../../stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/CoreSupport/core_cm3.h" type="1"/>
     <File name="stm32f10x_it.c" path="../../../stm32_cmake/stm32test-SPL/stm32f10x_it.c" type="1"/>
-    <File name="mpu6050.h" path="../../../stm32_cmake/stm32test-SPL/mpu6050.h" type="1"/>
+    <File name="mpu6050.h" path="../../../stm32_cmake/stm32test-SPL/MPU6050.h" type="1"/>
+    <File name="system_stm32f10x.c" path="../../../stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c" type="1"/>
     <File name="MPU6050.c" path="../../../stm32_cmake/stm32test-SPL/MPU6050.c" type="1"/>
+    <File name="core_cm3.c" path="../../../stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/CoreSupport/core_cm3.c" type="1"/>
+    <File name="stm32f10x.h" path="../../../stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/stm32f10x.h" type="1"/>
+    <File name="startup_stm32f10x_md_vl.s" path="../../../stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_md_vl.s" type="1"/>
     <File name="stm32f10x_it.h" path="../../../stm32_cmake/stm32test-SPL/stm32f10x_it.h" type="1"/>
     <File name="HAL_MPU6050.h" path="../../../stm32_cmake/stm32test-SPL/HAL_MPU6050.h" type="1"/>
     <File name="main.c" path="../../../stm32_cmake/stm32test-SPL/main.c" type="1"/>

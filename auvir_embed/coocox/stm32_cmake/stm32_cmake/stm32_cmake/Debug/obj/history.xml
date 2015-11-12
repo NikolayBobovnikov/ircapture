@@ -1,14 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <history>
-   <processor signature="arm-none-eabi-gcc noversion nomachine -mcpu=cortex-m3 -mthumb -g2 -Wall -O0 -std=c99 -c -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\SPL\src -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\CoreSupport -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\SPL\inc -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x -ID:\nbobovnikov\home\dev\auvir\auvir_embed -ID:\nbobovnikov\home\dev\auvir\auvir_embed\coocox\stm32_cmake\stm32_cmake -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\gcc_ride7">
-      <target file="stm32f10x_it.o" lastModified="150fabc1812">
+   <processor signature="arm-none-eabi-gcc noversion nomachine -mcpu=cortex-m3 -mthumb -g2 -Wall -O0 -g -c -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -DSTM32F100RBT6B -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\SPL\src -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\CoreSupport -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\SPL\inc -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\CoreSupport -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3 -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x -ID:\nbobovnikov\home\dev\auvir\auvir_embed -ID:\nbobovnikov\home\dev\auvir\auvir_embed\coocox\stm32_cmake\stm32_cmake -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\gcc_ride7">
+      <target file="core_cm3.o" lastModified="150fb2300fe">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\CoreSupport\core_cm3.c" lastModified="150f6be72ef"/>
+      </target>
+      <target file="system_stm32f10x.o" lastModified="150fb230144">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\system_stm32f10x.c" lastModified="14fd0398c36"/>
+      </target>
+      <target file="startup_stm32f10x_md_vl.o" lastModified="150fb2300c2">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\gcc_ride7\startup_stm32f10x_md_vl.s" lastModified="150fb22fb2d"/>
+      </target>
+      <target file="stm32f10x_it.o" lastModified="150fb2301da">
          <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\stm32f10x_it.c" lastModified="14fd0398c6f"/>
       </target>
-      <target file="main.o" lastModified="150fabc17d6">
-         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\main.c" lastModified="150fab7b789"/>
+      <target file="main.o" lastModified="150fb23019e">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\main.c" lastModified="150fb184227"/>
       </target>
-      <target file="MPU6050.o" lastModified="150fabc186c">
-         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\MPU6050.c" lastModified="150f71e28ae"/>
+      <target file="MPU6050.o" lastModified="150fb230234">
+         <source file="..\..\..\..\..\..\stm32_cmake\stm32test-SPL\MPU6050.c" lastModified="150fb08238b"/>
       </target>
    </processor>
 </history>
