@@ -2,11 +2,11 @@
 #include "stm32f10x_i2c.h"
 #include "MPU6050.h"
 
-const char* const example_string = "Hello World!\r\n\0";
-const char* const msg_conenction_success = "Connected!\r\n\0";
-const char* const msg_conenction_fail = "Oops, connection failed.\r\n\0";
-const char* const msg_MPU6050_I2C_Init = "MPU6050_I2C_Init!\r\n\0";
-const char* const msg_MPU6050_Initialize = "MPU6050_Initialize!\r\n\0";
+char * example_string = "Hello World!\r\n\0";
+char* msg_conenction_success = "Connected!\r\n\0";
+char* msg_conenction_fail = "Oops, connection failed.\r\n\0";
+char* msg_MPU6050_I2C_Init = "MPU6050_I2C_Init!\r\n\0";
+char* msg_MPU6050_Initialize = "MPU6050_Initialize!\r\n\0";
 
 void _exit(void)
 {
@@ -106,7 +106,7 @@ void init_uart()
 
 }
 
-void usart_sent_byte(uint8_t ch)
+void usart_sent_byte(char ch)
 {
 /*7. Write the data to send in the USART_DR register (this clears the TXE bit). Repeat this
 for each data to be transmitted in case of single buffer.*/
@@ -130,7 +130,7 @@ transmission.*/
      //while ((USART1->SR & USART_SR_TXE) == 0);
 }
 
-void usart_send_str(uint8_t * str)
+void usart_send_str(char * str)
 {
     while(*str != '\0')
     {
@@ -156,7 +156,7 @@ void button_led()
         else
         {
             blue_led_off();
-            usart_send_str((uint8_t *)example_string);
+            usart_send_str((char *)example_string);
         }
     }
 }
@@ -360,7 +360,7 @@ int main()
 
     usart_send_str(msg_MPU6050_Initialize);
     MPU6050_Initialize();
-    bool connection_ok = false;
+    volatile bool connection_ok = false;
     connection_ok = MPU6050_TestConnection();
     uint8_t device_id = MPU6050_GetDeviceID();
     uint8_t* device_id_addr = &device_id;
@@ -382,29 +382,40 @@ int main()
         {
             blue_led_on();
 
-            int16_t  AccelGyro[6]={0};
-            MPU6050_GetRawAccelGyro(AccelGyro);
-            int a = 0;
+            bool connected = MPU6050_TestConnection();
+            // test connection and send a message
+            if(connected)
+            {
+                usart_send_str((char *)msg_conenction_success);
+                // Read data from the sensor
+                int16_t  AccelGyro[6]={0};
+                MPU6050_GetRawAccelGyro(AccelGyro);
+
+                MPU6050_t sensor_data={0};
+                //MPU6050_ReadAll(&sensor_data);
+
+            }
             /*
             if(!message_sent)
             {
-            	// Read data from the sensor
-            	int16_t  AccelGyro[6]={0};
-            	MPU6050_GetRawAccelGyro(AccelGyro);
-
-            	MPU6050_t sensor_data={0};
-                //MPU6050_ReadAll(&sensor_data);
-
+                bool connected = MPU6050_TestConnection();
                 // test connection and send a message
-                if(MPU6050_TestConnection())
+                if(connected)
                 {
-                    usart_send_str((uint8_t *)msg_conenction_success);
+                    usart_send_str((char *)msg_conenction_success);
+                    // Read data from the sensor
+                    int16_t  AccelGyro[6]={0};
+                    MPU6050_GetRawAccelGyro(AccelGyro);
+
+                    MPU6050_t sensor_data={0};
+                    //MPU6050_ReadAll(&sensor_data);
+
                 }
                 else
                 {
-                    usart_send_str((uint8_t *)msg_conenction_fail);
+                    usart_send_str((char *)msg_conenction_fail);
                 }
-                usart_send_str((uint8_t *)example_string);
+                usart_send_str((char *)example_string);
                 message_sent = true;
             }
             */
