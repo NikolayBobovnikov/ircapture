@@ -229,6 +229,36 @@ void MPU6050_GetRawAccelGyro(s16* AccelGyro)
 
 }
 
+
+/// Added from another library -->
+
+void MPU6050_ReadAll(MPU6050_t* DataStruct) {
+    uint8_t data[14];
+    int16_t temp;
+
+    /* Read full raw data, 14bytes */
+    //TM_I2C_ReadMulti(MPU6050_I2C, DataStruct->Address, MPU6050_ACCEL_XOUT_H, data, 14);
+    MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS, data, MPU6050_RA_ACCEL_XOUT_H, 14);
+
+    /* Format accelerometer data */
+    DataStruct->Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
+    DataStruct->Accelerometer_Y = (int16_t)(data[2] << 8 | data[3]);
+    DataStruct->Accelerometer_Z = (int16_t)(data[4] << 8 | data[5]);
+
+    /* Format temperature */
+    temp = (data[6] << 8 | data[7]);
+    DataStruct->Temperature = (float)((float)((int16_t)temp) / (float)340.0 + (float)36.53);
+
+    /* Format gyroscope data */
+    DataStruct->Gyroscope_X = (int16_t)(data[8] << 8 | data[9]);
+    DataStruct->Gyroscope_Y = (int16_t)(data[10] << 8 | data[11]);
+    DataStruct->Gyroscope_Z = (int16_t)(data[12] << 8 | data[13]);
+
+    return;
+}
+
+/// Added from another library <--
+
 /** Write multiple bits in an 8-bit device register.
  * @param slaveAddr I2C slave device address
  * @param regAddr Register regAddr to write to

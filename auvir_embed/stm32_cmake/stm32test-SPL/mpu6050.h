@@ -393,6 +393,36 @@ extern "C" {
 #define MPU6050_DMP_MEMORY_BANK_SIZE    256
 #define MPU6050_DMP_MEMORY_CHUNK_SIZE   16
 
+
+/// Added from another library -->
+/**
+ * @brief  MPU6050 data structure
+ */
+typedef struct {
+    /* Private */
+    uint8_t Address;         /*!< I2C address of device. Only for private use */
+    float Gyro_Mult;         /*!< Gyroscope corrector from raw data to "degrees/s". Only for private use */
+    float Acce_Mult;         /*!< Accelerometer corrector from raw data to "g". Only for private use */
+    /* Public */
+    int16_t Accelerometer_X; /*!< Accelerometer value X axis */
+    int16_t Accelerometer_Y; /*!< Accelerometer value Y axis */
+    int16_t Accelerometer_Z; /*!< Accelerometer value Z axis */
+    int16_t Gyroscope_X;     /*!< Gyroscope value X axis */
+    int16_t Gyroscope_Y;     /*!< Gyroscope value Y axis */
+    int16_t Gyroscope_Z;     /*!< Gyroscope value Z axis */
+    float Temperature;       /*!< Temperature in degrees */
+} MPU6050_t;
+
+/**
+ * @brief  Reads accelerometer, gyroscope and temperature data from sensor
+ * @param  *DataStruct: Pointer to @ref TM_MPU6050_t structure to store data to
+ * @retval Member of @ref TM_MPU6050_Result_t:
+ *            - TM_MPU6050_Result_Ok: everything is OK
+ *            - Other: in other cases
+ */
+void MPU6050_ReadAll(MPU6050_t* DataStruct);
+/// Added from another library <--
+
 void MPU6050_Initialize();
 bool MPU6050_TestConnection();
 

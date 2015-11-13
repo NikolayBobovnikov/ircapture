@@ -336,6 +336,7 @@ int main()
         if( is_button_off != 0)
         {
             button_pressed = true;
+            blue_led_on();
         }
     }
 
@@ -359,28 +360,41 @@ int main()
 
     usart_send_str(msg_MPU6050_Initialize);
     MPU6050_Initialize();
-    int connection_ok = MPU6050_TestConnection();
+    bool connection_ok = false;
+    connection_ok = MPU6050_TestConnection();
+    uint8_t device_id = MPU6050_GetDeviceID();
+    uint8_t* device_id_addr = &device_id;
     //MPU6050_Write();
     //MPU6050_Read();
 
-
-
+    bool message_sent = false;
 
     while(1)
     {
         unsigned int is_button_off = (GPIOA->IDR & 0x1);
-        bool message_sent = false;
+
         if( is_button_off == 0)
         {
             blue_led_off();
+            message_sent = false;
         }
         else
         {
             blue_led_on();
-            usart_send_str((uint8_t *)example_string);
+
+            int16_t  AccelGyro[6]={0};
+            MPU6050_GetRawAccelGyro(AccelGyro);
+            int a = 0;
             /*
             if(!message_sent)
             {
+            	// Read data from the sensor
+            	int16_t  AccelGyro[6]={0};
+            	MPU6050_GetRawAccelGyro(AccelGyro);
+
+            	MPU6050_t sensor_data={0};
+                //MPU6050_ReadAll(&sensor_data);
+
                 // test connection and send a message
                 if(MPU6050_TestConnection())
                 {
@@ -394,6 +408,8 @@ int main()
                 message_sent = true;
             }
             */
+
+
         }
     }
 
