@@ -1,13 +1,17 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <history>
    <processor signature="arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -g2 -nostartfiles -Map=stm32_cmake.map -O0 --gc-sections -LC:\Users\nbobovnikov\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\stm32_cmake -TC:\Users\nbobovnikov\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\stm32_cmake/arm-gcc-link.ld -g">
-      <target file="stm32_cmake.elf" lastModified="150fb2a391b">
-         <source file="..\obj\stm32f10x_it.o" lastModified="150fb2a36f2"/>
-         <source file="..\obj\system_stm32f10x.o" lastModified="150fb2a3666"/>
-         <source file="..\obj\MPU6050.o" lastModified="150fb2a374c"/>
-         <source file="..\obj\core_cm3.o" lastModified="150fb2a3620"/>
-         <source file="..\obj\startup_stm32f10x_md_vl.o" lastModified="150fb2a35e4"/>
-         <source file="..\obj\main.o" lastModified="150fb2a36b6"/>
+      <target file="stm32_cmake.elf" lastModified="1510174dded">
+         <source file="..\obj\stm32f10x_usart.o" lastModified="1510174db05"/>
+         <source file="..\obj\system_stm32f10x.o" lastModified="1510174d998"/>
+         <source file="..\obj\startup_stm32f10x_md_vl.o" lastModified="1510174d90c"/>
+         <source file="..\obj\stm32f10x_gpio.o" lastModified="1510174d9ef"/>
+         <source file="..\obj\stm32f10x_rcc.o" lastModified="1510174daa1"/>
+         <source file="..\obj\stm32f10x_it.o" lastModified="1510174db46"/>
+         <source file="..\obj\stm32f10x_i2c.o" lastModified="1510174dc02"/>
+         <source file="..\obj\MPU6050.o" lastModified="1510174db9e"/>
+         <source file="..\obj\main.o" lastModified="1510174da3c"/>
+         <source file="..\obj\core_cm3.o" lastModified="1510174d94e"/>
       </target>
    </processor>
 </history>

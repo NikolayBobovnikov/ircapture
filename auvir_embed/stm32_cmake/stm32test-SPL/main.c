@@ -3,6 +3,10 @@
 #include "MPU6050.h"
 
 const char* const example_string = "Hello World!\r\n\0";
+const char* const msg_conenction_success = "Connected!\r\n\0";
+const char* const msg_conenction_fail = "Oops, connection failed.\r\n\0";
+const char* const msg_MPU6050_I2C_Init = "MPU6050_I2C_Init!\r\n\0";
+const char* const msg_MPU6050_Initialize = "MPU6050_Initialize!\r\n\0";
 
 void _exit(void)
 {
@@ -350,17 +354,16 @@ int main()
     I2C_Read(I2C1 , data , 6, MPU6050_ADDRESS);
     */
 
-    //usart_send_str("MPU6050_I2C_Init\r\n\0");
-    //MPU6050_I2C_Init();
+    usart_send_str(msg_MPU6050_I2C_Init);
+    MPU6050_I2C_Init();
 
-    //usart_send_str("MPU6050_Initialize\r\n\0");
-    //MPU6050_Initialize();
+    usart_send_str(msg_MPU6050_Initialize);
+    MPU6050_Initialize();
+    int connection_ok = MPU6050_TestConnection();
     //MPU6050_Write();
     //MPU6050_Read();
 
 
-    const char* const msg_conenction_success = "Connected!\r\n\0";
-    const char* const msg_conenction_fail = "Oops, connection failed.\r\n\0";
 
 
     while(1)
