@@ -8,6 +8,10 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=DEBUG ..
 make
 
 cd ..
+
+#kill hanging openocd if any
+#ps axf | grep openocd | grep -v grep | awk '{print "kill -9 " $1}' | sh
+
 #start debugger
 (openocd -f ./openocd.cfg &)
 

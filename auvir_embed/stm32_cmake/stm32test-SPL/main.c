@@ -1,6 +1,7 @@
 #include "stm32f10x.h"
 #include "stm32f10x_i2c.h"
 #include "MPU6050.h"
+#include "I2CRoutines.h"
 
 char * example_string = "Hello World!\r\n\0";
 char* msg_conenction_success = "Connected!\r\n\0";
@@ -16,16 +17,6 @@ void _exit(void)
     }
 }
 
-
-void delay(unsigned int num)
-{
-    unsigned int i;
-    for (i = 0; i < num; i++)
-    {
-        ;
-    }
-}
-
 void init_led()
 {
     //====================================
@@ -33,7 +24,7 @@ void init_led()
     //====================================
     RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 
-   //====================================
+    //====================================
     // setup GPIO port C pin 8 for output
     //====================================
     // output mode push-pull - by default
@@ -89,45 +80,45 @@ void init_uart()
 
     /* Initialize uart peripheral*/
 
-        RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_USART1EN;
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_USART1EN;
     //1. Enable the USART by writing the UE bit in USART_CR1 register to 1.
-        USART1->CR1 |= USART_CR1_UE;                // Uart Enable
+    USART1->CR1 |= USART_CR1_UE;                // Uart Enable
     //2. Program the M bit in USART_CR1 to define the word length.
-        USART1->CR1 &= (~USART_CR1_M);              // 8 bit word - bit M is reset
+    USART1->CR1 &= (~USART_CR1_M);              // 8 bit word - bit M is reset
     //3. Program the number of stop bits in USART_CR2.
-        USART1->CR2 &= (~USART_CR2_STOP);           // 1 stop bit - 00
+    USART1->CR2 &= (~USART_CR2_STOP);           // 1 stop bit - 00
     /*4. Select DMA enable (DMAT) in USART_CR3 if Multi buffer Communication is to take
     place. Configure the DMA register as explained in multibuffer communication.*/
-        USART1->CR3 &= (~USART_CR3_DMAT);           // DMA disabled
+    USART1->CR3 &= (~USART_CR3_DMAT);           // DMA disabled
     //5. Select the desired baud rate using the USART_BRR register.
-        USART1->BRR = (SystemCoreClock / 115200);   //9600 or 115200 bps
+    USART1->BRR = (SystemCoreClock / 115200);   //9600 or 115200 bps
     //6. Set the TE bit in USART_CR1 to send an idle frame as first transmission.
-        USART1->CR1 |= USART_CR1_TE;
+    USART1->CR1 |= USART_CR1_TE;
 
 }
 
 void usart_sent_byte(char ch)
 {
-/*7. Write the data to send in the USART_DR register (this clears the TXE bit). Repeat this
+    /*7. Write the data to send in the USART_DR register (this clears the TXE bit). Repeat this
 for each data to be transmitted in case of single buffer.*/
 
-  /*
+    /*
    * Before write data to DR register, we check state of TXE (transmitter empty) flag. When this flag is clear, we can't write to DR register.
    * High value of this flag mean that is no data in transmit buffer (previous data just be sent or there is first tranmission) and we can write new data to send.
   */
-  while(!(USART1->SR & USART_SR_TXE))
-  {
-    ;
-  }
-  USART1->DR = ch;
-/*8. After writing the last data into the USART_DR register, wait until TC=1. This indicates
+    while(!(USART1->SR & USART_SR_TXE))
+    {
+        ;
+    }
+    USART1->DR = ch;
+    /*8. After writing the last data into the USART_DR register, wait until TC=1. This indicates
 that the transmission of the last frame is complete. This is required for instance when
 the USART is disabled or enters the Halt mode to avoid corrupting the last
 transmission.*/
-  while ((USART1->SR & USART_SR_TC) == 0);
+    while ((USART1->SR & USART_SR_TC) == 0);
 
-  // wait for TX
-     //while ((USART1->SR & USART_SR_TXE) == 0);
+    // wait for TX
+    //while ((USART1->SR & USART_SR_TXE) == 0);
 }
 
 void usart_send_str(char * str)
@@ -163,267 +154,175 @@ void button_led()
 
 
 
-/// i2c functions
-/*
 
-void I2C_LowLevel_Init(I2C_TypeDef* I2Cx , int ClockSpeed , int
-                       OwnAddress)
+/** @addtogroup Optimized I2C examples
+  * @{
+  */
+
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+ErrorStatus HSEStartUpStatus;
+/* Buffer of data to be received by I2C1 */
+uint8_t Buffer_Rx1[255];
+/* Buffer of data to be transmitted by I2C1 */
+uint8_t Buffer_Tx1[255] = {0x5, 0x6,0x8,0xA};
+/* Buffer of data to be received by I2C2 */
+uint8_t Buffer_Rx2[255];
+/* Buffer of data to be transmitted by I2C2 */
+uint8_t Buffer_Tx2[255] = {0xF, 0xB, 0xC,0xD};
+extern __IO uint8_t Tx_Idx1 , Rx_Idx1;
+extern __IO uint8_t Tx_Idx2 , Rx_Idx2;
+
+/* Private function prototypes -----------------------------------------------*/
+void GPIO_Configuration(void);
+void NVIC_Configuration(void);
+/* Private functions ---------------------------------------------------------*/
+
+
+short x,y,z;
+static __IO uint32_t TimingDelay;
+
+void Delay(uint32_t nTime);
+void TimingDelay_Decrement(void);
+void InitSysClock(void);
+
+
+//
+void GWriteReg(unsigned char reg, unsigned char value) // Write sensor reg
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
-    I2C_InitTypeDef I2C_InitStructure;
-    // Enable GPIOB clocks
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB , ENABLE);
-    // Configure I2C clock and GPIO
-    GPIO_StructInit (& GPIO_InitStructure);
-    if (I2Cx == I2C1){
-        // I2C1 clock enable
-        RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1 , ENABLE);
-        // I2C1 SDA and SCL configuration
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_OD;
-        GPIO_Init(GPIOB , &GPIO_InitStructure);
-        // I2C1 Reset
-        RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1 , ENABLE);
-        RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1 , DISABLE);
-    }
-    else
-    {
-        // I2C2 ...
-    }
-    // Configure I2Cx
-    I2C_StructInit (& I2C_InitStructure);
-    I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-    I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
-    I2C_InitStructure.I2C_OwnAddress1 = OwnAddress;
-    I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
-    I2C_InitStructure.I2C_AcknowledgedAddress =
-            I2C_AcknowledgedAddress_7bit;
-    I2C_InitStructure.I2C_ClockSpeed = ClockSpeed;
-    I2C_Init(I2Cx , &I2C_InitStructure);
-    I2C_Cmd(I2Cx , ENABLE);
+        Buffer_Tx1[0]=reg;
+        Buffer_Tx1[1]=value;
+
+        I2C_Master_BufferWrite(I2C1, Buffer_Tx1,2,Polling, MPU6050_DEFAULT_ADDRESS);
 }
-
-#define Timed(x) Timeout = 0xFFFF; while (x) \
-{ if (Timeout -- == 0) goto errReturn ;}
-
-
-ErrorStatus I2C_Write(I2C_TypeDef* I2Cx , const uint8_t* buf ,
-                 uint32_t nbyte , uint8_t SlaveAddress)
+unsigned char GReadReg(unsigned char reg) // Read sensor reg
 {
-    __IO uint32_t Timeout = 0;
-    if (nbyte)
-    {
-        Timed(I2C_GetFlagStatus(I2Cx , I2C_FLAG_BUSY));
-        // Intiate Start Sequence
-        I2C_GenerateSTART(I2Cx , ENABLE);
-        Timed (! I2C_CheckEvent(I2Cx , I2C_EVENT_MASTER_MODE_SELECT));
-        // Send Address EV5
-        I2C_Send7bitAddress(I2Cx , SlaveAddress ,
-                            I2C_Direction_Transmitter);
-        Timed (! I2C_CheckEvent(I2Cx ,
-                                I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-        // EV6 Write first byte EV8_1
-        I2C_SendData(I2Cx , *buf ++);
-        while (--nbyte) {
-            // wait on BTF
-            Timed (! I2C_GetFlagStatus(I2Cx , I2C_FLAG_BTF));
-            I2C_SendData(I2Cx , *buf ++);
-        }
-        Timed (! I2C_GetFlagStatus(I2Cx , I2C_FLAG_BTF));
-        I2C_GenerateSTOP(I2Cx , ENABLE);
-        Timed(I2C_GetFlagStatus(I2C1 , I2C_FLAG_STOPF));
-    }
-    return SUCCESS;
-errReturn:
-    return ERROR;
+        Buffer_Tx1[0]=reg;
+        I2C_Master_BufferWrite(I2C1, Buffer_Tx1,1,Interrupt, MPU6050_DEFAULT_ADDRESS);
+        I2C_Master_BufferRead(I2C1,Buffer_Rx1,1,Polling, MPU6050_DEFAULT_ADDRESS);
+        return Buffer_Rx1[0];
 }
-
-ErrorStatus I2C_Read(I2C_TypeDef* I2Cx , uint8_t *buf ,
-                uint32_t nbyte , uint8_t SlaveAddress)
+void GDataRead() // Read data from sensor
 {
-    __IO uint32_t Timeout = 0;
-    if (! nbyte)
-        return SUCCESS;
-    // Wait for idle I2C interface
-    Timed(I2C_GetFlagStatus(I2Cx , I2C_FLAG_BUSY));
-    // Enable Acknowledgment , clear POS flag
-    I2C_AcknowledgeConfig(I2Cx , ENABLE);
-    I2C_NACKPositionConfig(I2Cx , I2C_NACKPosition_Current);
-    // Intiate Start Sequence (wait for EV5)
-    I2C_GenerateSTART(I2Cx , ENABLE);
-    Timed (! I2C_CheckEvent(I2Cx , I2C_EVENT_MASTER_MODE_SELECT));
-    // Send Address
-    I2C_Send7bitAddress(I2Cx , SlaveAddress , I2C_Direction_Receiver);
-    // EV6
-    Timed (! I2C_GetFlagStatus(I2Cx , I2C_FLAG_ADDR));
+    MPU6050_t DataStruct;
 
-    // process 1, 2 and more bytes differently
-    if (nbyte == 1)
-    {
-        // Clear Ack bit
-        I2C_AcknowledgeConfig(I2Cx , DISABLE);
-        // EV6_1 -- must be atomic -- Clear ADDR , generate STOP
-        __disable_irq ();
-        (void) I2Cx ->SR2;
-        I2C_GenerateSTOP(I2Cx ,ENABLE);
-        __enable_irq ();
-        // Receive data EV7
-        Timed (! I2C_GetFlagStatus(I2Cx , I2C_FLAG_RXNE));
-        *buf++ = I2C_ReceiveData(I2Cx);
-    }
-    else if (nbyte == 2)
-    {
-        // Set POS flag
-        I2C_NACKPositionConfig(I2Cx , I2C_NACKPosition_Next);
-        // EV6_1 -- must be atomic and in this order
-        __disable_irq ();
-        (void) I2Cx ->SR2; // Clear ADDR flag
-        I2C_AcknowledgeConfig(I2Cx , DISABLE); // Clear Ack bit
-        __enable_irq ();
-        // EV7_3 -- Wait for BTF , program stop , read data twice
-        Timed (! I2C_GetFlagStatus(I2Cx , I2C_FLAG_BTF));
-        __disable_irq ();
-        I2C_GenerateSTOP(I2Cx ,ENABLE);
-        *buf++ = I2Cx ->DR;
-        __enable_irq ();
-        *buf++ = I2Cx ->DR;
-    }
-    else {
-        (void) I2Cx ->SR2; // Clear ADDR flag
-        while (nbyte -- != 3)
+        Buffer_Tx1[0] = MPU6050_RA_ACCEL_XOUT_H |(1<<7);
+        if(I2C_Master_BufferWrite(I2C1, Buffer_Tx1, 1, DMA, MPU6050_DEFAULT_ADDRESS)==Success)
         {
-            // EV7 -- cannot guarantee 1 transfer completion time ,
-            // wait for BTF instead of RXNE
-            Timed (! I2C_GetFlagStatus(I2Cx , I2C_FLAG_BTF));
-            *buf++ = I2C_ReceiveData(I2Cx);
+                        if(I2C_Master_BufferRead(I2C1,Buffer_Rx1,6,DMA, MPU6050_DEFAULT_ADDRESS)==Success)
+                        {
+                            /* Format accelerometer data */
+                            DataStruct.Accelerometer_X = (int16_t)(Buffer_Rx1[0] << 8 | Buffer_Rx1[1]);
+                            DataStruct.Accelerometer_Y = (int16_t)(Buffer_Rx1[2] << 8 | Buffer_Rx1[3]);
+                            DataStruct.Accelerometer_Z = (int16_t)(Buffer_Rx1[4] << 8 | Buffer_Rx1[5]);
+                        }
         }
-        Timed (! I2C_GetFlagStatus(I2Cx , I2C_FLAG_BTF));
-        // EV7_2 -- Figure 1 has an error , doesn 't read N-2 !
-        I2C_AcknowledgeConfig(I2Cx , DISABLE); // clear ack bit
-        __disable_irq ();
-        *buf++ = I2C_ReceiveData(I2Cx); // receive byte N-2
-        I2C_GenerateSTOP(I2Cx ,ENABLE); // program stop
-        __enable_irq ();
-        *buf++ = I2C_ReceiveData(I2Cx); // receive byte N-1
-        // wait for byte N
-        Timed (! I2C_CheckEvent(I2Cx , I2C_EVENT_MASTER_BYTE_RECEIVED));
-        *buf++ = I2C_ReceiveData(I2Cx);
-        nbyte = 0;
-    }
-    // Wait for stop
-    Timed(I2C_GetFlagStatus(I2Cx , I2C_FLAG_STOPF));
-    return SUCCESS;
-errReturn:
-    return ERROR;
 }
 
-/// i2c functions
-*/
-
-int main()
+void GInit() // Init sensor
 {
-    //button_led();
-    init_led();
-    init_button();
-    init_uart();
+    // TODO: init sensor
+    //GWriteReg(GYR_REG1,0x0F);
+    //GWriteReg(GYR_REG4,0x20);
 
-    // wait to press button
-    bool button_pressed = false;
-    while(!button_pressed)
-    {
-        unsigned int is_button_off = (GPIOA->IDR & 0x1);
-        if( is_button_off != 0)
-        {
-            button_pressed = true;
-            blue_led_on();
-        }
-    }
-
-    /*
-    // Init
-    #define MPU6050_ADDRESS 0x69
-    const uint8_t buf[] = {0xf0 , 0x55};
-    const uint8_t buf2[] = {0xfb , 0x00};
-    I2C_Write(I2C1 , buf , 2, MPU6050_ADDRESS);
-    I2C_Write(I2C1 , buf2 , 2, MPU6050_ADDRESS);
-
-    // Read
-    uint8_t data [6];
-    const uint8_t buf3[] = {0};
-    I2C_Write(I2C1 , buf3 , 1, MPU6050_ADDRESS);
-    I2C_Read(I2C1 , data , 6, MPU6050_ADDRESS);
-    */
-
-    usart_send_str(msg_MPU6050_I2C_Init);
+    MPU6050_GPIO_Init();
     MPU6050_I2C_Init();
 
-    usart_send_str(msg_MPU6050_Initialize);
+    bool connected = MPU6050_TestConnection();
+
     MPU6050_Initialize();
-    volatile bool connection_ok = false;
-    connection_ok = MPU6050_TestConnection();
-    uint8_t device_id = MPU6050_GetDeviceID();
-    uint8_t* device_id_addr = &device_id;
-    //MPU6050_Write();
-    //MPU6050_Read();
 
-    bool message_sent = false;
-
-    while(1)
+    while (1)
     {
-        unsigned int is_button_off = (GPIOA->IDR & 0x1);
-
-        if( is_button_off == 0)
-        {
-            blue_led_off();
-            message_sent = false;
-        }
-        else
-        {
-            blue_led_on();
-
-            bool connected = MPU6050_TestConnection();
-            // test connection and send a message
-            if(connected)
-            {
-                usart_send_str((char *)msg_conenction_success);
-                // Read data from the sensor
-                int16_t  AccelGyro[6]={0};
-                MPU6050_GetRawAccelGyro(AccelGyro);
-
-                MPU6050_t sensor_data={0};
-                //MPU6050_ReadAll(&sensor_data);
-
-            }
-            /*
-            if(!message_sent)
-            {
-                bool connected = MPU6050_TestConnection();
-                // test connection and send a message
-                if(connected)
-                {
-                    usart_send_str((char *)msg_conenction_success);
-                    // Read data from the sensor
-                    int16_t  AccelGyro[6]={0};
-                    MPU6050_GetRawAccelGyro(AccelGyro);
-
-                    MPU6050_t sensor_data={0};
-                    //MPU6050_ReadAll(&sensor_data);
-
-                }
-                else
-                {
-                    usart_send_str((char *)msg_conenction_fail);
-                }
-                usart_send_str((char *)example_string);
-                message_sent = true;
-            }
-            */
-
-
-        }
     }
 
+    //MPU6050_WriteBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_CLKSEL_BIT, MPU6050_PWR1_CLKSEL_LENGTH, source);
+}
 
-    return 0;
+int main(void)
+{
+    NVIC_Configuration();
+    InitSysClock();
+    //I2C_LowLevel_Init(I2C1);
+
+    GInit();
+
+    /* Use I2C1 as Master which is communicating with I2C1 of another STM32F10x device */
+    while(1)
+    {
+        GDataRead(); // Read data to variables x,y,z
+    }
+
+    /* Use I2C1 as Slave */
+    /*! When using Slave with DMA, uncomment //#define SLAVE_DMA_USE in the stm32f10x_it.c file.*/
+    /*I2C_Slave_BufferReadWrite(I2C1, DMA);
+                while(1); */
+}
+
+/**
+  * @brief  Configures NVIC and Vector Table base location.
+  * @param  None
+  * @retval : None
+  */
+void InitSysClock(void)
+{
+        if (SysTick_Config(SystemCoreClock / 1000))
+  {
+     while (1);
+  }
+}
+void NVIC_Configuration(void)
+{
+    /* 1 bit for pre-emption priority, 3 bits for subpriority */
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+    NVIC_SetPriority(I2C1_EV_IRQn, 0x00);
+    NVIC_EnableIRQ(I2C1_EV_IRQn);
+
+    NVIC_SetPriority(I2C1_ER_IRQn, 0x01);
+    NVIC_EnableIRQ(I2C1_ER_IRQn);
+
+    NVIC_SetPriority(I2C2_EV_IRQn, 0x00);
+    NVIC_EnableIRQ(I2C2_EV_IRQn);
+
+    NVIC_SetPriority(I2C2_ER_IRQn, 0x01);
+    NVIC_EnableIRQ(I2C2_ER_IRQn);
+}
+
+#ifdef  USE_FULL_ASSERT
+
+
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *   where the assert_param error has occurred.
+  * @param file: pointer to the source file name
+  * @param line: assert_param error line source number
+  * @retval : None
+  */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+    /* User can add his own implementation to report the file name and line number,
+       ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+
+    /* Infinite loop */
+    while (1)
+    {
+    }
+}
+#endif
+/**
+  * @}
+  */
+void Delay(uint32_t nTime)
+{
+  TimingDelay = nTime;
+
+  while(TimingDelay != 0);
+}
+void TimingDelay_Decrement(void)
+{
+  if (TimingDelay != 0x00)
+      TimingDelay--;
 }
