@@ -1,7 +1,6 @@
 #include "stm32f10x.h"
 #include "stm32f10x_i2c.h"
-#include "MPU6050.h"
-#include "I2CRoutines.h"
+#include "../Libraries/MPU6050HariLib/MPU6050.h"
 
 char * example_string = "Hello World!\r\n\0";
 char* msg_conenction_success = "Connected!\r\n\0";
@@ -153,176 +152,36 @@ void button_led()
 }
 
 
-
-
-/** @addtogroup Optimized I2C examples
-  * @{
-  */
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-ErrorStatus HSEStartUpStatus;
-/* Buffer of data to be received by I2C1 */
-uint8_t Buffer_Rx1[255];
-/* Buffer of data to be transmitted by I2C1 */
-uint8_t Buffer_Tx1[255] = {0x5, 0x6,0x8,0xA};
-/* Buffer of data to be received by I2C2 */
-uint8_t Buffer_Rx2[255];
-/* Buffer of data to be transmitted by I2C2 */
-uint8_t Buffer_Tx2[255] = {0xF, 0xB, 0xC,0xD};
-extern __IO uint8_t Tx_Idx1 , Rx_Idx1;
-extern __IO uint8_t Tx_Idx2 , Rx_Idx2;
-
 /* Private function prototypes -----------------------------------------------*/
-void GPIO_Configuration(void);
-void NVIC_Configuration(void);
 /* Private functions ---------------------------------------------------------*/
-
-
-short x,y,z;
-static __IO uint32_t TimingDelay;
-
-void Delay(uint32_t nTime);
-void TimingDelay_Decrement(void);
-void InitSysClock(void);
-
-
-//
-void GWriteReg(unsigned char reg, unsigned char value) // Write sensor reg
-{
-        Buffer_Tx1[0]=reg;
-        Buffer_Tx1[1]=value;
-
-        I2C_Master_BufferWrite(I2C1, Buffer_Tx1,2,Polling, MPU6050_DEFAULT_ADDRESS);
-}
-unsigned char GReadReg(unsigned char reg) // Read sensor reg
-{
-        Buffer_Tx1[0]=reg;
-        I2C_Master_BufferWrite(I2C1, Buffer_Tx1,1,Interrupt, MPU6050_DEFAULT_ADDRESS);
-        I2C_Master_BufferRead(I2C1,Buffer_Rx1,1,Polling, MPU6050_DEFAULT_ADDRESS);
-        return Buffer_Rx1[0];
-}
-void GDataRead() // Read data from sensor
-{
-    MPU6050_t DataStruct;
-
-        Buffer_Tx1[0] = MPU6050_RA_ACCEL_XOUT_H |(1<<7);
-        if(I2C_Master_BufferWrite(I2C1, Buffer_Tx1, 1, DMA, MPU6050_DEFAULT_ADDRESS)==Success)
-        {
-                        if(I2C_Master_BufferRead(I2C1,Buffer_Rx1,6,DMA, MPU6050_DEFAULT_ADDRESS)==Success)
-                        {
-                            /* Format accelerometer data */
-                            DataStruct.Accelerometer_X = (int16_t)(Buffer_Rx1[0] << 8 | Buffer_Rx1[1]);
-                            DataStruct.Accelerometer_Y = (int16_t)(Buffer_Rx1[2] << 8 | Buffer_Rx1[3]);
-                            DataStruct.Accelerometer_Z = (int16_t)(Buffer_Rx1[4] << 8 | Buffer_Rx1[5]);
-                        }
-        }
-}
-
-void GInit() // Init sensor
-{
-    // TODO: init sensor
-    //GWriteReg(GYR_REG1,0x0F);
-    //GWriteReg(GYR_REG4,0x20);
-
-    MPU6050_GPIO_Init();
-    MPU6050_I2C_Init();
-
-    bool connected = MPU6050_TestConnection();
-
-    MPU6050_Initialize();
-
-    while (1)
-    {
-    }
-
-    //MPU6050_WriteBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_CLKSEL_BIT, MPU6050_PWR1_CLKSEL_LENGTH, source);
-}
 
 int main(void)
 {
-    NVIC_Configuration();
-    InitSysClock();
-    //I2C_LowLevel_Init(I2C1);
+    // TODO: init sensor
+    MPU6050_GPIO_Init();
+    MPU6050_I2C_Init();
 
-    GInit();
+    init_led();
+    init_button();
+    init_uart();
 
-    /* Use I2C1 as Master which is communicating with I2C1 of another STM32F10x device */
     while(1)
     {
-        GDataRead(); // Read data to variables x,y,z
-    }
-
-    /* Use I2C1 as Slave */
-    /*! When using Slave with DMA, uncomment //#define SLAVE_DMA_USE in the stm32f10x_it.c file.*/
-    /*I2C_Slave_BufferReadWrite(I2C1, DMA);
-                while(1); */
-}
-
-/**
-  * @brief  Configures NVIC and Vector Table base location.
-  * @param  None
-  * @retval : None
-  */
-void InitSysClock(void)
-{
-        if (SysTick_Config(SystemCoreClock / 1000))
-  {
-     while (1);
-  }
-}
-void NVIC_Configuration(void)
-{
-    /* 1 bit for pre-emption priority, 3 bits for subpriority */
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-
-    NVIC_SetPriority(I2C1_EV_IRQn, 0x00);
-    NVIC_EnableIRQ(I2C1_EV_IRQn);
-
-    NVIC_SetPriority(I2C1_ER_IRQn, 0x01);
-    NVIC_EnableIRQ(I2C1_ER_IRQn);
-
-    NVIC_SetPriority(I2C2_EV_IRQn, 0x00);
-    NVIC_EnableIRQ(I2C2_EV_IRQn);
-
-    NVIC_SetPriority(I2C2_ER_IRQn, 0x01);
-    NVIC_EnableIRQ(I2C2_ER_IRQn);
-}
-
-#ifdef  USE_FULL_ASSERT
-
-
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *   where the assert_param error has occurred.
-  * @param file: pointer to the source file name
-  * @param line: assert_param error line source number
-  * @retval : None
-  */
-void assert_failed(uint8_t* file, uint32_t line)
-{
-    /* User can add his own implementation to report the file name and line number,
-       ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-
-    /* Infinite loop */
-    while (1)
-    {
+        unsigned int is_button_off = (GPIOA->IDR & 0x1);
+        //volatile bool connected = MPU6050_TestConnection();
+        //if(connected)
+        if( is_button_off == 0)
+        {
+            blue_led_on();
+        }
+        else
+        {
+            blue_led_off();
+        }
     }
 }
-#endif
-/**
-  * @}
-  */
-void Delay(uint32_t nTime)
-{
-  TimingDelay = nTime;
 
-  while(TimingDelay != 0);
-}
-void TimingDelay_Decrement(void)
-{
-  if (TimingDelay != 0x00)
-      TimingDelay--;
-}
