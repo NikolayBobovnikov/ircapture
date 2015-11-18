@@ -16,29 +16,39 @@
 <part id="3"/>
 <part id="4"/>
 <part id="5"/>
+<part id="6"/>
+<part id="7"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
-<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/main.c" title="main.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/main.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/main.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4498" selectionTopPixel="210"/>
-</editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x.h" partName="stm32f10x.h" title="stm32f10x.h" tooltip="D:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-spl\libraries\cmsis\cm3\devicesupport\st\stm32f10x\stm32f10x.h" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" uri="file:/D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-spl/libraries/cmsis/cm3/devicesupport/st/stm32f10x/stm32f10x.h"/>
-<editorState selectionHorizontalPixel="0" selectionLength="10" selectionOffset="36899" selectionTopPixel="6975"/>
-</editor>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="MPU6050.c" partName="MPU6050.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/MPU6050.c" title="MPU6050.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/MPU6050.c" workbook="DefaultEditorWorkbook">
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="MPU6050.c" partName="MPU6050.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/MPU6050HariLib/MPU6050.c" title="MPU6050.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/MPU6050HariLib/MPU6050.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/MPU6050.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="27" selectionOffset="8539" selectionTopPixel="3225"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2746" selectionTopPixel="720"/>
 </editor>
-<editor id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f10x_md_vl.s" partName="startup_stm32f10x_md_vl.s" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_md_vl.s" title="startup_stm32f10x_md_vl.s" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/gcc_ride7/startup_stm32f10x_md_vl.s" workbook="DefaultEditorWorkbook">
+<editor id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f10x_md_vl.s" partName="startup_stm32f10x_md_vl.s" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/CPAL/CMSIS/Device/ST/STM32F10x/Source/Templates/gcc_ride7/startup_stm32f10x_md_vl.s" title="startup_stm32f10x_md_vl.s" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/CPAL/CMSIS/Device/ST/STM32F10x/Source/Templates/gcc_ride7/startup_stm32f10x_md_vl.s" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/Initialization/startup_stm32f10x_md_vl.s"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2691" selectionTopPixel="795"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="0"/>
 </editor>
 <editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_conf.h" partName="stm32f10x_conf.h" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/stm32f10x_conf.h" title="stm32f10x_conf.h" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/stm32f10x_conf.h" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/stm32f10x_conf.h"/>
 <editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="2471" selectionTopPixel="560"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x.h" partName="stm32f10x.h" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/CPAL/CMSIS/Device/ST/STM32F10x/Include/stm32f10x.h" title="stm32f10x.h" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/CPAL/CMSIS/Device/ST/STM32F10x/Include/stm32f10x.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/Initialization/stm32f10x.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="16" selectionOffset="637161" selectionTopPixel="125040"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_i2c.c" partName="stm32f10x_i2c.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/CPAL/STM32F10x_StdPeriph_Driver/src/stm32f10x_i2c.c" title="stm32f10x_i2c.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/CPAL/STM32F10x_StdPeriph_Driver/src/stm32f10x_i2c.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/SPL/stm32f10x_i2c.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="60" selectionOffset="5298" selectionTopPixel="1530"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="MPU6050.h" partName="MPU6050.h" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/MPU6050HariLib/MPU6050.h" title="MPU6050.h" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/Libraries/MPU6050HariLib/MPU6050.h" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/MPU6050.h"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="0"/>
+</editor>
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/main.c" title="main.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-SPL/main.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32_cmake/main.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="0"/>
 </editor>
 </editors>
 <views>
@@ -65,8 +75,7 @@
 </view>
 <view id="org.eclipse.ui.views.ProblemView" partName="Problems">
 <viewState PRIMARY_SORT_FIELD="org.eclipse.ui.ide.severityAndDescriptionField" categoryGroup="org.eclipse.ui.ide.severity" markerContentGenerator="org.eclipse.ui.ide.problemsGenerator" partName="Problems">
-<expanded>
-<category IMemento.internal.id="Warnings (1 item)"/>
+<expanded>&#x0A;<category IMemento.internal.id="Warnings (1 item)"/>
 </expanded>
 <columnWidths org.eclipse.ui.ide.locationField="90" org.eclipse.ui.ide.markerType="119" org.eclipse.ui.ide.pathField="120" org.eclipse.ui.ide.resourceField="90" org.eclipse.ui.ide.severityAndDescriptionField="1281"/>
 <visible IMemento.internal.id="org.eclipse.ui.ide.severityAndDescriptionField"/>
@@ -92,8 +101,7 @@
 </view>
 <view id="org.coocox.coassistant.view.CoAssistantView_debug" partName="Peripherals">
 <viewState horizontalPosition="0" verticalPosition="0">
-<selection>
-<element name="GPIOA"/>
+<selection>&#x0A;<element name="GPIOA"/>
 </selection>
 <registerValues baseAddress="Base Address: 0x40010800" description="Description:  General purpose I/O"/>
 </viewState>
@@ -233,43 +241,30 @@
 <view id="org.coocox.builder.ui.views.ProjectView"/>
 <fastViewBars/>
 <viewLayoutRec closeable="false" id="org.eclipse.debug.ui.DebugView"/>
-<layout>
-<mainWindow>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">
-<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<layout>&#x0A;<mainWindow>&#x0A;<info folder="true" part="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">&#x0A;<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="stickyFolderRight" ratio="0.74984205" ratioLeft="1187" ratioRight="396" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder appearance="2" expanded="2">
-<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
+<info folder="true" part="stickyFolderRight" ratio="0.74984205" ratioLeft="1187" ratioRight="396" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder appearance="2" expanded="2">&#x0A;<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@4501cf" ratio="0.7390841" ratioLeft="694" ratioRight="245" relationship="4" relative="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">
-<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@4501cf" ratio="0.7390841" ratioLeft="694" ratioRight="245" relationship="4" relative="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.debug.ui.DebugView" label="Debug"/>
 <page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 <part id="1"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@d5d4c6" ratio="0.48559454" ratioLeft="927" ratioRight="982" relationship="2" relative="org.eclipse.ui.internal.ViewStack@4501cf">
-<folder activePageID="org.coocox.codebugger.trace.ui.traceview" appearance="2" expanded="2">
-<page content="org.coocox.codebugger.trace.ui.traceview" label="Semihosting"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@d5d4c6" ratio="0.48559454" ratioLeft="927" ratioRight="982" relationship="2" relative="org.eclipse.ui.internal.ViewStack@4501cf">&#x0A;<folder activePageID="org.coocox.codebugger.trace.ui.traceview" appearance="2" expanded="2">&#x0A;<page content="org.coocox.codebugger.trace.ui.traceview" label="Semihosting"/>
 <page content="org.eclipse.debug.ui.VariableView" label="Variables"/>
 <page content="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser" label="Memory Browser"/>
 <page content="org.eclipse.debug.ui.ExpressionView" label="Expressions"/>
 <page content="org.eclipse.ui.views.ProblemView" label="Problems"/>
 <page content="org.eclipse.debug.ui.MemoryView" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 <part id="1"/>
 <part id="2"/>
 <part id="3"/>
@@ -277,14 +272,11 @@
 </presentation>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@13d123f" ratio="0.71922475" ratioLeft="1373" ratioRight="536" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder activePageID="org.coocox.coassistant.view.CoAssistantView_debug" appearance="2" expanded="2">
-<page content="org.eclipse.cdt.dsf.debug.ui.disassembly.view" label="Disassembly"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@13d123f" ratio="0.71922475" ratioLeft="1373" ratioRight="536" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder activePageID="org.coocox.coassistant.view.CoAssistantView_debug" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.cdt.dsf.debug.ui.disassembly.view" label="Disassembly"/>
 <page content="org.coocox.coassistant.view.CoAssistantView_debug" label="Peripherals"/>
 <page content="org.eclipse.debug.ui.RegisterView" label="Registers"/>
 <page content="org.eclipse.ui.views.ContentOutline" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 <part id="1"/>
 <part id="2"/>
 </presentation>
@@ -303,6 +295,14 @@
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/main.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" path="/stm32_cmake/Initialization/startup_stm32f10x_md_vl.s"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/stm32f10x_conf.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" path="/stm32_cmake/Initialization/startup_stm32f10x_md_vl.s"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/main.c"/>
+<editor factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" uri="file:/D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-spl/libraries/cmsis/cm3/devicesupport/st/stm32f10x/stm32f10x.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/Initialization/stm32f10x.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/MPU6050.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/SPL/stm32f10x_i2c.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/MPU6050.h"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32_cmake/main.c"/>
 </editors>
 <item historyLabel="main.c" index="0">
 <position info="not_deleted" x="4352" y="2"/>
@@ -370,8 +370,56 @@
 <item historyLabel="main.c" index="2">
 <position info="not_deleted" x="783" y="0"/>
 </item>
-<item active="true" historyLabel="main.c" index="2">
+<item historyLabel="main.c" index="2">
 <position info="not_deleted" x="4354" y="0"/>
+</item>
+<item historyLabel="startup_stm32f10x_md_vl.s" index="5">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="main.c" index="6">
+<position info="not_deleted" x="4498" y="0"/>
+</item>
+<item historyLabel="stm32f10x.h" index="7">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="stm32f10x.h" index="8">
+<position info="not_deleted" x="37290" y="23"/>
+</item>
+<item historyLabel="stm32f10x.h" index="8">
+<position info="not_deleted" x="637149" y="31"/>
+</item>
+<item historyLabel="MPU6050.c" index="9">
+<position info="not_deleted" x="8547" y="27"/>
+</item>
+<item historyLabel="MPU6050.c" index="9">
+<position info="not_deleted" x="2703" y="0"/>
+</item>
+<item historyLabel="stm32f10x_i2c.c" index="10">
+<position info="not_deleted" x="5298" y="60"/>
+</item>
+<item historyLabel="MPU6050.c" index="9">
+<position info="not_deleted" x="14383" y="16"/>
+</item>
+<item historyLabel="MPU6050.h" index="11">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="MPU6050.c" index="9">
+<position info="not_deleted" x="2746" y="0"/>
+</item>
+<item historyLabel="main.c" index="12">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="startup_stm32f10x_md_vl.s" index="5">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="main.c" index="12">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="startup_stm32f10x_md_vl.s" index="5">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item active="true" historyLabel="main.c" index="12">
+<position info="not_deleted" x="0" y="0"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -380,47 +428,50 @@
 <actionBarAdvisor/>
 </window>
 <mruList>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_conf.h" tooltip="stm32_cmake/stm32f10x_conf.h">
-<persistable path="/stm32_cmake/stm32f10x_conf.h"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f10x_md_vl.s" tooltip="stm32_cmake/startup_stm32f10x_md_vl.s">
-<persistable path="/stm32_cmake/startup_stm32f10x_md_vl.s"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="tmp2/main.c">
-<persistable path="/tmp2/main.c"/>
-</file>
-<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.ui.DefaultTextEditor" name="stm32test_flash.ld" tooltip="D:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-spl\build\stm32test_flash.ld">
-<persistable uri="file:/D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-spl/build/stm32test_flash.ld"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="system_stm32f10x.c" tooltip="stm32_cmake/system_stm32f10x.c">
-<persistable path="/stm32_cmake/system_stm32f10x.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="MPU6050.c" tooltip="stm32_cmake/MPU6050.c">
-<persistable path="/stm32_cmake/MPU6050.c"/>
-</file>
-<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x.h" tooltip="D:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-spl\libraries\cmsis\cm3\devicesupport\st\stm32f10x\stm32f10x.h">
-<persistable uri="file:/D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-spl/libraries/cmsis/cm3/devicesupport/st/stm32f10x/stm32f10x.h"/>
-</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="stm32_cmake/main.c">
 <persistable path="/stm32_cmake/main.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="stm32test/main.c">
-<persistable path="/stm32test/main.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="MPU6050.h" tooltip="stm32_cmake/MPU6050.h">
+<persistable path="/stm32_cmake/MPU6050.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_tim.h" tooltip="stm32vldiscovery/components/STM32F10x_MD_VL_STDLIB/stm32f10x_tim.h">
-<persistable path="/stm32vldiscovery/components/STM32F10x_MD_VL_STDLIB/stm32f10x_tim.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_i2c.c" tooltip="stm32_cmake/SPL/stm32f10x_i2c.c">
+<persistable path="/stm32_cmake/SPL/stm32f10x_i2c.c"/>
 </file>
-<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x.h" tooltip="D:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-spl\libraries\cmsis\cm3\devicesupport\st\stm32f10x\stm32f10x.h">
-<persistable uri="file:/D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-spl/libraries/cmsis/cm3/devicesupport/st/stm32f10x/stm32f10x.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x.h" tooltip="stm32_cmake/Initialization/stm32f10x.h">
+<persistable path="/stm32_cmake/Initialization/stm32f10x.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f10x_md_vl.s" tooltip="stm32_cmake/startup_stm32f10x_md_vl.s">
-<persistable path="/stm32_cmake/startup_stm32f10x_md_vl.s"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="system_stm32l1xx.c" tooltip="eduproject/system_stm32l1xx.c">
+<persistable path="/eduproject/system_stm32l1xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="tmp2/main.c">
-<persistable path="/tmp2/main.c"/>
+<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="cpal_i2c.h" tooltip="D:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\libraries\cpal\stm32-f1-f2-f4-l1_i2c_cpal_v1.2.0\libraries\stm32_cpal_driver\inc\cpal_i2c.h">
+<persistable uri="file:/D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/libraries/cpal/stm32-f1-f2-f4-l1_i2c_cpal_v1.2.0/libraries/stm32_cpal_driver/inc/cpal_i2c.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="eduproject/main.c">
+<persistable path="/eduproject/main.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.h" tooltip="eduproject/main.h">
+<persistable path="/eduproject/main.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f10x_md.s" tooltip="eduproject/components/STM32F10x_MD_STDLIB/startup_stm32f10x_md.s">
+<persistable path="/eduproject/components/STM32F10x_MD_STDLIB/startup_stm32f10x_md.s"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_rcc.h" tooltip="eduproject/components/STM32F10x_MD_STDLIB/stm32f10x_rcc.h">
+<persistable path="/eduproject/components/STM32F10x_MD_STDLIB/stm32f10x_rcc.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_gpio.c" tooltip="eduproject/components/STM32F10x_MD_STDLIB/stm32f10x_gpio.c">
+<persistable path="/eduproject/components/STM32F10x_MD_STDLIB/stm32f10x_gpio.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_gpio.h" tooltip="eduproject/components/STM32F10x_MD_STDLIB/stm32f10x_gpio.h">
+<persistable path="/eduproject/components/STM32F10x_MD_STDLIB/stm32f10x_gpio.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f10x_it.c" tooltip="stm32_cmake/Initialization/stm32f10x_it.c">
+<persistable path="/stm32_cmake/Initialization/stm32f10x_it.c"/>
 </file>
 <file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.ui.DefaultTextEditor" name="stm32test_flash.ld" tooltip="D:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-spl\build\stm32test_flash.ld">
 <persistable uri="file:/D:/nbobovnikov/home/dev/auvir/auvir_embed/stm32_cmake/stm32test-spl/build/stm32test_flash.ld"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="system_stm32l1xx.c" tooltip="eduproject/system_stm32l1xx.c">
+<persistable path="/eduproject/system_stm32l1xx.c"/>
 </file>
 </mruList>
 </workbench>
