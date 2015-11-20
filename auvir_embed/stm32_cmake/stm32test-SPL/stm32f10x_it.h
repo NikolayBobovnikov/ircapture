@@ -44,6 +44,12 @@
  void DebugMon_Handler(void);
  void PendSV_Handler(void);
  void SysTick_Handler(void);
+ void I2C1_EV_IRQHandler(void);
+ void I2C1_ER_IRQHandler(void);
+ void I2C2_EV_IRQHandler(void);
+ void I2C2_ER_IRQHandler(void);
+ void DMA1_Channel6_IRQHandler(void);
+ void DMA1_Channel7_IRQHandler(void);
 
 #ifdef __cplusplus
 }

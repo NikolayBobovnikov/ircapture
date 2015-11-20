@@ -10,8 +10,6 @@ set(CMSIS_DIR ${THIRDPARTY_STM32LIB_PATH}/CMSIS)
 #
 SET(SPL_INCLUDE_DIRS
     ${SPL_DIR}/inc/
-    ${CMSIS_DIR}/CM3/DeviceSupport/ST/STM32F10x/
-    ${CMSIS_DIR}/CM3/CoreSupport/
 )
 
 # Startup files
