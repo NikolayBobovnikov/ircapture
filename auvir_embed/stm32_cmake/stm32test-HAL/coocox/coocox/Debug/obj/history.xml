@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<history>
+   <processor signature="arm-none-eabi-gcc noversion nomachine -mcpu=cortex-m3 -mthumb -g2 -Wall -O0 -c -DSTM32F100RBT6B -DHAL_MODULE_ENABLED -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\CMSIS\Device\ST\STM32F1xx -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\CMSIS\Device\ST\STM32F1xx\Include -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\STM32F1xx_HAL_Driver\Inc -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Inc -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\CMSIS\Include -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\coocox -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\STM32F1xx_HAL_Driver -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\CMSIS -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\CMSIS\Device\ST -ID:\nbobovnikov\home\dev\auvir\auvir_embed\stm32_cmake\stm32test-HAL\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy">
+      <target file="startup_stm32f100xb.o" lastModified="151250150ca">
+         <source file="..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f100xb.s" lastModified="15124f2db66"/>
+      </target>
+   </processor>
+</history>
