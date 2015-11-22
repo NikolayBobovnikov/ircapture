@@ -1,5 +1,5 @@
 #include "serial_port.hpp"
-
+#include "stdio.h"
 
 CSerialPort::CSerialPort()
 {
@@ -44,49 +44,104 @@ std::string SimpleSerial::readLine()
 
 void SimpleSerial::read_mpu6050_data()
 {
-    using namespace boost;
-    uint8_t b;
-
-    // read buffer
-    bool finished_reading = false;
-    int data_buf_ind = 0;
-    while(!finished_reading && data_buf_ind < sizeof(mpu6050_data_buf))
-    {
-        boost::asio::read(serial, boost::asio::buffer(&b, 1));
-        if(b == 0)
-        {
-            finished_reading = true;
-        }
-        else
-        {
-            mpu6050_data_buf[data_buf_ind++] = b;
-        }
-    }
-    // convert to structure
-    // 1 variant
-//    uint16_t reg_data[7] = {0};
-//    for(int i = 0; i < sizeof(reg_data); i++)
-//    {
-//        int mpu6050_data_buf_index = i * 2;
-//        reg_data[i] = (((int16_t) mpu6050_data_buf[mpu6050_data_buf_index]) << 8) | mpu6050_data_buf[mpu6050_data_buf_index + 1];
-//    }
-//    mpu6050_data_struct.Accelerometer_X = reg_data[0];
-//    mpu6050_data_struct.Accelerometer_Y = reg_data[1];
-//    mpu6050_data_struct.Accelerometer_Z = reg_data[2];
-//    mpu6050_data_struct.Temperature =     reg_data[3];
-//    mpu6050_data_struct.Gyroscope_X =     reg_data[4];
-//    mpu6050_data_struct.Gyroscope_Y =     reg_data[5];
-//    mpu6050_data_struct.Gyroscope_Z =     reg_data[6];
-      //2 variant:
-    uint8_t buf[sizeof(mpu6050_data_struct)];
-    memcpy(&mpu6050_data_struct, buf, sizeof(mpu6050_data_struct));
 }
 
-std::string SimpleSerial::get_mpu6050_temperature()
+bool SimpleSerial::read_mpu6050_packet_ok()
 {
-    read_mpu6050_data();
-    float temp_value = (mpu6050_data_struct.Temperature)/340 + 36.53;
-    return std::to_string(temp_value);
+    using namespace boost;
+    uint8_t motion_data_size = sizeof(MPU6050_MotionData_t);
+
+    // 1. Wait for START
+    int max_tries = 10;
+    bool started = false;
+    while(!started)
+    {
+        if(max_tries-- == 0)
+        {
+            return false;
+        }
+
+        uint8_t b_start = 2;
+        boost::asio::read(serial, boost::asio::buffer(&b_start, 1));
+        if(b_start == UART_PACKET_START) // Check that this is start byte
+        {
+            uint8_t b_size_begin = 0;
+            boost::asio::read(serial, boost::asio::buffer(&b_size_begin, 1)); //check that the next goes size of data
+            if(b_size_begin == motion_data_size)
+            {
+                started = true;
+            }
+        }
+    }
+    // 2. Read data
+    size_t bytes_received = boost::asio::read(serial, boost::asio::buffer(&mpu6050_motion_data, motion_data_size));
+
+    if(bytes_received != motion_data_size)
+    {
+        return false;
+    }
+
+    // 3. Check the end of the packet
+    uint8_t b_size_end = 0;
+    boost::asio::read(serial, boost::asio::buffer(&b_size_end, 1));
+    if(b_size_end != motion_data_size)
+    {
+        return false;
+    }
+    uint8_t b_end = 1;
+    boost::asio::read(serial, boost::asio::buffer(&b_end, 1));
+    if(b_end != UART_PACKET_END)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+std::string SimpleSerial::get_mpu6050_data_str()
+{
+    std::string result_str = "";
+    if(read_mpu6050_packet_ok())
+    {
+        //read_mpu6050_data();
+        result_str += "ACCEL_XANGLE: " + std::to_string(mpu6050_motion_data.ACCEL_XANGLE) + "\n";
+        result_str += "ACCEL_YANGLE: " + std::to_string(mpu6050_motion_data.ACCEL_YANGLE) + "\n";
+        result_str += "GYRO_XRATE:   " + std::to_string(mpu6050_motion_data.GYRO_XRATE  ) + "\n";
+        result_str += "GYRO_YRATE:   " + std::to_string(mpu6050_motion_data.GYRO_YRATE  ) + "\n";
+        result_str += "GYRO_ZRATE:   " + std::to_string(mpu6050_motion_data.GYRO_ZRATE  ) + "\n";
+    }
+
+
+    //float temp_value = (mpu6050_data_struct.Temperature)/340 + 36.53;
+    //return std::to_string(temp_value);
+    return result_str;
+}
+
+std::string SimpleSerial::test_serialization()
+{
+    // construct
+    const char * test_str = "HelloSerialization!\0";
+    UART_TestSerialization_t test_packet;
+    test_packet.data_uint8_t = 8;
+    test_packet.data_uint16_t = 16;
+    test_packet.float_number = 10.10;
+    test_packet.int_number = 9;
+    int size = sizeof(test_str);
+    strncpy(test_packet.string, test_str, strnlen(test_str, 128));
+
+    char t[128] = {0};
+    strncpy(t, test_str, strnlen(test_str,128));
+
+    // place to a buffer
+    uint8_t buffer[sizeof(UART_TestSerialization_t)];
+    memcpy(buffer, &test_packet, sizeof(test_packet));
+
+    // reconstruct from a buffer
+    UART_TestSerialization_t test_packet_reconstructed;
+    memcpy(&test_packet_reconstructed, buffer, sizeof(UART_TestSerialization_t));
+
+    std::string result_str = std::string(test_packet_reconstructed.string);
+    return result_str;
 }
 
 std::string mpu6050_temperature_str(uint16_t temp_reg_value)

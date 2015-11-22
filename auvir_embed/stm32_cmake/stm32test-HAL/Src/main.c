@@ -35,6 +35,7 @@
 
 /* USER CODE BEGIN Includes */
 #include <string.h>
+#include <math.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
 /* USER CODE END Includes */
@@ -53,6 +54,73 @@ typedef struct {
     int16_t Gyroscope_Z;
     int16_t Temperature;
 } MPU6050_data_t;
+
+typedef struct
+{
+    uint8_t GYRO_XRATE;
+    uint8_t GYRO_YRATE;
+    uint8_t GYRO_ZRATE;
+    float ACCEL_XANGLE;
+    float ACCEL_YANGLE;
+} MPU6050_MotionData_t;
+
+enum UART_Packet_Condition {UART_PACKET_START = 0xFF, UART_PACKET_END = 0};
+typedef struct
+{
+    uint8_t PACKET_START;
+    uint8_t data_size_begin;
+
+    MPU6050_MotionData_t data;
+
+    uint8_t data_size_end;
+    uint8_t PACKET_END;
+} UART_Packet_t;
+UART_Packet_t uart_packet;
+
+void send_motion_data(MPU6050_MotionData_t* data)
+{
+    /*
+    // make a packet
+    uart_packet.PACKET_START = UART_PACKET_START;
+    uart_packet.PACKET_END = UART_PACKET_END;
+    uart_packet.data_size_begin = sizeof(MPU6050_MotionData_t);
+    uart_packet.data_size_end = uart_packet.data_size_begin;
+    memcpy(&(uart_packet.data), data, sizeof(MPU6050_MotionData_t));
+    // send packet
+    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &uart_packet, sizeof(UART_Packet_t), 1000);
+    */
+
+    HAL_StatusTypeDef status;
+
+    uint8_t start_byte = UART_PACKET_START;
+    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &start_byte, 1, 1000);
+
+    uint8_t size_begin = sizeof(MPU6050_MotionData_t);
+    status = HAL_UART_Transmit(&huart1, &size_begin, 1, 1000);
+
+    status = HAL_UART_Transmit(&huart1, data, sizeof(MPU6050_MotionData_t), 1000);
+
+    uint8_t size_end = sizeof(MPU6050_MotionData_t);
+    status = HAL_UART_Transmit(&huart1, &size_end, 1, 1000);
+
+    uint8_t end_byte = UART_PACKET_END;
+    status = HAL_UART_Transmit(&huart1, &end_byte, 1, 1000);
+
+
+}
+
+
+uint8_t GYRO_XOUT_OFFSET;
+uint8_t GYRO_YOUT_OFFSET;
+uint8_t GYRO_ZOUT_OFFSET;
+uint8_t ACCEL_XOUT;
+uint8_t ACCEL_YOUT;
+uint8_t ACCEL_ZOUT;
+uint8_t GYRO_XRATE;
+uint8_t GYRO_YRATE;
+uint8_t GYRO_ZRATE;
+float ACCEL_XANGLE;
+float ACCEL_YANGLE;
 
 
 /* USER CODE BEGIN PV */
@@ -82,9 +150,15 @@ void led_off();
 void led_hal();
 bool usart_send_str_ok(const char *input);
 void usart_send_str(const char *input);
-void combine_bytes(uint8_t h, uint8_t l, uint16_t result);
 void mpu6050_read_to_struct(MPU6050_data_t* mpu6050data);
 void mpu6050_send_data_uart(MPU6050_data_t* mpu6050data);
+
+void Calibrate_Gyros();
+void Get_Accel_Values();
+void Get_Accel_Angles();
+void Get_Gyro_Rates();
+
+void mpu6050_loop();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -122,23 +196,35 @@ int main(void)
     while(!MPU6050_testConnection());
     MPU6050_initialize();
 
+    unsigned int x = 1;
+    int endian = (int) (((char *)&x)[0]);
+    uint8_t sizefloat = sizeof(float);
     /* USER CODE END 2 */
 
     /* Infinite loop */
+
+    //mpu6050_loop();
+
+    MPU6050_MotionData_t data;
+
+    data.ACCEL_XANGLE = 1.01;
+    data.ACCEL_YANGLE = 2.02;
+    data.GYRO_XRATE = 3;
+    data.GYRO_YRATE = 4;
+    data.GYRO_ZRATE = 5;
+
     while (1)
     {
         /* USER CODE BEGIN WHILE */
-        MPU6050_data_t mpu6050data = {0};
-        mpu6050_read_to_struct(&mpu6050data);
-        mpu6050_send_data_uart(&mpu6050data);
-        //const char * str = "Test string\r\n\0";
-        //bool result = usart_send_str_ok(buf);
-        //HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*) temperature_reg_value, 2, 1000);
-        HAL_Delay(300);
+        send_motion_data(&data);
+        HAL_Delay(1000);
         /* USER CODE END WHILE */
     }
 
     /* USER CODE BEGIN 3 */
+
+    //mpu6050_all_routines();
+
     /* USER CODE END 3 */
 
 }
@@ -344,16 +430,13 @@ void usart_send_str(const char *input)
 {
     usart_send_str_ok(input);
 }
-void combine_bytes(uint8_t h, uint8_t l, uint16_t result)
-{
-    result = (((int16_t) h) << 8) | l;
-}
 void mpu6050_read_to_struct(MPU6050_data_t *mpu6050data)
 {
     mpu6050data->Accelerometer_X = MPU6050_getAccelerationX();
     mpu6050data->Accelerometer_Y = MPU6050_getAccelerationY();
     mpu6050data->Accelerometer_Z = MPU6050_getAccelerationZ();
     mpu6050data->Temperature =     MPU6050_getTemperature();
+    //mpu6050data->Temperature =     HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW << 1, MPU6050_RA_TEMP_OUT_H, 2, (uint8_t*) (&(mpu6050data->Temperature)), 1, 3000);
     mpu6050data->Gyroscope_X =     MPU6050_getRotationX();
     mpu6050data->Gyroscope_Y =     MPU6050_getRotationY();
     mpu6050data->Gyroscope_Z =     MPU6050_getRotationZ();
@@ -370,13 +453,139 @@ void mpu6050_read_to_struct(MPU6050_data_t *mpu6050data)
 //    mpu6050rawdata.Gyroscope_Z =     rawdata[6];
 
 }
-
 void mpu6050_send_data_uart(MPU6050_data_t* mpu6050data)
 {
     uint8_t buf[sizeof(mpu6050data)+1]; // last byte for 0 (stop bit)
     memcpy(buf, &mpu6050data, sizeof(mpu6050data));
     buf[sizeof(mpu6050data)] = 0; // last byte for 0 (stop bit)
     HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, buf, sizeof(buf), 1000);
+}
+
+
+
+void Calibrate_Gyros()
+{
+    uint8_t GYRO_XOUT_H;
+    uint8_t GYRO_XOUT_L;
+    uint8_t GYRO_YOUT_H;
+    uint8_t GYRO_YOUT_L;
+    uint8_t GYRO_ZOUT_H;
+    uint8_t GYRO_ZOUT_L;
+    uint8_t GYRO_XOUT_OFFSET_1000SUM = 0;
+    uint8_t GYRO_YOUT_OFFSET_1000SUM = 0;
+    uint8_t GYRO_ZOUT_OFFSET_1000SUM = 0;
+
+    int x = 0;
+    for(x = 0; x<1000; x++)
+    {
+        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_XOUT_H, 1, &GYRO_XOUT_H, 1, 1000);
+        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_XOUT_L, 1, &GYRO_XOUT_L, 1, 1000);
+        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_YOUT_H, 1, &GYRO_YOUT_H, 1, 1000);
+        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_YOUT_L, 1, &GYRO_YOUT_L, 1, 1000);
+        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_ZOUT_H, 1, &GYRO_ZOUT_H, 1, 1000);
+        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_ZOUT_L, 1, &GYRO_ZOUT_L, 1, 1000);
+
+        GYRO_XOUT_OFFSET_1000SUM += ((GYRO_XOUT_H<<8)|GYRO_XOUT_L);
+        GYRO_YOUT_OFFSET_1000SUM += ((GYRO_YOUT_H<<8)|GYRO_YOUT_L);
+        GYRO_ZOUT_OFFSET_1000SUM += ((GYRO_ZOUT_H<<8)|GYRO_ZOUT_L);
+
+        HAL_Delay(1);
+    }
+    GYRO_XOUT_OFFSET = GYRO_XOUT_OFFSET_1000SUM/1000;
+    GYRO_YOUT_OFFSET = GYRO_YOUT_OFFSET_1000SUM/1000;
+    GYRO_ZOUT_OFFSET = GYRO_ZOUT_OFFSET_1000SUM/1000;
+}
+
+//Gets raw accelerometer data, performs no processing
+void Get_Accel_Values()
+{
+    uint8_t ACCEL_XOUT_H;
+    uint8_t ACCEL_XOUT_L;
+    uint8_t ACCEL_YOUT_H;
+    uint8_t ACCEL_YOUT_L;
+    uint8_t ACCEL_ZOUT_H;
+    uint8_t ACCEL_ZOUT_L;
+
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_XOUT_H, 1, &ACCEL_XOUT_H, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_XOUT_L, 1, &ACCEL_XOUT_L, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_YOUT_H, 1, &ACCEL_YOUT_H, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_YOUT_L, 1, &ACCEL_YOUT_L, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_ZOUT_H, 1, &ACCEL_ZOUT_H, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_ZOUT_L, 1, &ACCEL_ZOUT_L, 1, 1000);
+
+    ACCEL_XOUT = ((ACCEL_XOUT_H<<8)|ACCEL_XOUT_L);
+    ACCEL_YOUT = ((ACCEL_YOUT_H<<8)|ACCEL_YOUT_L);
+    ACCEL_ZOUT = ((ACCEL_ZOUT_H<<8)|ACCEL_ZOUT_L);
+}
+
+//Converts the already acquired accelerometer data into 3D euler angles
+void Get_Accel_Angles()
+{
+    ACCEL_XANGLE = 57.295*atan((float)ACCEL_YOUT/ sqrt(pow((float)ACCEL_ZOUT,2)+pow((float)ACCEL_XOUT,2)));
+    ACCEL_YANGLE = 57.295*atan((float)-ACCEL_XOUT/ sqrt(pow((float)ACCEL_ZOUT,2)+pow((float)ACCEL_YOUT,2)));
+}
+
+//Function to read the gyroscope rate data and convert it into degrees/s
+void Get_Gyro_Rates()
+{
+    uint8_t GYRO_XOUT_H;
+    uint8_t GYRO_XOUT_L;
+    uint8_t GYRO_YOUT_H;
+    uint8_t GYRO_YOUT_L;
+    uint8_t GYRO_ZOUT_H;
+    uint8_t GYRO_ZOUT_L;
+
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_XOUT_H, 1, &GYRO_XOUT_H, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_XOUT_L, 1, &GYRO_XOUT_L, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_YOUT_H, 1, &GYRO_YOUT_H, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_YOUT_L, 1, &GYRO_YOUT_L, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_ZOUT_H, 1, &GYRO_ZOUT_H, 1, 1000);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_ZOUT_L, 1, &GYRO_ZOUT_L, 1, 1000);
+
+    uint8_t GYRO_XOUT = ((GYRO_XOUT_H<<8)|GYRO_XOUT_L) - GYRO_XOUT_OFFSET;
+    uint8_t GYRO_YOUT = ((GYRO_YOUT_H<<8)|GYRO_YOUT_L) - GYRO_YOUT_OFFSET;
+    uint8_t GYRO_ZOUT = ((GYRO_ZOUT_H<<8)|GYRO_ZOUT_L) - GYRO_ZOUT_OFFSET;
+
+
+    uint8_t gyro_xsensitivity = 131;
+    uint8_t gyro_ysensitivity = 131;
+    uint8_t gyro_zsensitivity = 131;
+    GYRO_XRATE = (float)GYRO_XOUT/gyro_xsensitivity;
+    GYRO_YRATE = (float)GYRO_YOUT/gyro_ysensitivity;
+    GYRO_ZRATE = (float)GYRO_ZOUT/gyro_zsensitivity;
+}
+
+void mpu6050_loop()
+{
+    //MPU6050_data_t mpu6050data = {0};
+    //mpu6050_read_to_struct(&mpu6050data);
+    //mpu6050_send_data_uart(&mpu6050data);
+
+    Calibrate_Gyros();
+
+    while (1)
+    {
+        /* USER CODE BEGIN WHILE */
+        Get_Accel_Values();
+        Get_Accel_Angles();
+        Get_Gyro_Rates();
+
+        MPU6050_MotionData_t motion_data;
+        motion_data.GYRO_XRATE   = GYRO_XRATE;
+        motion_data.GYRO_YRATE   = GYRO_YRATE;
+        motion_data.GYRO_ZRATE   = GYRO_ZRATE;
+        motion_data.ACCEL_XANGLE = ACCEL_XANGLE;
+        motion_data.ACCEL_YANGLE = ACCEL_YANGLE;
+
+        uint8_t buf[sizeof(motion_data)+1]; // last byte for 0 (stop bit)
+        memcpy(buf, &motion_data, sizeof(motion_data));
+        buf[sizeof(motion_data)] = 0; // last byte for 0 (stop bit)
+        HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, buf, sizeof(buf), 1000);
+        HAL_Delay(300);
+        /* USER CODE END WHILE */
+    }
+
+
 }
 /* USER CODE END 4 */
 
