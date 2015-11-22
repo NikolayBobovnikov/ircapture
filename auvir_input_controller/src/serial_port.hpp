@@ -60,6 +60,8 @@ public:
                     break;
                 case '\n':
                     return result;
+                case '\0':
+                    return result;
                 default:
                     result+=c;
             }

@@ -8,7 +8,10 @@ int main(void)
     {
         SimpleSerial serial("/dev/ttyUSB0",115200);
         std::cout << "Opened /dev/ttyUSB0" << std::endl;
-        std::cout << serial.readLine()<< std::endl;
+        while(1)
+        {
+            std::cout << serial.readLine()<< std::endl;
+        }
     }
 
     catch(boost::system::system_error& e)
