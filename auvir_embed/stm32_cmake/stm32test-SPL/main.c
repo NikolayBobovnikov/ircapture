@@ -244,18 +244,18 @@ void GInit() // Init sensor
 int main(void)
 {
 	init_led();
-    //I2C_LowLevel_Init(I2C1);
-
-    MPU6050_GPIO_Init();
-    MPU6050_I2C_Init();
-
-    bool connected = MPU6050_TestConnection();
-
-    /* Use I2C1 as Master which is communicating with I2C1 of another STM32F10x device */
+    init_uart();
+    char * str = "Helloooo!\r\n\0";
+    char * str2 = "Buyyyyy!\r\n\0";
     while(1)
     {
-    	if(connected)
-    		blue_led_on();
+        blue_led_on();
+        usart_send_str(str);
+        delay(10000);
+        blue_led_off();
+        usart_send_str(str2);
+        delay(10000);
+
     }
 
     /* Use I2C1 as Slave */

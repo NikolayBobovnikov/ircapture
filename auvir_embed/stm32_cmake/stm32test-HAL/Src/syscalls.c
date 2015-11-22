@@ -14,6 +14,7 @@ void _exit(int status)
 {
     while (1);
 }
+void usart_send_str(char* str);
 
 // close - закрытие файла - возвращаем ошибку
 int _close(int file)
@@ -140,6 +141,7 @@ int _read(int file, char *ptr, int len)
     switch (file)
     {
     case STDIN_FILENO:
+        //TODO: check conversion below
         HAL_UART_Receive(&huart1, (uint8_t*)ptr, len, 1000);
         break;
     default:
@@ -195,16 +197,12 @@ int _write(int file, char *ptr, int len)
     switch (file)
     {
     case STDOUT_FILENO: /*stdout*/
-        for (n = 0; n < len; n++)
-        {
-            HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 1000);
-        }
+        //TODO: check conversion below
+        HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 1000);
         break;
     case STDERR_FILENO: /* stderr */
-        for (n = 0; n < len; n++)
-        {
-            HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 1000);
-        }
+        //TODO: check conversion below
+        HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 1000);
         break;
     default:
         errno = EBADF;

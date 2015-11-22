@@ -34,6 +34,7 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal.h"
 
+#include <string.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
 
@@ -66,7 +67,11 @@ void init_led_hal();
 void init_led();
 void led_on();
 void led_off();
-int mpu6050(void);
+bool usart_send_str_ok(const char *input);
+void usart_send_str(const char *input);
+
+
+void mpu6050(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -97,23 +102,21 @@ int main(void)
     //init_led();
     init_led_hal();
 
-    uint8_t temp = 0;
-    HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(0x68<<1),(uint16_t)0x75,1,&temp,1,3000);
+    //uint8_t temp = 0;
+    //HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(0x68<<1),(uint16_t)0x75,1,&temp,1,3000);
     //////HAL_I2C_Master_Receive(&hi2c1, (uint16_t)(0x68<<1),(uint16_t)0x75,1,&temp,1,3000);
-    HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(0x68<<1), 3, 1000);
+    //HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(0x68<<1), 3, 1000);
 
-    mpu6050();
+    //mpu6050();
 
     I2Cdev_hi2c = &hi2c1; // init of i2cdevlib.
     // You can select other i2c device anytime and
     // call the same driver functions on other sensors
-    while(!MPU6050_testConnection());
+    //while(!MPU6050_testConnection());
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-
-
 
     char buf[128];
     while (1)
@@ -129,7 +132,9 @@ int main(void)
         //led_off();
         /* USER CODE BEGIN 3 */
 
-
+        const char * str = "1234567\r\n\0";
+        bool result = usart_send_str_ok(str);
+        HAL_Delay(1000);
         // test uart
        // HAL_UART_Transmit(&huart1,)
     }
@@ -270,17 +275,82 @@ void led_off()
 {
     GPIOC->BRR |= GPIO_BRR_BR8;
 }
-
-int mpu6050()
+void init_uart()
 {
-    uint8_t Data = 0;
-    HAL_I2C_Mem_Read(&hi2c1, MPU6050_DEFAULT_ADDRESS,MPU6050_RA_WHO_AM_I, 1, &Data, 1,3000);
+
+    /* Initialize GPIO for transmit/receive pin */
+
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+
+    //Transmit register - pin 9
+    //MODE: 11: Output mode, max speed 50 MHz.
+    GPIOA->CRH |= GPIO_CRH_MODE9;
+
+    //10: Alternate function output Push-pull
+    GPIOA->CRH &= (~GPIO_CRH_CNF9);
+    GPIOA->CRH |= GPIO_CRH_CNF9_1;
+
+    //Receive register - pin 10
+    // MODE: 00: Input mode (reset state)
+    GPIOA->CRH &= (~GPIO_CRH_MODE10);
+    // CNF: 01: Floating input (reset state)
+    GPIOA->CRH &= (~GPIO_CRH_CNF10);
+    GPIOA->CRH |= GPIO_CRH_CNF10_0;
+
+
+    /* Initialize uart peripheral*/
+
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_USART1EN;
+    //1. Enable the USART by writing the UE bit in USART_CR1 register to 1.
+    USART1->CR1 |= USART_CR1_UE;                // Uart Enable
+    //2. Program the M bit in USART_CR1 to define the word length.
+    USART1->CR1 &= (~USART_CR1_M);              // 8 bit word - bit M is reset
+    //3. Program the number of stop bits in USART_CR2.
+    USART1->CR2 &= (~USART_CR2_STOP);           // 1 stop bit - 00
+    /*4. Select DMA enable (DMAT) in USART_CR3 if Multi buffer Communication is to take
+    place. Configure the DMA register as explained in multibuffer communication.*/
+    USART1->CR3 &= (~USART_CR3_DMAT);           // DMA disabled
+    //5. Select the desired baud rate using the USART_BRR register.
+    USART1->BRR = (SystemCoreClock / 115200);   //9600 or 115200 bps
+    //6. Set the TE bit in USART_CR1 to send an idle frame as first transmission.
+    USART1->CR1 |= USART_CR1_TE;
+
+}
+
+bool usart_send_str_ok(const char *input)
+{
+    // TODO: move to outside
+    const size_t max_string_lengh = 3;
+    char str[max_string_lengh + 1];
+
+    strncpy(str, input, sizeof(str));   // copy input without exceeding the length of the destination
+    str[sizeof(str) - 1] = '\0';        // if strlen(input) == sizeof(str) then strncpy won't NUL terminate
+    size_t bytes_to_sent = strlen(str) + 1; // length of input string + 1 if it is less than max_string_lengh; max_string_lengh otherwise
+
+    // TODO: study signed/unsigned conversion below
+    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*) str, bytes_to_sent, 1000);
+    if(trans == HAL_OK)
+    {
+        return true;
+    }
+    return false;
+}
+
+void usart_send_str(const char *input)
+{
+    usart_send_str_ok(input);
+}
+
+void mpu6050()
+{
+    uint8_t temp = 0;
+    HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDRESS_AD0_LOW<<1, MPU6050_RA_WHO_AM_I, 1, &temp, 1, 1000);
     //HAL_I2C_Mem_Read(&hi2c1, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_WHO_AM_I, 1, &Data, 1, 1000);
     //HAL_I2C_Master_Receive(&hi2c1, (uint16_t)(0x68<<1),(uint16_t)0x75,1,&temp,1,3000);
 
-    if(Data == 0x68)
+    if(temp == 0x68)
     {
-        printf("\nI2C Read Test Passed, MPU6050 Address: 0x%x", Data);
+        printf("\nI2C Read Test Passed, MPU6050 Address: 0x%x", temp);
     }
     else
     {
