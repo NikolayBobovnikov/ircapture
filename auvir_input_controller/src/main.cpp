@@ -8,9 +8,10 @@ int main(void)
     {
         SimpleSerial serial("/dev/ttyUSB0",115200);
         std::cout << "Opened /dev/ttyUSB0" << std::endl;
+        std::cout << "MPU6050_data_t: " + std::to_string(sizeof(MPU6050_data_t)) << std::endl;
         while(1)
         {
-            std::cout << serial.readLine()<< std::endl;
+            std::cout << serial.get_mpu6050_temperature() << std::endl;
         }
     }
 
@@ -23,3 +24,4 @@ int main(void)
     std::cout << "Press enter...." << std::endl;
     std::getchar();
 }
+

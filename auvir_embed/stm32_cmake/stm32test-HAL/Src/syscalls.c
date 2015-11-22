@@ -193,7 +193,6 @@ int _wait(int *status)
  */
 int _write(int file, char *ptr, int len)
 {
-    int n;
     switch (file)
     {
     case STDOUT_FILENO: /*stdout*/

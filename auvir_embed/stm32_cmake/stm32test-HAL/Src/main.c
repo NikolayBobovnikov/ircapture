@@ -32,14 +32,11 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
-#include "stm32f1xx_hal.h"
 
+/* USER CODE BEGIN Includes */
 #include <string.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
-
-/* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -47,10 +44,23 @@ I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 UART_HandleTypeDef huart1;
 
+typedef struct {
+    int16_t Accelerometer_X;
+    int16_t Accelerometer_Y;
+    int16_t Accelerometer_Z;
+    int16_t Gyroscope_X;
+    int16_t Gyroscope_Y;
+    int16_t Gyroscope_Z;
+    int16_t Temperature;
+} MPU6050_data_t;
+
+
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 #define LED_PIN GPIO_PIN_8
 #define LED_PORT GPIOC
+
+const size_t max_string_lengh = 127;
 
 /* USER CODE END PV */
 
@@ -63,15 +73,18 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+extern float truncf(float x);
+
 void init_led_hal();
 void init_led();
 void led_on();
 void led_off();
+void led_hal();
 bool usart_send_str_ok(const char *input);
 void usart_send_str(const char *input);
-
-
-void mpu6050(void);
+void combine_bytes(uint8_t h, uint8_t l, uint16_t result);
+void mpu6050_read_to_struct(MPU6050_data_t* mpu6050data);
+void mpu6050_send_data_uart(MPU6050_data_t* mpu6050data);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -99,45 +112,33 @@ int main(void)
     MX_USART1_UART_Init();
 
     /* USER CODE BEGIN 2 */
-    //init_led();
     init_led_hal();
-
-    //uint8_t temp = 0;
-    //HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(0x68<<1),(uint16_t)0x75,1,&temp,1,3000);
-    //////HAL_I2C_Master_Receive(&hi2c1, (uint16_t)(0x68<<1),(uint16_t)0x75,1,&temp,1,3000);
-    //HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(0x68<<1), 3, 1000);
-
-    //mpu6050();
 
     I2Cdev_hi2c = &hi2c1; // init of i2cdevlib.
     // You can select other i2c device anytime and
     // call the same driver functions on other sensors
-    //while(!MPU6050_testConnection());
+
+    MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
+    while(!MPU6050_testConnection());
+    MPU6050_initialize();
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-
-    char buf[128];
     while (1)
     {
+        /* USER CODE BEGIN WHILE */
+        MPU6050_data_t mpu6050data = {0};
+        mpu6050_read_to_struct(&mpu6050data);
+        mpu6050_send_data_uart(&mpu6050data);
+        //const char * str = "Test string\r\n\0";
+        //bool result = usart_send_str_ok(buf);
+        //HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*) temperature_reg_value, 2, 1000);
+        HAL_Delay(300);
         /* USER CODE END WHILE */
-        //HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
-        //HAL_Delay(1000);
-        //HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
-        //HAL_Delay(1000);
-        //HAL_GPIO_WritePin(GPIOC, LED_PIN, GPIO_PIN_SET);
-        //led_on();
-        //HAL_Delay(10000);
-        //led_off();
-        /* USER CODE BEGIN 3 */
-
-        const char * str = "1234567\r\n\0";
-        bool result = usart_send_str_ok(str);
-        HAL_Delay(1000);
-        // test uart
-       // HAL_UART_Transmit(&huart1,)
     }
+
+    /* USER CODE BEGIN 3 */
     /* USER CODE END 3 */
 
 }
@@ -275,6 +276,12 @@ void led_off()
 {
     GPIOC->BRR |= GPIO_BRR_BR8;
 }
+void led_hal()
+{
+    HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
+    HAL_Delay(1000);
+    //HAL_GPIO_WritePin(GPIOC, LED_PIN, GPIO_PIN_SET);
+}
 void init_uart()
 {
 
@@ -316,11 +323,9 @@ void init_uart()
     USART1->CR1 |= USART_CR1_TE;
 
 }
-
 bool usart_send_str_ok(const char *input)
 {
     // TODO: move to outside
-    const size_t max_string_lengh = 3;
     char str[max_string_lengh + 1];
 
     strncpy(str, input, sizeof(str));   // copy input without exceeding the length of the destination
@@ -335,28 +340,43 @@ bool usart_send_str_ok(const char *input)
     }
     return false;
 }
-
 void usart_send_str(const char *input)
 {
     usart_send_str_ok(input);
 }
-
-void mpu6050()
+void combine_bytes(uint8_t h, uint8_t l, uint16_t result)
 {
-    uint8_t temp = 0;
-    HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDRESS_AD0_LOW<<1, MPU6050_RA_WHO_AM_I, 1, &temp, 1, 1000);
-    //HAL_I2C_Mem_Read(&hi2c1, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_WHO_AM_I, 1, &Data, 1, 1000);
-    //HAL_I2C_Master_Receive(&hi2c1, (uint16_t)(0x68<<1),(uint16_t)0x75,1,&temp,1,3000);
+    result = (((int16_t) h) << 8) | l;
+}
+void mpu6050_read_to_struct(MPU6050_data_t *mpu6050data)
+{
+    mpu6050data->Accelerometer_X = MPU6050_getAccelerationX();
+    mpu6050data->Accelerometer_Y = MPU6050_getAccelerationY();
+    mpu6050data->Accelerometer_Z = MPU6050_getAccelerationZ();
+    mpu6050data->Temperature =     MPU6050_getTemperature();
+    mpu6050data->Gyroscope_X =     MPU6050_getRotationX();
+    mpu6050data->Gyroscope_Y =     MPU6050_getRotationY();
+    mpu6050data->Gyroscope_Z =     MPU6050_getRotationZ();
+    // TODO: read all registers at once - from 0x3B (ACCEL_XOUT) to 0x48 (GYRO_ZOUT)
+//    uint16_t rawdata[7]={0};
+//    HAL_StatusTypeDef status = HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW << 1, 0x3B, 2, (uint8_t*)&rawdata[0], 7, 3000);
+//    MPU6050_data_t mpu6050rawdata;
+//    mpu6050rawdata.Accelerometer_X = rawdata[0];
+//    mpu6050rawdata.Accelerometer_Y = rawdata[1];
+//    mpu6050rawdata.Accelerometer_Z = rawdata[2];
+//    mpu6050rawdata.Temperature =     rawdata[3];
+//    mpu6050rawdata.Gyroscope_X =     rawdata[4];
+//    mpu6050rawdata.Gyroscope_Y =     rawdata[5];
+//    mpu6050rawdata.Gyroscope_Z =     rawdata[6];
 
-    if(temp == 0x68)
-    {
-        printf("\nI2C Read Test Passed, MPU6050 Address: 0x%x", temp);
-    }
-    else
-    {
-        printf("ERROR: I2C Read Test Failed, Stopping");
-        while(1){}
-    }
+}
+
+void mpu6050_send_data_uart(MPU6050_data_t* mpu6050data)
+{
+    uint8_t buf[sizeof(mpu6050data)+1]; // last byte for 0 (stop bit)
+    memcpy(buf, &mpu6050data, sizeof(mpu6050data));
+    buf[sizeof(mpu6050data)] = 0; // last byte for 0 (stop bit)
+    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, buf, sizeof(buf), 1000);
 }
 /* USER CODE END 4 */
 
