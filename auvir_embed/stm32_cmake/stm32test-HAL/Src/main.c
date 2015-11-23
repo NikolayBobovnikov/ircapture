@@ -60,13 +60,28 @@ typedef struct
 	int16_t Accelerometer_X;
 	int16_t Accelerometer_Y;
     int16_t Accelerometer_Z;
+    int16_t Temperature;
     int16_t Gyroscope_X;
     int16_t Gyroscope_Y;
     int16_t Gyroscope_Z;
-    int16_t Temperature;
-    char strbuf[16];
 
-} MPU6050_MotionData_t;
+} MPU6050_Data_Reg_t;
+
+static MPU6050_Data_Reg_t motion_data;
+static uint8_t buffer[14];
+
+void MPU6050_getAllData(MPU6050_Data_Reg_t* motion_data)
+{
+    I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, buffer, 0);
+    motion_data->Accelerometer_X = (((int16_t)buffer[0]) << 8) | buffer[1];
+    motion_data->Accelerometer_Y = (((int16_t)buffer[2]) << 8) | buffer[3];
+    motion_data->Accelerometer_Z = (((int16_t)buffer[4]) << 8) | buffer[5];
+    motion_data->Temperature     = (((int16_t)buffer[6]) << 8) | buffer[7];
+    motion_data->Gyroscope_X = (((int16_t)buffer[8]) << 8) | buffer[9];
+    motion_data->Gyroscope_Y = (((int16_t)buffer[10]) << 8) | buffer[11];
+    motion_data->Gyroscope_Z = (((int16_t)buffer[12]) << 8) | buffer[13];
+}
+
 
 enum UART_Packet_Condition {UART_PACKET_START = 0xFF, UART_PACKET_END = 0};
 typedef struct
@@ -74,42 +89,55 @@ typedef struct
     uint8_t PACKET_START;
     uint8_t data_size_begin;
 
-    MPU6050_MotionData_t data;
+    MPU6050_Data_Reg_t data;
 
     uint8_t data_size_end;
     uint8_t PACKET_END;
 } UART_Packet_t;
-UART_Packet_t uart_packet;
 
-void send_motion_data(MPU6050_MotionData_t* data)
+static UART_Packet_t uart_packet;
+
+// should be called once during startup
+void initialize_uart_packet()
 {
-    /*
-    // make a packet
     uart_packet.PACKET_START = UART_PACKET_START;
     uart_packet.PACKET_END = UART_PACKET_END;
-    uart_packet.data_size_begin = sizeof(MPU6050_MotionData_t);
+    uart_packet.data_size_begin = sizeof(MPU6050_Data_Reg_t);
     uart_packet.data_size_end = uart_packet.data_size_begin;
-    memcpy(&(uart_packet.data), data, sizeof(MPU6050_MotionData_t));
-    // send packet
-    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &uart_packet, sizeof(UART_Packet_t), 1000);
-    */
+}
 
+void send_motion_data(MPU6050_Data_Reg_t* data)
+{
+    // make a packet; fields below are the same in all packets
+    uart_packet.PACKET_START = UART_PACKET_START;
+    uart_packet.PACKET_END = UART_PACKET_END;
+    uart_packet.data_size_begin = sizeof(MPU6050_Data_Reg_t);
+    uart_packet.data_size_end = uart_packet.data_size_begin;
+
+    // TODO: read data to uart_packet.data directly
+    memcpy(&(uart_packet.data), data, sizeof(MPU6050_Data_Reg_t));
+
+    // send packet
+    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*)&uart_packet, sizeof(UART_Packet_t), 1000);
+
+
+    /*
     HAL_StatusTypeDef status;
 
     uint8_t start_byte = UART_PACKET_START;
     HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &start_byte, 1, 1000);
 
-    uint8_t size_begin = sizeof(MPU6050_MotionData_t);
+    uint8_t size_begin = sizeof(MPU6050_Data_Reg_t);
     status = HAL_UART_Transmit(&huart1, &size_begin, 1, 1000);
 
-    status = HAL_UART_Transmit(&huart1, data, sizeof(MPU6050_MotionData_t), 1000);
+    status = HAL_UART_Transmit(&huart1, (uint8_t*) data, sizeof(MPU6050_Data_Reg_t), 1000);
 
-    uint8_t size_end = sizeof(MPU6050_MotionData_t);
+    uint8_t size_end = sizeof(MPU6050_Data_Reg_t);
     status = HAL_UART_Transmit(&huart1, &size_end, 1, 1000);
 
     uint8_t end_byte = UART_PACKET_END;
     status = HAL_UART_Transmit(&huart1, &end_byte, 1, 1000);
-
+    */
 
 }
 
@@ -189,6 +217,7 @@ int main(void)
     MX_I2C2_Init();
     MX_USART1_UART_Init();
     init_led_hal();
+    initialize_uart_packet();
 
     /* USER CODE BEGIN 2 */
 
@@ -207,7 +236,7 @@ int main(void)
 
 
 
-    MPU6050_MotionData_t data;
+    MPU6050_Data_Reg_t data;
     data.Accelerometer_X = 1;
     data.Accelerometer_Y = 2;
     data.Accelerometer_Z = 3;
@@ -215,9 +244,6 @@ int main(void)
     data.Gyroscope_X = 5;
     data.Gyroscope_Y = 6;
     data.Gyroscope_Z = 7;
-    const char * str = "StrBuf!\0";
-    memset(data.strbuf, 0, sizeof(data.strbuf));
-    strncpy(data.strbuf, str, strnlen(str, sizeof(data.strbuf)));
 
     while (1)
     {
@@ -577,36 +603,10 @@ void mpu6050_loop()
         //Get_Accel_Angles();
         //Get_Gyro_Rates();
 
-        /*
-        MPU6050_MotionData_t motion_data2;
-        motion_data2.Accelerometer_X = MPU6050_getAccelerationX();
-        motion_data2.Accelerometer_Y = MPU6050_getAccelerationY();
-        motion_data2.Accelerometer_Z = MPU6050_getAccelerationZ();
-        motion_data2.Temperature     = MPU6050_getTemperature();
-        motion_data2.Gyroscope_X     = MPU6050_getRotationX();
-        motion_data2.Gyroscope_Y     = MPU6050_getRotationY();
-        motion_data2.Gyroscope_Z     = MPU6050_getRotationZ();
-        float Temperature2	        = motion_data2.Temperature/340 + 36.53;
-        */
 
-        MPU6050_MotionData_t motion_data;
-        MPU6050_getAllData(
-        		&(motion_data.Accelerometer_X),
-        		&(motion_data.Accelerometer_Y),
-        		&(motion_data.Accelerometer_Z),
-        		&(motion_data.Temperature),
-        		&(motion_data.Gyroscope_X),
-        		&(motion_data.Gyroscope_Y),
-        		&(motion_data.Gyroscope_Z)
-        					);
-
-        memset(motion_data.strbuf, 0, sizeof(motion_data.strbuf));
-        strncpy(motion_data.strbuf, str, strnlen(str, sizeof(motion_data.strbuf)));
-
-        float Temperature	        = motion_data.Temperature/340 + 36.53;
-
+        MPU6050_getAllData(&motion_data);
+        float temper	        = motion_data.Temperature/340 + 36.53;
         send_motion_data(&motion_data);
-
         HAL_Delay(100);
         /* USER CODE END WHILE */
     }
