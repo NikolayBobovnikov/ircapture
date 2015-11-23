@@ -3,6 +3,7 @@
 #include <boost/bind.hpp>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 typedef struct {
@@ -17,37 +18,40 @@ typedef struct {
 
 typedef struct
 {
-    uint8_t GYRO_XRATE;
-    uint8_t GYRO_YRATE;
-    uint8_t GYRO_ZRATE;
-    float ACCEL_XANGLE;
-    float ACCEL_YANGLE;
+    int16_t Accelerometer_X;
+    int16_t Accelerometer_Y;
+    int16_t Accelerometer_Z;
+    int16_t Gyroscope_X;
+    int16_t Gyroscope_Y;
+    int16_t Gyroscope_Z;
+    int16_t Temperature;
+    char strbuf[16];
 } MPU6050_MotionData_t;
 
 typedef struct
 {
-    uint8_t START = 1;
+    uint8_t START;
 
-    uint8_t data_uint8_t = 0;
-    uint16_t data_uint16_t = 0;
-    int int_number = 0;
-    float float_number = 0;
-    char string[128]={0};
+    uint8_t data_uint8_t;
+    uint16_t data_uint16_t;
+    int int_number;
+    float float_number;
+    char string[128];
 
-    uint8_t END = 0;
+    uint8_t END;
 } UART_TestSerialization_t;
 
 
 enum UART_Packet_Condition {UART_PACKET_START = 0xFF, UART_PACKET_END = 0};
 typedef struct
 {
-    const uint8_t START = UART_PACKET_START;
-    const uint8_t data_size_begin = sizeof(MPU6050_MotionData_t);
+    const uint8_t START;
+    const uint8_t data_size_begin;
 
-    MPU6050_MotionData_t data = {0};
+    MPU6050_MotionData_t data;
 
-    const uint8_t data_size_end = sizeof(MPU6050_MotionData_t);
-    const uint8_t END = UART_PACKET_END;
+    const uint8_t data_size_end;
+    const uint8_t END;
 } UART_Packet_t;
 
 
@@ -75,8 +79,8 @@ public:
 
         //mpu6050_data_buf = {0};
         std::fill( data_buffer, data_buffer + sizeof( data_buffer ), 0 );
-        mpu6050_data_struct = {0};
-        mpu6050_motion_data = {0};
+        //std::fill( &mpu6050_data_struct, &mpu6050_data_struct + sizeof( mpu6050_data_struct ), 0 );
+        //std::fill( &mpu6050_motion_data, &mpu6050_motion_data + sizeof( mpu6050_motion_data ), 0 );
     }
 
     /**

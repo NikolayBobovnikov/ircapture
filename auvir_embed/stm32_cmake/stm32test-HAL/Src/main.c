@@ -46,7 +46,7 @@ I2C_HandleTypeDef hi2c2;
 UART_HandleTypeDef huart1;
 
 typedef struct {
-    int16_t Accelerometer_X;
+	int16_t Accelerometer_X;
     int16_t Accelerometer_Y;
     int16_t Accelerometer_Z;
     int16_t Gyroscope_X;
@@ -57,11 +57,15 @@ typedef struct {
 
 typedef struct
 {
-    uint8_t GYRO_XRATE;
-    uint8_t GYRO_YRATE;
-    uint8_t GYRO_ZRATE;
-    float ACCEL_XANGLE;
-    float ACCEL_YANGLE;
+	int16_t Accelerometer_X;
+	int16_t Accelerometer_Y;
+    int16_t Accelerometer_Z;
+    int16_t Gyroscope_X;
+    int16_t Gyroscope_Y;
+    int16_t Gyroscope_Z;
+    int16_t Temperature;
+    char strbuf[16];
+
 } MPU6050_MotionData_t;
 
 enum UART_Packet_Condition {UART_PACKET_START = 0xFF, UART_PACKET_END = 0};
@@ -110,17 +114,17 @@ void send_motion_data(MPU6050_MotionData_t* data)
 }
 
 
-uint8_t GYRO_XOUT_OFFSET;
-uint8_t GYRO_YOUT_OFFSET;
-uint8_t GYRO_ZOUT_OFFSET;
-uint8_t ACCEL_XOUT;
-uint8_t ACCEL_YOUT;
-uint8_t ACCEL_ZOUT;
-uint8_t GYRO_XRATE;
-uint8_t GYRO_YRATE;
-uint8_t GYRO_ZRATE;
-float ACCEL_XANGLE;
-float ACCEL_YANGLE;
+volatile uint8_t GYRO_XOUT_OFFSET;
+volatile uint8_t GYRO_YOUT_OFFSET;
+volatile uint8_t GYRO_ZOUT_OFFSET;
+volatile uint8_t ACCEL_XOUT;
+volatile uint8_t ACCEL_YOUT;
+volatile uint8_t ACCEL_ZOUT;
+volatile uint8_t GYRO_XRATE;
+volatile uint8_t GYRO_YRATE;
+volatile uint8_t GYRO_ZRATE;
+volatile float ACCEL_XANGLE;
+volatile float ACCEL_YANGLE;
 
 
 /* USER CODE BEGIN PV */
@@ -184,39 +188,42 @@ int main(void)
     MX_I2C1_Init();
     MX_I2C2_Init();
     MX_USART1_UART_Init();
-
-    /* USER CODE BEGIN 2 */
     init_led_hal();
 
-    I2Cdev_hi2c = &hi2c1; // init of i2cdevlib.
-    // You can select other i2c device anytime and
-    // call the same driver functions on other sensors
+    /* USER CODE BEGIN 2 */
 
+    I2Cdev_hi2c = &hi2c1;
     MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
     while(!MPU6050_testConnection());
     MPU6050_initialize();
 
-    unsigned int x = 1;
-    int endian = (int) (((char *)&x)[0]);
-    uint8_t sizefloat = sizeof(float);
+    uint8_t rate = MPU6050_getRate();
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
 
-    //mpu6050_loop();
+    mpu6050_loop();
+
+
 
     MPU6050_MotionData_t data;
-
-    data.ACCEL_XANGLE = 1.01;
-    data.ACCEL_YANGLE = 2.02;
-    data.GYRO_XRATE = 3;
-    data.GYRO_YRATE = 4;
-    data.GYRO_ZRATE = 5;
+    data.Accelerometer_X = 1;
+    data.Accelerometer_Y = 2;
+    data.Accelerometer_Z = 3;
+    data.Temperature = 4;
+    data.Gyroscope_X = 5;
+    data.Gyroscope_Y = 6;
+    data.Gyroscope_Z = 7;
+    const char * str = "StrBuf!\0";
+    memset(data.strbuf, 0, sizeof(data.strbuf));
+    strncpy(data.strbuf, str, strnlen(str, sizeof(data.strbuf)));
 
     while (1)
     {
         /* USER CODE BEGIN WHILE */
         send_motion_data(&data);
+    	//HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, data.strbuf, sizeof(data.strbuf), 1000);
         HAL_Delay(1000);
         /* USER CODE END WHILE */
     }
@@ -462,7 +469,6 @@ void mpu6050_send_data_uart(MPU6050_data_t* mpu6050data)
 }
 
 
-
 void Calibrate_Gyros()
 {
     uint8_t GYRO_XOUT_H;
@@ -561,27 +567,47 @@ void mpu6050_loop()
     //mpu6050_read_to_struct(&mpu6050data);
     //mpu6050_send_data_uart(&mpu6050data);
 
-    Calibrate_Gyros();
+	const char * str = "StrBuf!\0";
+	//Calibrate_Gyros();
 
     while (1)
     {
         /* USER CODE BEGIN WHILE */
-        Get_Accel_Values();
-        Get_Accel_Angles();
-        Get_Gyro_Rates();
+        //Get_Accel_Values();
+        //Get_Accel_Angles();
+        //Get_Gyro_Rates();
+
+        /*
+        MPU6050_MotionData_t motion_data2;
+        motion_data2.Accelerometer_X = MPU6050_getAccelerationX();
+        motion_data2.Accelerometer_Y = MPU6050_getAccelerationY();
+        motion_data2.Accelerometer_Z = MPU6050_getAccelerationZ();
+        motion_data2.Temperature     = MPU6050_getTemperature();
+        motion_data2.Gyroscope_X     = MPU6050_getRotationX();
+        motion_data2.Gyroscope_Y     = MPU6050_getRotationY();
+        motion_data2.Gyroscope_Z     = MPU6050_getRotationZ();
+        float Temperature2	        = motion_data2.Temperature/340 + 36.53;
+        */
 
         MPU6050_MotionData_t motion_data;
-        motion_data.GYRO_XRATE   = GYRO_XRATE;
-        motion_data.GYRO_YRATE   = GYRO_YRATE;
-        motion_data.GYRO_ZRATE   = GYRO_ZRATE;
-        motion_data.ACCEL_XANGLE = ACCEL_XANGLE;
-        motion_data.ACCEL_YANGLE = ACCEL_YANGLE;
+        MPU6050_getAllData(
+        		&(motion_data.Accelerometer_X),
+        		&(motion_data.Accelerometer_Y),
+        		&(motion_data.Accelerometer_Z),
+        		&(motion_data.Temperature),
+        		&(motion_data.Gyroscope_X),
+        		&(motion_data.Gyroscope_Y),
+        		&(motion_data.Gyroscope_Z)
+        					);
 
-        uint8_t buf[sizeof(motion_data)+1]; // last byte for 0 (stop bit)
-        memcpy(buf, &motion_data, sizeof(motion_data));
-        buf[sizeof(motion_data)] = 0; // last byte for 0 (stop bit)
-        HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, buf, sizeof(buf), 1000);
-        HAL_Delay(300);
+        memset(motion_data.strbuf, 0, sizeof(motion_data.strbuf));
+        strncpy(motion_data.strbuf, str, strnlen(str, sizeof(motion_data.strbuf)));
+
+        float Temperature	        = motion_data.Temperature/340 + 36.53;
+
+        send_motion_data(&motion_data);
+
+        HAL_Delay(100);
         /* USER CODE END WHILE */
     }
 

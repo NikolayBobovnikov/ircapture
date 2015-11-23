@@ -52,7 +52,7 @@ bool SimpleSerial::read_mpu6050_packet_ok()
     uint8_t motion_data_size = sizeof(MPU6050_MotionData_t);
 
     // 1. Wait for START
-    int max_tries = 10;
+    int max_tries = 5;
     bool started = false;
     while(!started)
     {
@@ -104,11 +104,34 @@ std::string SimpleSerial::get_mpu6050_data_str()
     if(read_mpu6050_packet_ok())
     {
         //read_mpu6050_data();
-        result_str += "ACCEL_XANGLE: " + std::to_string(mpu6050_motion_data.ACCEL_XANGLE) + "\n";
-        result_str += "ACCEL_YANGLE: " + std::to_string(mpu6050_motion_data.ACCEL_YANGLE) + "\n";
-        result_str += "GYRO_XRATE:   " + std::to_string(mpu6050_motion_data.GYRO_XRATE  ) + "\n";
-        result_str += "GYRO_YRATE:   " + std::to_string(mpu6050_motion_data.GYRO_YRATE  ) + "\n";
-        result_str += "GYRO_ZRATE:   " + std::to_string(mpu6050_motion_data.GYRO_ZRATE  ) + "\n";
+//        result_str += "Accelerometer_X: " + std::to_string(mpu6050_motion_data.Accelerometer_X  ) + "\n";
+//        result_str += "Accelerometer_Y: " + std::to_string(mpu6050_motion_data.Accelerometer_Y  ) + "\n";
+//        result_str += "Accelerometer_Z: " + std::to_string(mpu6050_motion_data.Accelerometer_Z  ) + "\n";
+//        result_str += "Temperature:     " + std::to_string(mpu6050_motion_data.Temperature      ) + "\n";
+//        result_str += "Gyroscope_X:     " + std::to_string(mpu6050_motion_data.Gyroscope_X      ) + "\n";
+//        result_str += "Gyroscope_Y:     " + std::to_string(mpu6050_motion_data.Gyroscope_Y      ) + "\n";
+//        result_str += "Gyroscope_Z:     " + std::to_string(mpu6050_motion_data.Gyroscope_Z      ) + "\n";
+//        result_str += "STRING:          " + std::string   (mpu6050_motion_data.strbuf           ) + "\n";
+
+        // header
+        result_str += std::string   ("     A_X ") +
+                      std::string   ("     A_Y ") +
+                      std::string   ("     A_Z ") +
+                      std::string   ("     T "  ) +
+                      std::string   ("     Tstr ") +
+                      std::string   ("         G_X ") +
+                      std::string   ("     G_Y ") +
+                      std::string   ("     G_Z ") + "\n";
+        // info
+        std::setprecision(2);
+        result_str += "  "    + std::to_string(mpu6050_motion_data.Accelerometer_X  ) +
+                      "     " + std::to_string(mpu6050_motion_data.Accelerometer_Y  ) +
+                      "     " + std::to_string(mpu6050_motion_data.Accelerometer_Z  ) +
+                      "  "    + std::to_string(mpu6050_motion_data.Temperature      ) +
+                      "     " + std::to_string((mpu6050_motion_data.Temperature/340 + 36.53)) +
+                      "     " + std::to_string(mpu6050_motion_data.Gyroscope_X      ) +
+                      "     " + std::to_string(mpu6050_motion_data.Gyroscope_Y      ) +
+                      "     " + std::to_string(mpu6050_motion_data.Gyroscope_Z      ) + "\n";
     }
 
 
@@ -150,7 +173,8 @@ std::string mpu6050_temperature_str(uint16_t temp_reg_value)
     float temperature = (temp_reg_value)/340 + 36.53;
     int integer_part = (int) temperature;           // Get the integer part
     int fractional_part = (int)((temperature - integer_part) * 1000);   // Get fractional part
-    snprintf(buf, sizeof(buf), "%d.%03d", integer_part, fractional_part,'\0');
+    //TODO: snprintf: identifier not fount on windows; //snprintf(buf, sizeof(buf), "%d.%03d", integer_part, fractional_part,'\0');
 
     std::string result = std::string(buf);
+    return result;
 }
