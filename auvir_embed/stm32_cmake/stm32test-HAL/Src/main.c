@@ -555,13 +555,13 @@ void usart_wait_exec_loop()
 	while( 1 )
 	  {
 	      uint8_t byte = UART_COMMAND_NOT_RECEIVED;
-	      HAL_UART_Receive(&huart1, &byte, 1, 100);
+	      HAL_UART_Receive(&huart1, &byte, 1, 1000);
 
 	      if(byte == UART_REQUEST_SEND_BYTE)
 	      {
 	          const uint8_t b = 25;
-	          HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &b, 1, 100);
-	          HAL_Delay(100);
+	          HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &b, 1, 1000);
+	          //HAL_Delay(100);
 	      }
 	      else if(byte == UART_REQUEST_SEND_MPU6050_TEST_DATA)
 	      {
@@ -574,8 +574,8 @@ void usart_wait_exec_loop()
 	          data.Gyroscope_Y = 6;
 	          data.Gyroscope_Z = 7;
 
-	          HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&data, sizeof(data), 100);
-	          HAL_Delay(100);
+	          HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&data, sizeof(data), 1000);
+	          //HAL_Delay(100);
 	      }
 	      else if(byte == UART_REQUEST_SEND_MPU6050_DATA)
 	      {
@@ -588,15 +588,15 @@ void usart_wait_exec_loop()
 	          data.Gyroscope_Y = MPU6050_getRotationY();
 	          data.Gyroscope_Z = MPU6050_getRotationZ();
 
-	          HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&data, sizeof(data), 100);
-	          HAL_Delay(100);
+	          HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&data, sizeof(data), 1000);
+	          //HAL_Delay(100);
 	      }
 	      else if(byte == UART_REQUEST_SEND_MPU6050_PACKET)
 	      {
 	          MPU6050_getAllData(&motion_data);
 
 	          send_motion_data(&motion_data);
-	          HAL_Delay(100);
+	          //HAL_Delay(100);
 	      }
 
 	  }
