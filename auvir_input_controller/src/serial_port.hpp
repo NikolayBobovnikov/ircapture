@@ -1,24 +1,18 @@
 #include <boost/asio.hpp>
-#include <boost/asio/serial_port.hpp> 
+#include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/timer.hpp>
-#include <boost/asio/deadline_timer.hpp>
 
-
+#include <stdexcept>
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <string>
 
-typedef struct {
-    int16_t Accelerometer_X;
-    int16_t Accelerometer_Y;
-    int16_t Accelerometer_Z;
-    int16_t Gyroscope_X;
-    int16_t Gyroscope_Y;
-    int16_t Gyroscope_Z;
-    int16_t Temperature;
-} MPU6050_data_t;
+#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
+#define SERIAL_TIMEOUT_MS 10000
 
 typedef struct
 {
@@ -46,16 +40,25 @@ typedef struct
 } UART_TestSerialization_t;
 
 
+enum UART_Commands {
+    UART_COMMAND_NOT_RECEIVED = 0,
+    UART_REQUEST_SEND,
+    UART_REQUEST_STOP,
+    UART_REQUEST_SEND_BYTE,
+    UART_REQUEST_SEND_MPU6050_TEST_DATA,
+    UART_REQUEST_SEND_MPU6050_DATA,
+    UART_REQUEST_SEND_MPU6050_PACKET
+};
 enum UART_Packet_Condition {UART_PACKET_START = 0xFF, UART_PACKET_END = 0};
 typedef struct
 {
-    const uint8_t START=UART_PACKET_START;
-    const uint8_t data_size_begin=sizeof(MPU6050_Data_Reg_t);
+    static const uint8_t START=UART_PACKET_START;
+    static const uint8_t data_size_begin=sizeof(MPU6050_Data_Reg_t);
 
     MPU6050_Data_Reg_t data;
 
-    const uint8_t data_size_end=sizeof(MPU6050_Data_Reg_t);
-    const uint8_t END=UART_PACKET_END;
+    static const uint8_t data_size_end=sizeof(MPU6050_Data_Reg_t);
+    static const uint8_t END=UART_PACKET_END;
 } UART_Packet_t;
 
 
@@ -77,11 +80,10 @@ public:
      * serial device
      */
     SimpleSerial(std::string port, unsigned int baud_rate)
-    : io(), serial(io,port), timeout(io)
+    : io(), serial(io,port), timeout(io), data_available(false)
     {
         serial.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
 
-        //mpu6050_data_buf = {0};
         std::fill( data_buffer, data_buffer + sizeof( data_buffer ), 0 );
     }
 
@@ -113,35 +115,17 @@ private:
     boost::asio::serial_port serial;
     boost::asio::deadline_timer timeout;
     unsigned char  my_buffer[1];
-    bool           data_available = false;
+    bool  data_available;
 
 
 
     uint8_t data_buffer[128];
-    MPU6050_data_t mpu6050_data_struct;
     MPU6050_Data_Reg_t mpu6050_motion_data;
 };
 
 std::string mpu6050_temperature_str(uint16_t temp_reg_value);
 
 
-
-
-
-
-
-
-
-#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
-#define SERIAL_TIMEOUT_MS 10000
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/thread.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/thread.hpp>
-#include <stdexcept>
-#include <iostream>
-#include <string>
 using namespace std;
 class SerialPort : private boost::noncopyable
 {
@@ -157,8 +141,17 @@ private:
     boost::asio::io_service& io_service;
     boost::asio::serial_port port;
     boost::asio::deadline_timer timeout_timer;
-    unsigned char buffer_read[sizeof(UART_Packet_t)];
+
+    unsigned char byte;
+    unsigned char buffer_packet_read[sizeof(UART_Packet_t)];
+    unsigned char buffer_data_read[sizeof(MPU6050_Data_Reg_t)];
     UART_Packet_t packet;
+    MPU6050_Data_Reg_t packet_data;
+    bool packet_begin_ok;
+    bool packet_datasize_begin_ok;
+    bool packet_data_ok;
+    bool packet_datasize_end_ok;
+    bool packet_end_ok;
 
     void read_callback(const boost::system::error_code& error, std::size_t bytes_transferred);
 
@@ -169,11 +162,42 @@ private:
 };
 
 
+//==========================================================
+#include <boost/date_time/posix_time/posix_time.hpp>
 
+class printer
+{
+public:
+  printer(boost::asio::io_service& io)
+    : timer_(io, boost::posix_time::seconds(1)),
+      count_(0)
+  {
+    timer_.async_wait(boost::bind(&printer::print, this));
+  }
 
+  ~printer()
+  {
+    std::cout << "Final count is " << count_ << std::endl;
+  }
 
+  void print()
+  {
+    if (count_ < 5)
+    {
+      std::cout << count_ << std::endl;
+      ++count_;
 
+      timer_.expires_at(timer_.expires_at() + boost::posix_time::seconds(1));
+      timer_.async_wait(boost::bind(&printer::print, this));
+    }
+  }
 
+private:
+  boost::asio::deadline_timer timer_;
+  int count_;
+};
+
+//==========================================================
 
 
 //

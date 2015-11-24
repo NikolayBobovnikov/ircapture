@@ -181,7 +181,14 @@ std::string mpu6050_temperature_str(uint16_t temp_reg_value)
 }
 
 SerialPort::SerialPort(boost::asio::io_service &io_service, unsigned int baud, const string &peripheral)
-    :io_service(io_service), port(io_service, peripheral), timeout_timer(io_service)
+    :io_service(io_service),
+      port(io_service, peripheral),
+      timeout_timer(io_service),
+      packet_begin_ok(false),
+      packet_datasize_begin_ok(false),
+      packet_data_ok(false),
+      packet_datasize_end_ok(false),
+      packet_end_ok(false)
 {
     if(!port.is_open())
     {
@@ -202,9 +209,41 @@ void SerialPort::close()
 void SerialPort::do_read()
 {
     cout << "..Do_read called." << endl;
-    boost::asio::async_read(port,boost::asio::buffer(buffer_read, sizeof(buffer_read)), boost::asio::transfer_at_least(sizeof(buffer_read)), boost::bind(&SerialPort::read_callback, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-    timeout_timer.expires_from_now(boost::posix_time::milliseconds(SERIAL_TIMEOUT_MS));
-    timeout_timer.async_wait(boost::bind(&SerialPort::wait_callback, this, boost::asio::placeholders::error));
+
+    // read packet header
+    if(!packet_begin_ok)
+    {
+        boost::asio::async_read(port,boost::asio::buffer(&byte, 1), boost::asio::transfer_at_least(1), boost::bind(&SerialPort::read_callback, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+        timeout_timer.expires_from_now(boost::posix_time::milliseconds(SERIAL_TIMEOUT_MS));
+        timeout_timer.async_wait(boost::bind(&SerialPort::wait_callback, this, boost::asio::placeholders::error));
+    }
+    else if(!packet_datasize_begin_ok)
+    {
+        boost::asio::async_read(port,boost::asio::buffer(&byte, 1), boost::asio::transfer_at_least(1), boost::bind(&SerialPort::read_callback, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+        timeout_timer.expires_from_now(boost::posix_time::milliseconds(SERIAL_TIMEOUT_MS));
+        timeout_timer.async_wait(boost::bind(&SerialPort::wait_callback, this, boost::asio::placeholders::error));
+    }
+    //read data
+    else if(!packet_data_ok)
+    {
+        boost::asio::async_read(port,boost::asio::buffer(buffer_data_read, sizeof(buffer_data_read)), boost::asio::transfer_at_least(sizeof(buffer_data_read)), boost::bind(&SerialPort::read_callback, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+        timeout_timer.expires_from_now(boost::posix_time::milliseconds(SERIAL_TIMEOUT_MS));
+        timeout_timer.async_wait(boost::bind(&SerialPort::wait_callback, this, boost::asio::placeholders::error));
+    }
+    // read packet end
+    else if(!packet_datasize_end_ok)
+    {
+        boost::asio::async_read(port,boost::asio::buffer(&byte, 1), boost::asio::transfer_at_least(1), boost::bind(&SerialPort::read_callback, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+        timeout_timer.expires_from_now(boost::posix_time::milliseconds(SERIAL_TIMEOUT_MS));
+        timeout_timer.async_wait(boost::bind(&SerialPort::wait_callback, this, boost::asio::placeholders::error));
+    }
+    else if(!packet_end_ok)
+    {
+        boost::asio::async_read(port,boost::asio::buffer(&byte, 1), boost::asio::transfer_at_least(1), boost::bind(&SerialPort::read_callback, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+        timeout_timer.expires_from_now(boost::posix_time::milliseconds(SERIAL_TIMEOUT_MS));
+        timeout_timer.async_wait(boost::bind(&SerialPort::wait_callback, this, boost::asio::placeholders::error));
+    }
+
 
 }
 
@@ -225,29 +264,108 @@ void SerialPort::read_callback(const boost::system::error_code &error, size_t by
         return;
     }
 
+    if(!packet_begin_ok)
+    {
+        if (byte != UART_PACKET_START)
+        {
+            ; // NO OP
+            return;
+        }
+        else
+        {
+            packet_begin_ok = true;
+            return;
+        }
+    }
+    else if(!packet_datasize_begin_ok)
+    {
+        if (byte != sizeof(buffer_data_read))
+        {
+            // get back original values and return
+            packet_begin_ok = false;
+            return;
+        }
+        else
+        {
+            packet_datasize_begin_ok = true;
+            return;
+        }
+    }
+    else if(!packet_data_ok)
+    {
+        if (bytes_transferred != sizeof(buffer_data_read))
+        {
+            // get back original values and return
+            packet_begin_ok = false;
+            packet_datasize_begin_ok = false;
+            packet_data_ok = false;
+            return;
+        }
+        else
+        {
+            packet_data_ok = true;
+            memcpy(&packet_data, buffer_data_read, sizeof(buffer_data_read));
+            std::string result_str="";
+            result_str += std::string   ("     A_X ") +
+                          std::string   ("     A_Y ") +
+                          std::string   ("     A_Z ") +
+                          std::string   ("     Tstr ") +
+                          std::string   ("         G_X ") +
+                          std::string   ("     G_Y ") +
+                          std::string   ("     G_Z ") + "\n";
+            // info
+            std::setprecision(2);
+            result_str += "  "    + std::to_string(packet_data.Accelerometer_X  ) +
+                          "     " + std::to_string(packet_data.Accelerometer_Y  ) +
+                          "     " + std::to_string(packet_data.Accelerometer_Z  ) +
+                          "  "    + std::to_string(packet_data.Temperature      ) +
+                          "     " + std::to_string((packet_data.Temperature/340 + 36.53)) +
+                          "     " + std::to_string(packet_data.Gyroscope_X      ) +
+                          "     " + std::to_string(packet_data.Gyroscope_Y      ) +
+                          "     " + std::to_string(packet_data.Gyroscope_Z      ) + "\n";
+
+            std::cout << result_str << std::endl;
+        }
+
+    }
+    else if(!packet_datasize_end_ok)
+    {
+        if (byte != sizeof(buffer_data_read))
+        {
+            // get back original values and return
+            packet_begin_ok = false;
+            packet_datasize_begin_ok = false;
+            packet_data_ok = false;
+        }
+        else
+        {
+            packet_datasize_end_ok = true;
+            return;
+        }
+    }
+    else if(!packet_end_ok)
+    {
+        if (byte != UART_PACKET_END)
+        {
+            // get back original values and return
+            packet_begin_ok = false;
+            packet_datasize_begin_ok = false;
+            packet_data_ok = false;
+        }
+        else
+        {
+            packet_end_ok = true;
+
+            // we read the packet; get back original values
+            packet_begin_ok = false;
+            packet_datasize_begin_ok = false;
+            packet_data_ok = false;
+            return;
+        }
+    }
+
     //cout << ".. ..Bytes transferred: " << bytes_transferred << " bytes." << endl;
     //cout << ".. ..Message: " << buffer_read[0] << buffer_read[1] << buffer_read[2] << buffer_read[3] << buffer_read[4] << buffer_read[5] << endl;
-    memcpy(&packet, buffer_read, sizeof(buffer_read));
-    std::string result_str="";
-    result_str += std::string   ("     A_X ") +
-                  std::string   ("     A_Y ") +
-                  std::string   ("     A_Z ") +
-                  std::string   ("     Tstr ") +
-                  std::string   ("         G_X ") +
-                  std::string   ("     G_Y ") +
-                  std::string   ("     G_Z ") + "\n";
-    // info
-    std::setprecision(2);
-    result_str += "  "    + std::to_string(packet.data.Accelerometer_X  ) +
-                  "     " + std::to_string(packet.data.Accelerometer_Y  ) +
-                  "     " + std::to_string(packet.data.Accelerometer_Z  ) +
-                  "  "    + std::to_string(packet.data.Temperature      ) +
-                  "     " + std::to_string((packet.data.Temperature/340 + 36.53)) +
-                  "     " + std::to_string(packet.data.Gyroscope_X      ) +
-                  "     " + std::to_string(packet.data.Gyroscope_Y      ) +
-                  "     " + std::to_string(packet.data.Gyroscope_Z      ) + "\n";
-
-    std::cout << result_str << std::endl;
 
     timeout_timer.cancel();
     do_read();

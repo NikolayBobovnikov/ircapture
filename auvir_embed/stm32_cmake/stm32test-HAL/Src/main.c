@@ -38,6 +38,9 @@
 #include <math.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
+
+//TODO: remove or turn off in release build
+#include "assert.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -83,6 +86,16 @@ void MPU6050_getAllData(MPU6050_Data_Reg_t* motion_data)
 }
 
 
+enum UART_Commands {
+	UART_COMMAND_NOT_RECEIVED = 0,
+    UART_REQUEST_SEND,
+	UART_REQUEST_STOP,
+	UART_REQUEST_SEND_BYTE,
+	UART_REQUEST_SEND_MPU6050_TEST_DATA,
+	UART_REQUEST_SEND_MPU6050_DATA,
+	UART_REQUEST_SEND_MPU6050_PACKET
+};
+
 enum UART_Packet_Condition {UART_PACKET_START = 0xFF, UART_PACKET_END = 0};
 typedef struct
 {
@@ -104,41 +117,6 @@ void initialize_uart_packet()
     uart_packet.PACKET_END = UART_PACKET_END;
     uart_packet.data_size_begin = sizeof(MPU6050_Data_Reg_t);
     uart_packet.data_size_end = uart_packet.data_size_begin;
-}
-
-void send_motion_data(MPU6050_Data_Reg_t* data)
-{
-    // make a packet; fields below are the same in all packets
-    uart_packet.PACKET_START = UART_PACKET_START;
-    uart_packet.PACKET_END = UART_PACKET_END;
-    uart_packet.data_size_begin = sizeof(MPU6050_Data_Reg_t);
-    uart_packet.data_size_end = uart_packet.data_size_begin;
-
-    // TODO: read data to uart_packet.data directly
-    memcpy(&(uart_packet.data), data, sizeof(MPU6050_Data_Reg_t));
-
-    // send packet
-    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*)&uart_packet, sizeof(UART_Packet_t), 1000);
-
-
-    /*
-    HAL_StatusTypeDef status;
-
-    uint8_t start_byte = UART_PACKET_START;
-    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &start_byte, 1, 1000);
-
-    uint8_t size_begin = sizeof(MPU6050_Data_Reg_t);
-    status = HAL_UART_Transmit(&huart1, &size_begin, 1, 1000);
-
-    status = HAL_UART_Transmit(&huart1, (uint8_t*) data, sizeof(MPU6050_Data_Reg_t), 1000);
-
-    uint8_t size_end = sizeof(MPU6050_Data_Reg_t);
-    status = HAL_UART_Transmit(&huart1, &size_end, 1, 1000);
-
-    uint8_t end_byte = UART_PACKET_END;
-    status = HAL_UART_Transmit(&huart1, &end_byte, 1, 1000);
-    */
-
 }
 
 
@@ -182,6 +160,7 @@ void led_off();
 void led_hal();
 bool usart_send_str_ok(const char *input);
 void usart_send_str(const char *input);
+
 void mpu6050_read_to_struct(MPU6050_data_t* mpu6050data);
 void mpu6050_send_data_uart(MPU6050_data_t* mpu6050data);
 
@@ -190,7 +169,10 @@ void Get_Accel_Values();
 void Get_Accel_Angles();
 void Get_Gyro_Rates();
 
+void usart_wait_exec_loop();
 void mpu6050_loop();
+void send_motion_data(MPU6050_Data_Reg_t* data);
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -226,33 +208,12 @@ int main(void)
     while(!MPU6050_testConnection());
     MPU6050_initialize();
 
-    uint8_t rate = MPU6050_getRate();
-
     /* USER CODE END 2 */
 
     /* Infinite loop */
 
-    mpu6050_loop();
+    usart_wait_exec_loop();
 
-
-
-    MPU6050_Data_Reg_t data;
-    data.Accelerometer_X = 1;
-    data.Accelerometer_Y = 2;
-    data.Accelerometer_Z = 3;
-    data.Temperature = 4;
-    data.Gyroscope_X = 5;
-    data.Gyroscope_Y = 6;
-    data.Gyroscope_Z = 7;
-
-    while (1)
-    {
-        /* USER CODE BEGIN WHILE */
-        send_motion_data(&data);
-    	//HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, data.strbuf, sizeof(data.strbuf), 1000);
-        HAL_Delay(1000);
-        /* USER CODE END WHILE */
-    }
 
     /* USER CODE BEGIN 3 */
 
@@ -463,6 +424,8 @@ void usart_send_str(const char *input)
 {
     usart_send_str_ok(input);
 }
+
+
 void mpu6050_read_to_struct(MPU6050_data_t *mpu6050data)
 {
     mpu6050data->Accelerometer_X = MPU6050_getAccelerationX();
@@ -587,13 +550,63 @@ void Get_Gyro_Rates()
     GYRO_ZRATE = (float)GYRO_ZOUT/gyro_zsensitivity;
 }
 
+void usart_wait_exec_loop()
+{
+	while( 1 )
+	  {
+	      uint8_t byte = UART_COMMAND_NOT_RECEIVED;
+	      HAL_UART_Receive(&huart1, &byte, 1, 100);
+
+	      if(byte == UART_REQUEST_SEND_BYTE)
+	      {
+	          const uint8_t b = 25;
+	          HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &b, 1, 100);
+	          HAL_Delay(100);
+	      }
+	      else if(byte == UART_REQUEST_SEND_MPU6050_TEST_DATA)
+	      {
+	          MPU6050_Data_Reg_t data;
+	          data.Accelerometer_X = 1;
+	          data.Accelerometer_Y = 2;
+	          data.Accelerometer_Z = 3;
+	          data.Temperature = 4;
+	          data.Gyroscope_X = 5;
+	          data.Gyroscope_Y = 6;
+	          data.Gyroscope_Z = 7;
+
+	          HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&data, sizeof(data), 100);
+	          HAL_Delay(100);
+	      }
+	      else if(byte == UART_REQUEST_SEND_MPU6050_DATA)
+	      {
+	          MPU6050_Data_Reg_t data;
+	          data.Accelerometer_X = MPU6050_getAccelerationX();
+	          data.Accelerometer_Y = MPU6050_getAccelerationY();
+	          data.Accelerometer_Z = MPU6050_getAccelerationZ();
+	          data.Temperature = MPU6050_getTemperature();
+	          data.Gyroscope_X = MPU6050_getRotationX();
+	          data.Gyroscope_Y = MPU6050_getRotationY();
+	          data.Gyroscope_Z = MPU6050_getRotationZ();
+
+	          HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&data, sizeof(data), 100);
+	          HAL_Delay(100);
+	      }
+	      else if(byte == UART_REQUEST_SEND_MPU6050_PACKET)
+	      {
+	          MPU6050_getAllData(&motion_data);
+
+	          send_motion_data(&motion_data);
+	          HAL_Delay(100);
+	      }
+
+	  }
+}
 void mpu6050_loop()
 {
     //MPU6050_data_t mpu6050data = {0};
     //mpu6050_read_to_struct(&mpu6050data);
     //mpu6050_send_data_uart(&mpu6050data);
 
-	const char * str = "StrBuf!\0";
 	//Calibrate_Gyros();
 
     while (1)
@@ -602,14 +615,52 @@ void mpu6050_loop()
         //Get_Accel_Values();
         //Get_Accel_Angles();
         //Get_Gyro_Rates();
-
-
         MPU6050_getAllData(&motion_data);
         float temper	        = motion_data.Temperature/340 + 36.53;
+        if(temper < 16 || temper > 40)
+        {
+        	int a = 0;
+        }
         send_motion_data(&motion_data);
         HAL_Delay(100);
         /* USER CODE END WHILE */
     }
+
+
+}
+
+void send_motion_data(MPU6050_Data_Reg_t* data)
+{
+    // packet header and end should be already initialized
+	assert(uart_packet.PACKET_START == UART_PACKET_START);
+	assert(uart_packet.PACKET_END == UART_PACKET_END);
+	assert(uart_packet.data_size_begin == sizeof(MPU6050_Data_Reg_t));
+	assert(uart_packet.data_size_end == uart_packet.data_size_begin);
+
+
+	/*
+    // TODO: read data to uart_packet.data directly
+    memcpy(&(uart_packet.data), data, sizeof(MPU6050_Data_Reg_t));
+    // send packet
+    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*)&uart_packet, sizeof(UART_Packet_t), 1000);
+	*/
+
+
+    HAL_StatusTypeDef status;
+
+    uint8_t start_byte = UART_PACKET_START;
+    HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, &start_byte, 1, 1000);
+
+    uint8_t size_begin = sizeof(MPU6050_Data_Reg_t);
+    status = HAL_UART_Transmit(&huart1, &size_begin, 1, 1000);
+
+    status = HAL_UART_Transmit(&huart1, (uint8_t*) data, sizeof(MPU6050_Data_Reg_t), 1000);
+
+    uint8_t size_end = sizeof(MPU6050_Data_Reg_t);
+    status = HAL_UART_Transmit(&huart1, &size_end, 1, 1000);
+
+    uint8_t end_byte = UART_PACKET_END;
+    status = HAL_UART_Transmit(&huart1, &end_byte, 1, 1000);
 
 
 }
