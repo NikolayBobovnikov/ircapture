@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <boost/utility.hpp>
 #include <boost/asio.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 /**
  * Thrown if timeout occurs
@@ -35,7 +36,7 @@ public:
 /**
  * Serial port class, with timeout on read operations.
  */
-class TimeoutSerial: private boost::noncopyable
+class TimeoutSerial: private boost::noncopyable, public boost::enable_shared_from_this<TimeoutSerial>
 {
 public:
     TimeoutSerial();

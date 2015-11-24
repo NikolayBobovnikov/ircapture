@@ -55,8 +55,8 @@ int main(void)
      using namespace boost;
      try {
 
-        TimeoutSerial serial("COM3",115200);
-        serial.setTimeout(posix_time::seconds(10));
+        boost::shared_ptr<TimeoutSerial> serial (new TimeoutSerial("COM3",115200));
+        serial->setTimeout(posix_time::seconds(10));
 
         //Text test
         //serial.writeString("Hello world\n");
@@ -69,25 +69,35 @@ int main(void)
         UART_Packet_t packet;
         char buffer_packet[sizeof(UART_Packet_t)];
 
+        if(serial->isOpen())
+        {
+            cout<<"Serial is open"<<endl;
+        }
+        else
+        {
+            cout<<"Error: Serial is not open: "<<endl;
+            getchar();
+        }
 
         while(true)
         {
+            //serial.flush();
             command = UART_REQUEST_SEND_MPU6050_DATA;
-            serial.write((char*)&command, 10);
+            serial->write((char*)&command, 10);
 
             switch(command)
             {
                 case UART_REQUEST_SEND_BYTE:
                 {
                     uint8_t byte;
-                    serial.read((char*)&byte,1);
+                    serial->read((char*)&byte,1);
 
                     std::cout << std::to_string(byte) << "; ";
                     break;
                 }
                 case UART_REQUEST_SEND_MPU6050_TEST_DATA:
                 {
-                    serial.read(buffer_data,sizeof(buffer_data));
+                    serial->read(buffer_data,sizeof(buffer_data));
                     memcpy(&data, buffer_data, sizeof(data));
                     std::string result_str;
                     result_str += std::string   ("     A_X ") +
@@ -110,7 +120,7 @@ int main(void)
                 }
                 case UART_REQUEST_SEND_MPU6050_DATA:
                 {
-                    serial.read(buffer_data,sizeof(buffer_data));
+                    serial->read(buffer_data,sizeof(buffer_data));
                     memcpy(&data, buffer_data, sizeof(data));
 
                     std::string result_str;
@@ -134,7 +144,7 @@ int main(void)
                 }
                 case UART_REQUEST_SEND_MPU6050_PACKET:
                 {
-                    serial.read(buffer_packet,sizeof(buffer_packet));
+                    serial->read(buffer_packet,sizeof(buffer_packet));
                     memcpy(&packet, buffer_packet, sizeof(packet));
 
                     std::string result_str;
@@ -160,9 +170,11 @@ int main(void)
                 break;
             }
 
+            boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+
         }
 
-        serial.close();
+        serial->close();
 
      } catch(boost::system::system_error& e)
     {
