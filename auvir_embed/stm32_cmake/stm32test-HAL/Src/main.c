@@ -637,15 +637,13 @@ void send_motion_data(MPU6050_Data_Reg_t* data)
 	assert(uart_packet.data_size_begin == sizeof(MPU6050_Data_Reg_t));
 	assert(uart_packet.data_size_end == uart_packet.data_size_begin);
 
-
-	/*
     // TODO: read data to uart_packet.data directly
     memcpy(&(uart_packet.data), data, sizeof(MPU6050_Data_Reg_t));
     // send packet
     HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*)&uart_packet, sizeof(UART_Packet_t), 1000);
-	*/
 
 
+	/*
     HAL_StatusTypeDef status;
 
     uint8_t start_byte = UART_PACKET_START;
@@ -661,6 +659,7 @@ void send_motion_data(MPU6050_Data_Reg_t* data)
 
     uint8_t end_byte = UART_PACKET_END;
     status = HAL_UART_Transmit(&huart1, &end_byte, 1, 1000);
+    */
 
 
 }
