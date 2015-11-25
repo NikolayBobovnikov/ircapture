@@ -38,16 +38,18 @@
 #include <math.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
-
-//TODO: remove or turn off in release build
-#include "assert.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
+
+TIM_HandleTypeDef htim4;
+
 UART_HandleTypeDef huart1;
 
+/* USER CODE BEGIN PV */
+/* Private variables ---------------------------------------------------------*/
 typedef struct
 {
 	int16_t Accelerometer_X;
@@ -57,25 +59,14 @@ typedef struct
     int16_t Gyroscope_X;
     int16_t Gyroscope_Y;
     int16_t Gyroscope_Z;
-
+    uint32_t delta_time;
 } MPU6050_MotionData_t;
+
 
 static MPU6050_MotionData_t motion_data_struct;
 static uint8_t motion_data_buffer[sizeof(MPU6050_MotionData_t)];
 const size_t max_string_lengh = 127;
 
-
-void MPU6050_getAllData()
-{
-    I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 0);
-    motion_data_struct.Accelerometer_X = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
-    motion_data_struct.Accelerometer_Y = (((int16_t)motion_data_buffer[2]) << 8) | motion_data_buffer[3];
-    motion_data_struct.Accelerometer_Z = (((int16_t)motion_data_buffer[4]) << 8) | motion_data_buffer[5];
-    motion_data_struct.Temperature     = (((int16_t)motion_data_buffer[6]) << 8) | motion_data_buffer[7];
-    motion_data_struct.Gyroscope_X     = (((int16_t)motion_data_buffer[8]) << 8) | motion_data_buffer[9];
-    motion_data_struct.Gyroscope_Y     = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
-    motion_data_struct.Gyroscope_Z     = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
-}
 
 enum UART_Commands {
 	UART_COMMAND_NOT_RECEIVED = 0,
@@ -101,8 +92,7 @@ volatile float ACCEL_XANGLE;
 volatile float ACCEL_YANGLE;
 
 
-/* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
+
 #define LED_PIN GPIO_PIN_8
 #define LED_PORT GPIOC
 
@@ -113,6 +103,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
+static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
@@ -126,106 +117,106 @@ void led_off();
 void led_hal();
 bool usart_send_str_ok(const char *input);
 void usart_send_str(const char *input);
-
 void Calibrate_Gyros();
 void Get_Accel_Values();
 void Get_Accel_Angles();
 void Get_Gyro_Rates();
-
+void MPU6050_getAllData();
 void usart_wait_exec_loop();
-
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
-void main(void)
+int main(void)
 {
 
-    /* USER CODE BEGIN 1 */
-    /* USER CODE END 1 */
+  /* USER CODE BEGIN 1 */
 
-    /* MCU Configuration----------------------------------------------------------*/
+  /* USER CODE END 1 */
 
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-    HAL_Init();
+  /* MCU Configuration----------------------------------------------------------*/
 
-    /* Configure the system clock */
-    SystemClock_Config();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-    /* Initialize all configured peripherals */
-    MX_GPIO_Init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_USART1_UART_Init();
-    init_led_hal();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-    /* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
+  MX_TIM4_Init();
+  MX_USART1_UART_Init();
 
-    I2Cdev_hi2c = &hi2c1;
-    MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
-    while(!MPU6050_testConnection());
-    MPU6050_initialize();
+  /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim4);
 
-    /* USER CODE END 2 */
+  init_led_hal();
+  I2Cdev_hi2c = &hi2c1;
+  MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
+  while(!MPU6050_testConnection());
+  MPU6050_initialize();
+  /* USER CODE END 2 */
 
-    /* Infinite loop */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+  /* USER CODE END WHILE */
 
-    usart_wait_exec_loop();
+  /* USER CODE BEGIN 3 */
+	  usart_wait_exec_loop();
+  }
+  /* USER CODE END 3 */
 
-
-    /* USER CODE BEGIN 3 */
-
-    //mpu6050_all_routines();
-
-    /* USER CODE END 3 */
 }
-
 
 /** System Clock Configuration
 */
 void SystemClock_Config(void)
 {
 
-    RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = 16;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-    HAL_RCC_OscConfig(&RCC_OscInitStruct);
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
 
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-    /* SysTick_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* I2C1 init function */
 void MX_I2C1_Init(void)
 {
 
-    hi2c1.Instance = I2C1;
-    hi2c1.Init.ClockSpeed = 100000;
-    hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-    hi2c1.Init.OwnAddress1 = 0;
-    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-    hi2c1.Init.OwnAddress2 = 0;
-    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
-    HAL_I2C_Init(&hi2c1);
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
+  HAL_I2C_Init(&hi2c1);
 
 }
 
@@ -233,16 +224,39 @@ void MX_I2C1_Init(void)
 void MX_I2C2_Init(void)
 {
 
-    hi2c2.Instance = I2C2;
-    hi2c2.Init.ClockSpeed = 100000;
-    hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
-    hi2c2.Init.OwnAddress1 = 0;
-    hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-    hi2c2.Init.OwnAddress2 = 0;
-    hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-    hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
-    HAL_I2C_Init(&hi2c2);
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.ClockSpeed = 100000;
+  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
+  HAL_I2C_Init(&hi2c2);
+
+}
+
+/* TIM4 init function */
+void MX_TIM4_Init(void)
+{
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 24000;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 24000;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim4);
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
 }
 
@@ -250,21 +264,21 @@ void MX_I2C2_Init(void)
 void MX_USART1_UART_Init(void)
 {
 
-    huart1.Instance = USART1;
-    huart1.Init.BaudRate = 9600; //115200;
-    huart1.Init.WordLength = UART_WORDLENGTH_8B;
-    huart1.Init.StopBits = UART_STOPBITS_1;
-    huart1.Init.Parity = UART_PARITY_NONE;
-    huart1.Init.Mode = UART_MODE_TX_RX;
-    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-    HAL_UART_Init(&huart1);
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  HAL_UART_Init(&huart1);
 
 }
 
 /** Configure pins as 
-        * Analog
-        * Input
+        * Analog 
+        * Input 
         * Output
         * EVENT_OUT
         * EXTI
@@ -272,9 +286,9 @@ void MX_USART1_UART_Init(void)
 void MX_GPIO_Init(void)
 {
 
-    /* GPIO Ports Clock Enable */
-    __GPIOB_CLK_ENABLE();
-    __GPIOA_CLK_ENABLE();
+  /* GPIO Ports Clock Enable */
+  __GPIOB_CLK_ENABLE();
+  __GPIOA_CLK_ENABLE();
 
 }
 
@@ -475,6 +489,26 @@ void Get_Gyro_Rates()
     GYRO_ZRATE = (float)GYRO_ZOUT/gyro_zsensitivity;
 }
 
+void MPU6050_getAllData()
+{
+	// get new data
+    I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 0);
+    // get time of arrival and reset timer
+    //HAL_TIM_Base_Stop(&htim4);
+    __HAL_TIM_GET_COUNTER(&htim4);
+    motion_data_struct.delta_time = htim4.Instance->CNT;
+   // HAL_TIM_Base_Start(&htim4);
+    //__HAL_TIM_SET_COUNTER(&htim4, 0);
+
+    motion_data_struct.Accelerometer_X = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
+    motion_data_struct.Accelerometer_Y = (((int16_t)motion_data_buffer[2]) << 8) | motion_data_buffer[3];
+    motion_data_struct.Accelerometer_Z = (((int16_t)motion_data_buffer[4]) << 8) | motion_data_buffer[5];
+    motion_data_struct.Temperature     = (((int16_t)motion_data_buffer[6]) << 8) | motion_data_buffer[7];
+    motion_data_struct.Gyroscope_X     = (((int16_t)motion_data_buffer[8]) << 8) | motion_data_buffer[9];
+    motion_data_struct.Gyroscope_Y     = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
+    motion_data_struct.Gyroscope_Z     = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
+}
+
 void usart_wait_exec_loop()
 {
 	while( 1 )
@@ -526,10 +560,10 @@ void usart_wait_exec_loop()
    */
 void assert_failed(uint8_t* file, uint32_t line)
 {
-    /* USER CODE BEGIN 6 */
-    /* User can add his own implementation to report the file name and line number,
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-    /* USER CODE END 6 */
+  /* USER CODE END 6 */
 
 }
 
@@ -537,7 +571,7 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}

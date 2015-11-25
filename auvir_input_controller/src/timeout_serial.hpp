@@ -36,7 +36,7 @@ public:
 /**
  * Serial port class, with timeout on read operations.
  */
-class TimeoutSerial: private boost::noncopyable//, public boost::enable_shared_from_this<TimeoutSerial>
+class TimeoutSerial: private boost::noncopyable, public boost::enable_shared_from_this<TimeoutSerial>
 {
 public:
     TimeoutSerial();
