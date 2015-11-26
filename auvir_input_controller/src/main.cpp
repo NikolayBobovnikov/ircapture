@@ -84,9 +84,17 @@ enum UART_Commands {
     UART_NULL_RESPONSE
 };
 
+void clearscreen()
+{
+#ifdef __linux
+        std::system("clear");
+#elif  WIN32
+        std::system("cls");
+#endif
+}
 void construct_mpu6050_data_str(MPU6050_MotionData_t * mpu6050_motion_data)
 {
-    std::system("cls");
+    clearscreen();
     std::string result_str = "";
     // info
     result_str +=  "A_X: " + std::to_string(mpu6050_motion_data->Accelerometer_X  ) + "\n" +
@@ -102,7 +110,7 @@ void construct_mpu6050_data_str(MPU6050_MotionData_t * mpu6050_motion_data)
 }
 void construct_mpu6050_calib_data_str(MPU6050_CalibrationData_t * mpu6050_calib_data)
 {
-    system("cls");
+    clearscreen();
     std::string result_str = "";
     // info
     result_str += "mean_ax  : " + std::to_string(mpu6050_calib_data->mean_ax  ) + "\n" +
@@ -130,8 +138,12 @@ int main(void)
 {
     try {
 
-        //std::string port_name = "/dev/ttyUSB0";
-        std::string port_name = "COM3";
+        std::string port_name;
+#ifdef __linux
+        port_name = "/dev/ttyUSB0";
+#elif  WIN32
+        port_name = "COM3";
+#endif
         int baud_rate = 115200;
         boost::shared_ptr<TimeoutSerial> serial(new TimeoutSerial());
         serial->setTimeout(boost::posix_time::seconds(10));
@@ -157,9 +169,6 @@ int main(void)
         char response;
         MPU6050_MotionData_t data;
         MPU6050_CalibrationData_t calib_data;
-        char buffer_data[sizeof(MPU6050_MotionData_t)];
-        char buffer_calib_data[sizeof(MPU6050_CalibrationData_t)];
-
         // start clock
         auto time_start = std::chrono::high_resolution_clock::now();
 
@@ -234,9 +243,8 @@ int main(void)
                 }
                 if(UART_CONENCTION_OK == responce_byte)
                 {
-                    std::system("cls");
+                    clearscreen();
                     std::cout << "UART connection is OK" << std::endl;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
                 serial->setTimeout(boost::posix_time::seconds(10));
             }
@@ -261,15 +269,13 @@ int main(void)
                 // process result
                 if(UART_MPU6050_CONENCTION_OK == response)
                 {
-                    std::system("cls");
+                    clearscreen();
                     std::cout << "MPU6050 is connected" << std::endl;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
                 else
                 {
-                    std::system("cls");
+                    clearscreen();
                     std::cout << "MPU6050 is NOT connected" << std::endl;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
                 serial->setTimeout(boost::posix_time::seconds(10));
             }

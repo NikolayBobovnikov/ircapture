@@ -197,8 +197,8 @@ int main(void)
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
-        //usart_wait_exec_loop();
-    	mpu6050_loop();
+        usart_wait_exec_loop();
+        //mpu6050_loop();
     }
     /* USER CODE END 3 */
 
