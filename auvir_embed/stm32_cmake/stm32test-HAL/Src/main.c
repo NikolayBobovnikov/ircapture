@@ -52,8 +52,8 @@ UART_HandleTypeDef huart1;
 /* Private variables ---------------------------------------------------------*/
 typedef struct
 {
-	int16_t Accelerometer_X;
-	int16_t Accelerometer_Y;
+    int16_t Accelerometer_X;
+    int16_t Accelerometer_Y;
     int16_t Accelerometer_Z;
     int16_t Temperature;
     int16_t Gyroscope_X;
@@ -62,35 +62,58 @@ typedef struct
     uint32_t delta_time;
 } MPU6050_MotionData_t;
 
-
-static MPU6050_MotionData_t motion_data_struct;
-static uint8_t motion_data_buffer[sizeof(MPU6050_MotionData_t)];
-const size_t max_string_lengh = 127;
-
+typedef struct
+{
+    int mean_ax;
+    int mean_ay;
+    int mean_az;
+    int mean_gx;
+    int mean_gy;
+    int mean_gz;
+    int offset_ax;
+    int offset_ay;
+    int offset_az;
+    int offset_gx;
+    int offset_gy;
+    int offset_gz;
+} MPU6050_CalibrationData_t;
 
 enum UART_Commands {
-	UART_COMMAND_NOT_RECEIVED = 0,
+    UART_COMMAND_NOT_RECEIVED = 0,
     UART_REQUEST_SEND,
-	UART_REQUEST_STOP,
-	UART_REQUEST_SEND_BYTE,
-	UART_REQUEST_SEND_MPU6050_TEST_DATA,
-	UART_REQUEST_SEND_MPU6050_DATA,
-	UART_REQUEST_SEND_MPU6050_PACKET
+    UART_REQUEST_STOP,
+    UART_REQUEST_SEND_BYTE,
+    UART_REQUEST_SEND_MPU6050_TEST_DATA,
+    UART_REQUEST_SEND_MPU6050_DATA,
+    UART_REQUEST_CALIB_DATA,
+
+    UART_TEST_CONNECTION,			// request
+    UART_CONNECTION_FAILURE,
+    UART_CONENCTION_OK,
+
+    UART_MPU6050_TEST_CONNECTION,	// request
+    UART_MPU6050_CONENCTION_FAILURE,
+    UART_MPU6050_CONENCTION_OK,
+    UART_NULL_RESPONSE
 };
 
+static MPU6050_MotionData_t motion_data;
+static MPU6050_CalibrationData_t calibration_data;
+static uint8_t motion_data_buffer[sizeof(MPU6050_MotionData_t)];
+const size_t max_string_lengh = 127;
+static float angle_x = 0.0;
+static float angle_y = 0.0;
+static float angle_z = 0.0;
 
-volatile uint8_t GYRO_XOUT_OFFSET;
-volatile uint8_t GYRO_YOUT_OFFSET;
-volatile uint8_t GYRO_ZOUT_OFFSET;
-volatile uint8_t ACCEL_XOUT;
-volatile uint8_t ACCEL_YOUT;
-volatile uint8_t ACCEL_ZOUT;
-volatile uint8_t GYRO_XRATE;
-volatile uint8_t GYRO_YRATE;
-volatile uint8_t GYRO_ZRATE;
-volatile float ACCEL_XANGLE;
-volatile float ACCEL_YANGLE;
 
+//Change this 3 variables if you want to fine tune the skecth to your needs.
+static const int buffersize=200;     //Amount of readings used to average, make it higher to get more precision but sketch will be slower  (default:1000)
+static const int acel_deadzone=50;     //Acelerometer error allowed, make it lower to get more precision, but sketch may not converge  (default:8)
+static const int giro_deadzone=10;     //Giro error allowed, make it lower to get more precision, but sketch may not converge  (default:1)
+
+int16_t ax, ay, az,gx, gy, gz;
+int mean_ax,mean_ay,mean_az,mean_gx,mean_gy,mean_gz,state=0;
+int offset_ax,offset_ay,offset_az,offset_gx,offset_gy,offset_gz;
 
 
 #define LED_PIN GPIO_PIN_8
@@ -122,101 +145,103 @@ void Get_Accel_Values();
 void Get_Accel_Angles();
 void Get_Gyro_Rates();
 void MPU6050_getAllData();
+void MPU6050_process_data();
 void usart_wait_exec_loop();
+void meansensors();
+void calibration();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+    /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+    /* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+    /* MCU Configuration----------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    HAL_Init();
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /* Configure the system clock */
+    SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
-  MX_TIM4_Init();
-  MX_USART1_UART_Init();
+    /* Initialize all configured peripherals */
+    MX_GPIO_Init();
+    MX_I2C1_Init();
+    MX_I2C2_Init();
+    MX_TIM4_Init();
+    MX_USART1_UART_Init();
 
-  /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start(&htim4);
+    /* USER CODE BEGIN 2 */
+    HAL_TIM_Base_Start(&htim4);
 
-  init_led_hal();
-  I2Cdev_hi2c = &hi2c1;
-  MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
-  while(!MPU6050_testConnection());
-  MPU6050_initialize();
-  /* USER CODE END 2 */
+    init_led_hal();
+    I2Cdev_hi2c = &hi2c1;
+    MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
+    while(!MPU6050_testConnection());
+    MPU6050_initialize();
+    /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-  /* USER CODE END WHILE */
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
+    while (1)
+    {
+        /* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
-	  usart_wait_exec_loop();
-  }
-  /* USER CODE END 3 */
+        /* USER CODE BEGIN 3 */
+        usart_wait_exec_loop();
+    }
+    /* USER CODE END 3 */
 
 }
+
+/* USER CODE END 0 */
 
 /** System Clock Configuration
 */
 void SystemClock_Config(void)
 {
 
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+    RCC_OscInitTypeDef RCC_OscInitStruct;
+    RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSICalibrationValue = 16;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+    HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
 
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+    /* SysTick_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* I2C1 init function */
 void MX_I2C1_Init(void)
 {
 
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
-  HAL_I2C_Init(&hi2c1);
+    hi2c1.Instance = I2C1;
+    hi2c1.Init.ClockSpeed = 100000;
+    hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+    hi2c1.Init.OwnAddress1 = 0;
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+    hi2c1.Init.OwnAddress2 = 0;
+    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
+    HAL_I2C_Init(&hi2c1);
 
 }
 
@@ -224,16 +249,16 @@ void MX_I2C1_Init(void)
 void MX_I2C2_Init(void)
 {
 
-  hi2c2.Instance = I2C2;
-  hi2c2.Init.ClockSpeed = 100000;
-  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c2.Init.OwnAddress1 = 0;
-  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-  hi2c2.Init.OwnAddress2 = 0;
-  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
-  HAL_I2C_Init(&hi2c2);
+    hi2c2.Instance = I2C2;
+    hi2c2.Init.ClockSpeed = 100000;
+    hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+    hi2c2.Init.OwnAddress1 = 0;
+    hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+    hi2c2.Init.OwnAddress2 = 0;
+    hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+    hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
+    HAL_I2C_Init(&hi2c2);
 
 }
 
@@ -241,22 +266,22 @@ void MX_I2C2_Init(void)
 void MX_TIM4_Init(void)
 {
 
-  TIM_ClockConfigTypeDef sClockSourceConfig;
-  TIM_MasterConfigTypeDef sMasterConfig;
+    TIM_ClockConfigTypeDef sClockSourceConfig;
+    TIM_MasterConfigTypeDef sMasterConfig;
 
-  htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 24000;
-  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 24000;
-  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  HAL_TIM_Base_Init(&htim4);
+    htim4.Instance = TIM4;
+    htim4.Init.Prescaler = 24000;
+    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim4.Init.Period = 24000;
+    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    HAL_TIM_Base_Init(&htim4);
 
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
 }
 
@@ -264,21 +289,21 @@ void MX_TIM4_Init(void)
 void MX_USART1_UART_Init(void)
 {
 
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  HAL_UART_Init(&huart1);
+    huart1.Instance = USART1;
+    huart1.Init.BaudRate = 115200;
+    huart1.Init.WordLength = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits = UART_STOPBITS_1;
+    huart1.Init.Parity = UART_PARITY_NONE;
+    huart1.Init.Mode = UART_MODE_TX_RX;
+    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+    HAL_UART_Init(&huart1);
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -286,9 +311,9 @@ void MX_USART1_UART_Init(void)
 void MX_GPIO_Init(void)
 {
 
-  /* GPIO Ports Clock Enable */
-  __GPIOB_CLK_ENABLE();
-  __GPIOA_CLK_ENABLE();
+    /* GPIO Ports Clock Enable */
+    __GPIOB_CLK_ENABLE();
+    __GPIOA_CLK_ENABLE();
 
 }
 
@@ -307,14 +332,14 @@ void init_led_hal()
 }
 void init_led()
 {
-    //====================================
+    // = = = = = = = = = = = = = = = = = =
     // enable clock for gpio port C
-    //====================================
+    // = = = = = = = = = = = = = = = = = =
     RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 
-    //====================================
+    // = = = = = = = = = = = = = = = = = =
     // setup GPIO port C pin 8 for output
-    //====================================
+    // = = = = = = = = = = = = = = = = = =
     // output mode push-pull - by default
     // setup speed 2Mhz
     GPIOC->CRH &= (~GPIO_CRH_CNF8);
@@ -376,176 +401,282 @@ void init_uart()
     USART1->CR1 |= USART_CR1_TE;
 
 }
+
 bool usart_send_str_ok(const char *input)
 {
     char string[max_string_lengh + 1];
     strncpy(string, input, sizeof(string));   // copy input without exceeding the length of the destination
-    string[sizeof(string) - 1] = '\0';        // if strlen(input) == sizeof(str) then strncpy won't NUL terminate
+    string[sizeof(string) - 1] = '\0';        // if strlen(input) = sizeof(str) then strncpy won't NUL terminate
     size_t bytes_to_sent = strlen(string) + 1; // length of input string + 1 if it is less than max_string_lengh; max_string_lengh otherwise
 
     // TODO: study signed/unsigned conversion below
     HAL_StatusTypeDef trans = HAL_UART_Transmit(&huart1, (uint8_t*) string, bytes_to_sent, 1000);
-    if(trans == HAL_OK)
+    if(HAL_OK == trans)
     {
         return true;
     }
     return false;
 }
+
 void usart_send_str(const char *input)
 {
     usart_send_str_ok(input);
 }
 
-
-void Calibrate_Gyros()
-{
-    uint8_t GYRO_XOUT_H;
-    uint8_t GYRO_XOUT_L;
-    uint8_t GYRO_YOUT_H;
-    uint8_t GYRO_YOUT_L;
-    uint8_t GYRO_ZOUT_H;
-    uint8_t GYRO_ZOUT_L;
-    uint8_t GYRO_XOUT_OFFSET_1000SUM = 0;
-    uint8_t GYRO_YOUT_OFFSET_1000SUM = 0;
-    uint8_t GYRO_ZOUT_OFFSET_1000SUM = 0;
-
-    int x = 0;
-    for(x = 0; x<1000; x++)
-    {
-        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_XOUT_H, 1, &GYRO_XOUT_H, 1, 1000);
-        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_XOUT_L, 1, &GYRO_XOUT_L, 1, 1000);
-        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_YOUT_H, 1, &GYRO_YOUT_H, 1, 1000);
-        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_YOUT_L, 1, &GYRO_YOUT_L, 1, 1000);
-        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_ZOUT_H, 1, &GYRO_ZOUT_H, 1, 1000);
-        HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS << 1, MPU6050_RA_GYRO_ZOUT_L, 1, &GYRO_ZOUT_L, 1, 1000);
-
-        GYRO_XOUT_OFFSET_1000SUM += ((GYRO_XOUT_H<<8)|GYRO_XOUT_L);
-        GYRO_YOUT_OFFSET_1000SUM += ((GYRO_YOUT_H<<8)|GYRO_YOUT_L);
-        GYRO_ZOUT_OFFSET_1000SUM += ((GYRO_ZOUT_H<<8)|GYRO_ZOUT_L);
-
-        HAL_Delay(1);
-    }
-    GYRO_XOUT_OFFSET = GYRO_XOUT_OFFSET_1000SUM/1000;
-    GYRO_YOUT_OFFSET = GYRO_YOUT_OFFSET_1000SUM/1000;
-    GYRO_ZOUT_OFFSET = GYRO_ZOUT_OFFSET_1000SUM/1000;
-}
-
-//Gets raw accelerometer data, performs no processing
-void Get_Accel_Values()
-{
-    uint8_t ACCEL_XOUT_H;
-    uint8_t ACCEL_XOUT_L;
-    uint8_t ACCEL_YOUT_H;
-    uint8_t ACCEL_YOUT_L;
-    uint8_t ACCEL_ZOUT_H;
-    uint8_t ACCEL_ZOUT_L;
-
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_XOUT_H, 1, &ACCEL_XOUT_H, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_XOUT_L, 1, &ACCEL_XOUT_L, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_YOUT_H, 1, &ACCEL_YOUT_H, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_YOUT_L, 1, &ACCEL_YOUT_L, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_ZOUT_H, 1, &ACCEL_ZOUT_H, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_ZOUT_L, 1, &ACCEL_ZOUT_L, 1, 1000);
-
-    ACCEL_XOUT = ((ACCEL_XOUT_H<<8)|ACCEL_XOUT_L);
-    ACCEL_YOUT = ((ACCEL_YOUT_H<<8)|ACCEL_YOUT_L);
-    ACCEL_ZOUT = ((ACCEL_ZOUT_H<<8)|ACCEL_ZOUT_L);
-}
-
-//Converts the already acquired accelerometer data into 3D euler angles
-void Get_Accel_Angles()
-{
-    ACCEL_XANGLE = 57.295*atan((float)ACCEL_YOUT/ sqrt(pow((float)ACCEL_ZOUT,2)+pow((float)ACCEL_XOUT,2)));
-    ACCEL_YANGLE = 57.295*atan((float)-ACCEL_XOUT/ sqrt(pow((float)ACCEL_ZOUT,2)+pow((float)ACCEL_YOUT,2)));
-}
-
-//Function to read the gyroscope rate data and convert it into degrees/s
-void Get_Gyro_Rates()
-{
-    uint8_t GYRO_XOUT_H;
-    uint8_t GYRO_XOUT_L;
-    uint8_t GYRO_YOUT_H;
-    uint8_t GYRO_YOUT_L;
-    uint8_t GYRO_ZOUT_H;
-    uint8_t GYRO_ZOUT_L;
-
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_XOUT_H, 1, &GYRO_XOUT_H, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_XOUT_L, 1, &GYRO_XOUT_L, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_YOUT_H, 1, &GYRO_YOUT_H, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_YOUT_L, 1, &GYRO_YOUT_L, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_ZOUT_H, 1, &GYRO_ZOUT_H, 1, 1000);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_ZOUT_L, 1, &GYRO_ZOUT_L, 1, 1000);
-
-    uint8_t GYRO_XOUT = ((GYRO_XOUT_H<<8)|GYRO_XOUT_L) - GYRO_XOUT_OFFSET;
-    uint8_t GYRO_YOUT = ((GYRO_YOUT_H<<8)|GYRO_YOUT_L) - GYRO_YOUT_OFFSET;
-    uint8_t GYRO_ZOUT = ((GYRO_ZOUT_H<<8)|GYRO_ZOUT_L) - GYRO_ZOUT_OFFSET;
-
-
-    uint8_t gyro_xsensitivity = 131;
-    uint8_t gyro_ysensitivity = 131;
-    uint8_t gyro_zsensitivity = 131;
-    GYRO_XRATE = (float)GYRO_XOUT/gyro_xsensitivity;
-    GYRO_YRATE = (float)GYRO_YOUT/gyro_ysensitivity;
-    GYRO_ZRATE = (float)GYRO_ZOUT/gyro_zsensitivity;
-}
-
 void MPU6050_getAllData()
 {
-	// get new data
-    I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 0);
-    // get time of arrival and reset timer
-    //HAL_TIM_Base_Stop(&htim4);
-    __HAL_TIM_GET_COUNTER(&htim4);
-    motion_data_struct.delta_time = htim4.Instance->CNT;
-   // HAL_TIM_Base_Start(&htim4);
+    // get time of arrival
+    //motion_data.delta_time = __HAL_TIM_GET_COUNTER(&htim4);
+    // get new data
+    I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 1000);
+    // reset timer
     //__HAL_TIM_SET_COUNTER(&htim4, 0);
 
-    motion_data_struct.Accelerometer_X = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
-    motion_data_struct.Accelerometer_Y = (((int16_t)motion_data_buffer[2]) << 8) | motion_data_buffer[3];
-    motion_data_struct.Accelerometer_Z = (((int16_t)motion_data_buffer[4]) << 8) | motion_data_buffer[5];
-    motion_data_struct.Temperature     = (((int16_t)motion_data_buffer[6]) << 8) | motion_data_buffer[7];
-    motion_data_struct.Gyroscope_X     = (((int16_t)motion_data_buffer[8]) << 8) | motion_data_buffer[9];
-    motion_data_struct.Gyroscope_Y     = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
-    motion_data_struct.Gyroscope_Z     = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
+    //HAL_I2C_Master_Transmit(I2Cdev_hi2c, devAddr << 1, &regAddr, 1, tout);
+    //HAL_I2C_Master_Receive(I2Cdev_hi2c, devAddr << 1, motion_data_buffer, 14, tout);
+    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW << 1, MPU6050_RA_ACCEL_XOUT_H, 1, motion_data_buffer, 14, 1000);
+
+
+    motion_data.Accelerometer_X = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
+    motion_data.Accelerometer_Y = (((int16_t)motion_data_buffer[2]) << 8) | motion_data_buffer[3];
+    motion_data.Accelerometer_Z = (((int16_t)motion_data_buffer[4]) << 8) | motion_data_buffer[5];
+    motion_data.Temperature    = (((int16_t)motion_data_buffer[6]) << 8) | motion_data_buffer[7];
+    motion_data.Gyroscope_X    = (((int16_t)motion_data_buffer[8]) << 8) | motion_data_buffer[9];
+    motion_data.Gyroscope_Y    = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
+    motion_data.Gyroscope_Z    = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
+}
+
+void MPU6050_process_data()
+{
+    //x_acc = (float)(x_acc_ADC – x_acc_offset) * x_acc_scale;
+        //gyro = (float)(gyro_ADC – gyro_offset) * gyro_scale;
+        //angle = (0.98)*(angle + gyro * dt) + (0.02)*(x_acc);
+
+        //x_acc = (float)(x_acc_ADC – x_acc_offsetGYRO_XOUT_OFFSET) * x_acc_scale;
+        angle_x = (0.98)*(angle_x + motion_data.Gyroscope_X * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_X);
+        angle_y = (0.98)*(angle_x + motion_data.Gyroscope_X * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_X);
+        angle_z = (0.98)*(angle_x + motion_data.Gyroscope_X * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_X);
 }
 
 void usart_wait_exec_loop()
 {
-	while( 1 )
-	  {
-	      uint8_t byte = UART_COMMAND_NOT_RECEIVED;
-	      HAL_UART_Receive(&huart1, &byte, 1, 1000);
+	HAL_StatusTypeDef status;
+    while( 1 )
+    {
+    	//reset command
+    	uint8_t command = UART_COMMAND_NOT_RECEIVED;
+    	uint8_t response = UART_NULL_RESPONSE;
+    	status = HAL_UART_Receive(&huart1, &command, 1, 1000);
 
-          if(byte == UART_REQUEST_SEND_MPU6050_DATA )
-	      {
-              MPU6050_getAllData();
-              HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data_struct, sizeof(motion_data_struct), 1000);
-              if(status != HAL_OK)
-              {
-                  // TODO: process error
-              }
-	      }
-          else if(byte == UART_REQUEST_SEND_MPU6050_TEST_DATA )
-          {
-              motion_data_struct.Accelerometer_X = 1;
-              motion_data_struct.Accelerometer_Y = 2;
-              motion_data_struct.Accelerometer_Z = 3;
-              motion_data_struct.Temperature     = 4;
-              motion_data_struct.Gyroscope_X     = 5;
-              motion_data_struct.Gyroscope_Y     = 6;
-              motion_data_struct.Gyroscope_Z     = 7;
-              HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data_struct, sizeof(motion_data_struct), 1000);
-              if(status != HAL_OK)
-              {
-                  // TODO: process error
-              }
-          }
+        // if received command, dispatch it
+        if(status == HAL_OK && UART_COMMAND_NOT_RECEIVED != command)
+        {
+			if(UART_REQUEST_SEND_MPU6050_DATA == command)
+			{
+				MPU6050_getAllData();
+				HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
+				if(status != HAL_OK)
+				{
+					// TODO: process error
+				}
+			}
+			else if(UART_REQUEST_SEND_MPU6050_TEST_DATA == command)
+			{
+				motion_data.Accelerometer_X = 1;
+				motion_data.Accelerometer_Y = 2;
+				motion_data.Accelerometer_Z = 3;
+				motion_data.Temperature    = 4;
+				motion_data.Gyroscope_X    = 5;
+				motion_data.Gyroscope_Y    = 6;
+				motion_data.Gyroscope_Z    = 7;
+				status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
+			}
+			else if (UART_REQUEST_CALIB_DATA == command)
+			{
+				meansensors();
+				calibration();
+				meansensors();
 
+				calibration_data.mean_ax   = mean_ax;
+				calibration_data.mean_ay   = mean_ay;
+				calibration_data.mean_az   = mean_az;
+				calibration_data.mean_gx   = mean_gx;
+				calibration_data.mean_gy   = mean_gy;
+				calibration_data.mean_gz   = mean_gz;
+				calibration_data.offset_ax = offset_ax;
+				calibration_data.offset_ay = offset_ay;
+				calibration_data.offset_az = offset_az;
+				calibration_data.offset_gx = offset_gx;
+				calibration_data.offset_gy = offset_gy;
+				calibration_data.offset_gz = offset_gz;
 
+				status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
+			}
+			else if(UART_TEST_CONNECTION == command)
+			{
+				response = UART_CONENCTION_OK;
+				status = HAL_UART_Transmit(&huart1, &response, sizeof(response), 1000);
+			}
+			else if(UART_MPU6050_TEST_CONNECTION == command)
+			{
+				if(MPU6050_testConnection())
+				{
+					response = UART_MPU6050_CONENCTION_OK;
+				}
+				else
+				{
+					response = UART_MPU6050_CONENCTION_FAILURE;
+				}
+				status = HAL_UART_Transmit(&huart1, &response, sizeof(response), 1000);
+			}
 
-	  }
+			// Process error
+			if(status != HAL_OK)
+			{
+				// TODO: process error
+			}
+        }
+
+        //reset command
+        //byte = UART_COMMAND_NOT_RECEIVED
+    } // end while
 }
 
+void mpu6050_loop()
+{
+	HAL_StatusTypeDef status;
+    if (state==0)
+    {
+        usart_send_str("\nReading sensors for first time...\0");
+        meansensors();
+        state++;
+        HAL_Delay(1000);
+      }
+
+    if (state==1)
+      {
+        usart_send_str("\nCalculating offsets...\0");
+        calibration();
+        state++;
+        HAL_Delay(1000);
+      }
+
+    if (state==2)
+      {
+        meansensors();
+
+        while (1)
+        {
+        	calibration_data.mean_ax   = mean_ax;
+            calibration_data.mean_ay   = mean_ay;
+            calibration_data.mean_az   = mean_az;
+            calibration_data.mean_gx   = mean_gx;
+            calibration_data.mean_gy   = mean_gy;
+            calibration_data.mean_gz   = mean_gz;
+            calibration_data.offset_ax = offset_ax;
+            calibration_data.offset_ay = offset_ay;
+            calibration_data.offset_az = offset_az;
+            calibration_data.offset_gx = offset_gx;
+            calibration_data.offset_gy = offset_gy;
+            calibration_data.offset_gz = offset_gz;
+
+            status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
+            if(status != HAL_OK)
+        	{
+        	     // TODO: process error
+        	}
+            //MPU6050_getAllData();
+            //status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
+            if(status != HAL_OK)
+            {
+                // TODO: process error
+            }
+        }
+      }
+}
+
+void meansensors()
+{
+    long i = 0, buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
+
+    while (i<(buffersize+101))
+    {
+        // read raw accel/gyro measurements from device
+        MPU6050_getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+        if (i>100 && i<= (buffersize+100))
+        { //First 100 measures are discarded
+            buff_ax = buff_ax+ax;
+            buff_ay = buff_ay+ay;
+            buff_az = buff_az+az;
+            buff_gx = buff_gx+gx;
+            buff_gy = buff_gy+gy;
+            buff_gz = buff_gz+gz;
+        }
+        if (i == (buffersize+100))
+        {
+            mean_ax = buff_ax/buffersize;
+            mean_ay = buff_ay/buffersize;
+            mean_az = buff_az/buffersize;
+            mean_gx = buff_gx/buffersize;
+            mean_gy = buff_gy/buffersize;
+            mean_gz = buff_gz/buffersize;
+        }
+        i++;
+        HAL_Delay(2); //Needed so we don't get repeated measures
+    }
+}
+
+void calibration()
+{
+    offset_ax = -mean_ax/8;
+    offset_ay = -mean_ay/8;
+    offset_az = (16384-mean_az)/8;
+
+    offset_gx = -mean_gx/4;
+    offset_gy = -mean_gy/4;
+    offset_gz = -mean_gz/4;
+
+    int iter_numer = 100;
+    while (iter_numer-- != 0)
+    {
+        int ready = 0;
+        MPU6050_setXAccelOffset(offset_ax);
+        MPU6050_setYAccelOffset(offset_ay);
+        MPU6050_setZAccelOffset(offset_az);
+
+        MPU6050_setXGyroOffset(offset_gx);
+        MPU6050_setYGyroOffset(offset_gy);
+        MPU6050_setZGyroOffset(offset_gz);
+
+        meansensors();
+
+        if (abs(mean_ax)<= acel_deadzone) ready++;
+        else offset_ax = offset_ax-mean_ax/acel_deadzone;
+
+        if (abs(mean_ay)<= acel_deadzone) ready++;
+        else offset_ay = offset_ay-mean_ay/acel_deadzone;
+
+        if (abs(16384-mean_az)<= acel_deadzone) ready++;
+        else offset_az = offset_az+(16384-mean_az)/acel_deadzone;
+
+        if (abs(mean_gx)<= giro_deadzone) ready++;
+        else offset_gx = offset_gx-mean_gx/(giro_deadzone+1);
+
+        if (abs(mean_gy)<= giro_deadzone) ready++;
+        else offset_gy = offset_gy-mean_gy/(giro_deadzone+1);
+
+        if (abs(mean_gz)<= giro_deadzone) ready++;
+        else offset_gz = offset_gz-mean_gz/(giro_deadzone+1);
+
+        if (ready == 6) break;
+
+        if(true == iter_numer)
+        {
+        	int about_to_exceed_tries = 0;
+        }
+    }
+}
 
 /* USER CODE END 4 */
 
@@ -560,10 +691,10 @@ void usart_wait_exec_loop()
    */
 void assert_failed(uint8_t* file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+    /* USER CODE BEGIN 6 */
+    /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 
 }
 
@@ -571,10 +702,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
