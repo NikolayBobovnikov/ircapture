@@ -74,14 +74,14 @@ typedef struct
     int var_ay;
     int var_az;
     int var_gx;
-    int var_gy; 
+    int var_gy;
     int var_gz;
-    int offset_ax;
-    int offset_ay;
-    int offset_az;
-    int offset_gx;
-    int offset_gy;
-    int offset_gz;
+    int16_t offset_ax;
+    int16_t offset_ay;
+    int16_t offset_az;
+    int16_t offset_gx;
+    int16_t offset_gy;
+    int16_t offset_gz;
 } MPU6050_CalibrationData_t;
 
 enum UART_Commands {
@@ -113,9 +113,9 @@ static float angle_z = 0.0;
 
 
 //Change this 3 variables if you want to fine tune the skecth to your needs.
-static const int buffersize=200;     //Amount of readings used to average, make it higher to get more precision but sketch will be slower  (default:1000)
+static const int number_of_samples=200;     //Amount of readings used to average, make it higher to get more precision but sketch will be slower  (default:1000)
 static const int acel_deadzone=50;     //Acelerometer error allowed, make it lower to get more precision, but sketch may not converge  (default:8)
-static const int giro_deadzone=10;     //Giro error allowed, make it lower to get more precision, but sketch may not converge  (default:1)
+static const int gyro_deadzone=10;     //Giro error allowed, make it lower to get more precision, but sketch may not converge  (default:1)
 
 static int16_t ax, ay, az,gx, gy, gz;
 static int state=0;
@@ -145,13 +145,11 @@ void led_off();
 void led_hal();
 bool usart_send_str_ok(const char *input);
 void usart_send_str(const char *input);
-void Calibrate_Gyros();
-void Get_Accel_Values();
-void Get_Accel_Angles();
-void Get_Gyro_Rates();
+int ipow(int base, int exp);
 void MPU6050_getAllData();
 void MPU6050_process_data();
 void usart_wait_exec_loop();
+void mpu6050_loop();
 void meansensors();
 void calibration();
 /* USER CODE END PFP */
@@ -190,7 +188,7 @@ int main(void)
     bool connected = MPU6050_testConnection();
     while(!MPU6050_testConnection());
     MPU6050_initialize();
-    /* USER CODE END 2 */
+    /* USER CODE ENDint ipow(int a, int b); 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
@@ -410,7 +408,6 @@ void init_uart()
     USART1->CR1 |= USART_CR1_TE;
 
 }
-
 bool usart_send_str_ok(const char *input)
 {
     char string[max_string_lengh + 1];
@@ -426,12 +423,23 @@ bool usart_send_str_ok(const char *input)
     }
     return false;
 }
-
 void usart_send_str(const char *input)
 {
     usart_send_str_ok(input);
 }
+int ipow(int base, int exp)
+{
+    int result = 1;
+    while (exp)
+    {
+        if (exp & 1)
+            result *= base;
+        exp >>= 1;
+        base *= base;
+    }
 
+    return result;
+}
 void MPU6050_getAllData()
 {
     // get time of arrival
@@ -574,49 +582,99 @@ void mpu6050_loop()
 void meansensors()
 {
     long i = 0, buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
+    int j = 0; // supplementary index
 
-    while (i<(buffersize+101))
+    // array of samples, each sample - array of values
+    uint8_t sample_array[number_of_samples][sizeof(MPU6050_MotionData_t)];
+
+    // collect data
+    HAL_Delay(200);
+    for (i = 0; i < number_of_samples; i++)
     {
-        // read raw accel/gyro measurements from device
-        MPU6050_getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
-        if (i>100 && i<= (buffersize+100))
-        { //First 100 measures are discarded
-            buff_ax = buff_ax+ax;
-            buff_ay = buff_ay+ay;
-            buff_az = buff_az+az;
-            buff_gx = buff_gx+gx;
-            buff_gy = buff_gy+gy;
-            buff_gz = buff_gz+gz;
-            calibration_data.var_ax = (calibration_data.var_ax + abs(buff_ax - ax))/i;
-            calibration_data.var_ay = (calibration_data.var_ay + abs(buff_ay - ay))/i;
-            calibration_data.var_az = (calibration_data.var_az + abs(buff_az - az))/i;
-            calibration_data.var_gx = (calibration_data.var_gx + abs(buff_gx - gx))/i;
-            calibration_data.var_gy = (calibration_data.var_gy + abs(buff_gy - gy))/i;
-            calibration_data.var_gz = (calibration_data.var_gz + abs(buff_gz - gz))/i;
-        }
-        if (i == (buffersize+100))
-        {
-            calibration_data.mean_ax = buff_ax/buffersize;
-            calibration_data.mean_ay = buff_ay/buffersize;
-            calibration_data.mean_az = buff_az/buffersize;
-            calibration_data.mean_gx = buff_gx/buffersize;
-            calibration_data.mean_gy = buff_gy/buffersize;
-            calibration_data.mean_gz = buff_gz/buffersize;
-        }
-        i++;
-        HAL_Delay(2); //Needed so we don't get repeated measures
+        I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, &(sample_array[i])[0], 100);
+        HAL_Delay(2);// Wait so that not get repeated samples
     }
+
+    // calculate mean
+    for (i = 0; i < number_of_samples; i++)
+    {
+        ax = (((int16_t)sample_array[i][0]) << 8) | sample_array[i][1];
+        ay = (((int16_t)sample_array[i][2]) << 8) | sample_array[i][3];
+        az = (((int16_t)sample_array[i][4]) << 8) | sample_array[i][5];
+        gx = (((int16_t)sample_array[i][8]) << 8) | sample_array[i][9];
+        gy = (((int16_t)sample_array[i][10])<< 8) | sample_array[i][11];
+        gz = (((int16_t)sample_array[i][12])<< 8) | sample_array[i][13];
+
+        buff_ax = buff_ax + ax;
+        buff_ay = buff_ay + ay;
+        buff_az = buff_az + az;
+        buff_gx = buff_gx + gx;
+        buff_gy = buff_gy + gy;
+        buff_gz = buff_gz + gz;
+
+        if (i == number_of_samples - 1)
+        {
+            calibration_data.mean_ax = buff_ax/number_of_samples;
+            calibration_data.mean_ay = buff_ay/number_of_samples;
+            calibration_data.mean_az = buff_az/number_of_samples;
+            calibration_data.mean_gx = buff_gx/number_of_samples;
+            calibration_data.mean_gy = buff_gy/number_of_samples;
+            calibration_data.mean_gz = buff_gz/number_of_samples;
+        }
+    }
+
+    // calculate variance
+    int squared_var_ax = 0;
+    int squared_var_ay = 0;
+    int squared_var_az = 0;
+    int squared_var_gx = 0;
+    int squared_var_gy = 0;
+    int squared_var_gz = 0;
+
+    for (i = 0; i < number_of_samples; i++)
+    {
+        ax = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
+        ay = (((int16_t)motion_data_buffer[2]) << 8) | motion_data_buffer[3];
+        az = (((int16_t)motion_data_buffer[4]) << 8) | motion_data_buffer[5];
+        gx = (((int16_t)motion_data_buffer[8]) << 8) | motion_data_buffer[9];
+        gy = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
+        gz = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
+
+        squared_var_ax = squared_var_ax + ipow((calibration_data.mean_ax - ax), 2);
+        squared_var_ay = squared_var_ay + ipow((calibration_data.mean_ay - ay), 2);
+        squared_var_az = squared_var_az + ipow((calibration_data.mean_az - az), 2);
+        squared_var_gx = squared_var_gx + ipow((calibration_data.mean_gx - gx), 2);
+        squared_var_gy = squared_var_gy + ipow((calibration_data.mean_gy - gy), 2);
+        squared_var_gz = squared_var_gz + ipow((calibration_data.mean_gz - gz), 2);
+
+        if (i == number_of_samples - 1)
+        {
+            calibration_data.var_ax = sqrt(squared_var_ax);
+            calibration_data.var_ay = sqrt(squared_var_ay);
+            calibration_data.var_az = sqrt(squared_var_az);
+            calibration_data.var_gx = sqrt(squared_var_gx);
+            calibration_data.var_gy = sqrt(squared_var_gy);
+            calibration_data.var_gz = sqrt(squared_var_gz);
+        }
+    }
+
 }
 
 void calibration()
 {
-    calibration_data.offset_ax =        -calibration_data.mean_ax /8;
-    calibration_data.offset_ay =        -calibration_data.mean_ay /8;
-    calibration_data.offset_az = (16384 -calibration_data.mean_az)/8;
-    calibration_data.offset_gx =        -calibration_data.mean_gx /4;
-    calibration_data.offset_gy =        -calibration_data.mean_gy /4;
-    calibration_data.offset_gz =        -calibration_data.mean_gz /4;
+    calibration_data.offset_ax = calibration_data.mean_ax / acel_deadzone;
+    calibration_data.offset_ay = calibration_data.mean_ay / acel_deadzone;
+    calibration_data.offset_az = calibration_data.mean_az / acel_deadzone - 16384;//16384
+    calibration_data.offset_gx = calibration_data.mean_gx / gyro_deadzone;
+    calibration_data.offset_gy = calibration_data.mean_gy / gyro_deadzone;
+    calibration_data.offset_gz = calibration_data.mean_gz / gyro_deadzone;
+
+    int mean_ax_prev = 0;
+    int mean_ay_prev = 0;
+    int mean_az_prev = 0;
+    int mean_gx_prev = 0;
+    int mean_gy_prev = 0;
+    int mean_gz_prev = 0;
 
     int iter_numer = 10;
     while (iter_numer-- != 0)
@@ -629,25 +687,101 @@ void calibration()
         MPU6050_setYGyroOffset (calibration_data.offset_gy);
         MPU6050_setZGyroOffset (calibration_data.offset_gz);
 
+        mean_ax_prev = calibration_data.offset_ax;
+        mean_ay_prev = calibration_data.offset_ay;
+        mean_az_prev = calibration_data.offset_az;
+        mean_gx_prev = calibration_data.offset_gx;
+        mean_gy_prev = calibration_data.offset_gy;
+        mean_gz_prev = calibration_data.offset_gz;
+
         meansensors();
 
         if (abs(calibration_data.mean_ax)<= acel_deadzone) ready++ ;
-        else calibration_data.offset_ax = calibration_data.offset_ax - calibration_data.mean_ax / acel_deadzone;
+        else
+        {
+            if (calibration_data.mean_ax < mean_ax_prev)
+            {
+                calibration_data.offset_ax = calibration_data.offset_ax + calibration_data.mean_ax / acel_deadzone;
+            }
+            else
+            {
+                calibration_data.offset_ax = calibration_data.offset_ax - calibration_data.mean_ax / acel_deadzone;
+            }
+            mean_ax_prev = calibration_data.mean_ax;
+        }
 
         if (abs(calibration_data.mean_ay)<= acel_deadzone) ready++ ;
-        else calibration_data.offset_ay = calibration_data.offset_ay - calibration_data.mean_ay / acel_deadzone;
+        else
+        {
+            //calibration_data.offset_ay = calibration_data.offset_ay - calibration_data.mean_ay / acel_deadzone;
+            if (calibration_data.mean_ay < mean_ay_prev)
+            {
+                calibration_data.offset_ay = calibration_data.offset_ay + calibration_data.mean_ay / acel_deadzone;
+            }
+            else
+            {
+                calibration_data.offset_ay = calibration_data.offset_ay - calibration_data.mean_ay / acel_deadzone;
+            }
+            mean_ay_prev = calibration_data.mean_ay;
+        }
+
 
         if (abs(16384 - calibration_data.mean_az)<= acel_deadzone) ready++ ;
-        else calibration_data.offset_az = calibration_data.offset_az + (16384 - calibration_data.mean_az) / acel_deadzone;
+        else
+        {
+            //calibration_data.offset_az = calibration_data.offset_az + (16384 - calibration_data.mean_az) / acel_deadzone;
+            if (calibration_data.mean_az < mean_az_prev)
+            {
+                calibration_data.offset_az = calibration_data.offset_az + (calibration_data.mean_az - 16384) / acel_deadzone;
+            }
+            else
+            {
+                calibration_data.offset_az = calibration_data.offset_az - (calibration_data.mean_az - 16384) / acel_deadzone;
+            }
+            mean_az_prev = calibration_data.mean_az;
+        }
 
-        if (abs(calibration_data.mean_gx)<= giro_deadzone) ready++ ;
-        else calibration_data.offset_gx = calibration_data.offset_gx - calibration_data.mean_gx / (giro_deadzone + 1);
+        if (abs(calibration_data.mean_gx)<= gyro_deadzone) ready++ ;
+        else
+        {
+            if (calibration_data.mean_gx < mean_gx_prev)
+            {
+                calibration_data.offset_gx = calibration_data.offset_gx + calibration_data.mean_gx / gyro_deadzone;
+            }
+            else
+            {
+                calibration_data.offset_gx = calibration_data.offset_gx - calibration_data.mean_gx / gyro_deadzone;
+            }
+            mean_gx_prev = calibration_data.mean_gx;
+        }
 
-        if (abs(calibration_data.mean_gy)<= giro_deadzone) ready++ ;
-        else calibration_data.offset_gy = calibration_data.offset_gy - calibration_data.mean_gy / (giro_deadzone + 1);
+        if (abs(calibration_data.mean_gy)<= gyro_deadzone) ready++ ;
+        else
+        {
+            if (calibration_data.mean_gy < mean_gy_prev)
+            {
+                calibration_data.offset_gy = calibration_data.offset_gy + calibration_data.mean_gy / gyro_deadzone;
+            }
+            else
+            {
+                calibration_data.offset_gy = calibration_data.offset_gy - calibration_data.mean_gy / gyro_deadzone;
+            }
+            mean_gy_prev = calibration_data.mean_gy;
+        }
 
-        if (abs(calibration_data.mean_gz)<= giro_deadzone) ready++ ;
-        else calibration_data.offset_gz = calibration_data.offset_gz - calibration_data.mean_gz / (giro_deadzone + 1);
+        if (abs(calibration_data.mean_gz)<= gyro_deadzone) ready++ ;
+        else
+        {
+            if (calibration_data.mean_gz < mean_gz_prev)
+            {
+                calibration_data.offset_gz = calibration_data.offset_gz + calibration_data.mean_gz / gyro_deadzone;
+            }
+            else
+            {
+                calibration_data.offset_gz = calibration_data.offset_gz - calibration_data.mean_gz / gyro_deadzone;
+            }
+            mean_gz_prev = calibration_data.mean_gz;
+        }
 
         if (ready == 6) break;
 
