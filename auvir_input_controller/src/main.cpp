@@ -44,12 +44,18 @@ typedef struct
 
 typedef struct
 {
-    int mean_ax  ;
-    int mean_ay  ;
-    int mean_az  ;
-    int mean_gx  ;
-    int mean_gy  ;
-    int mean_gz  ;
+    int mean_ax;
+    int mean_ay;
+    int mean_az;
+    int mean_gx;
+    int mean_gy;
+    int mean_gz;
+    int var_ax;
+    int var_ay;
+    int var_az;
+    int var_gx;
+    int var_gy;
+    int var_gz;
     int offset_ax;
     int offset_ay;
     int offset_az;
@@ -65,6 +71,7 @@ enum UART_Commands {
     UART_REQUEST_SEND_BYTE,
     UART_REQUEST_SEND_MPU6050_TEST_DATA,
     UART_REQUEST_SEND_MPU6050_DATA,
+
     UART_REQUEST_CALIB_DATA,
 
     UART_TEST_CONNECTION,			// request
@@ -91,7 +98,6 @@ void construct_mpu6050_data_str(MPU6050_MotionData_t * mpu6050_motion_data)
             "G_Z: " + std::to_string(mpu6050_motion_data->Gyroscope_Z      ) + "\n" +
             "dt:  " + std::to_string(mpu6050_motion_data->delta_time      );
 
-    std::system("cls");
     std::cout << result_str << std::endl;
 }
 void construct_mpu6050_calib_data_str(MPU6050_CalibrationData_t * mpu6050_calib_data)
@@ -99,21 +105,24 @@ void construct_mpu6050_calib_data_str(MPU6050_CalibrationData_t * mpu6050_calib_
     system("cls");
     std::string result_str = "";
     // info
-    result_str +=   "mean_ax  : " + std::to_string(mpu6050_calib_data->mean_ax    ) + "\n" +
-            "mean_ay  : " + std::to_string(mpu6050_calib_data->mean_ay    ) + "\n" +
-            "mean_az  : " + std::to_string(mpu6050_calib_data->mean_az    ) + "\n" +
-            "mean_gx  : " + std::to_string(mpu6050_calib_data->mean_gx    ) + "\n" +
-            "mean_gy  : " + std::to_string(mpu6050_calib_data->mean_gy    ) + "\n" +
-            "mean_gz  : " + std::to_string(mpu6050_calib_data->mean_gz    ) + "\n" +
-            "offset_ax: " + std::to_string(mpu6050_calib_data->offset_ax  ) + "\n" +
-            "offset_ay: " + std::to_string(mpu6050_calib_data->offset_ay  ) + "\n" +
-            "offset_az: " + std::to_string(mpu6050_calib_data->offset_az  ) + "\n" +
-            "offset_gx: " + std::to_string(mpu6050_calib_data->offset_gx  ) + "\n" +
-            "offset_gy: " + std::to_string(mpu6050_calib_data->offset_gy  ) + "\n" +
-            "offset_gz: " + std::to_string(mpu6050_calib_data->offset_gz  ) + "\n";
-
-
-    std::system("cls");
+    result_str += "mean_ax  : " + std::to_string(mpu6050_calib_data->mean_ax  ) + "\n" +
+                  "mean_ay  : " + std::to_string(mpu6050_calib_data->mean_ay  ) + "\n" +
+                  "mean_az  : " + std::to_string(mpu6050_calib_data->mean_az  ) + "\n" +
+                  "mean_gx  : " + std::to_string(mpu6050_calib_data->mean_gx  ) + "\n" +
+                  "mean_gy  : " + std::to_string(mpu6050_calib_data->mean_gy  ) + "\n" +
+                  "mean_gz  : " + std::to_string(mpu6050_calib_data->mean_gz  ) + "\n" +
+                  "var_ax : " + std::to_string(mpu6050_calib_data->var_ax ) + "\n" +
+                  "var_ay : " + std::to_string(mpu6050_calib_data->var_ay ) + "\n" +
+                  "var_az : " + std::to_string(mpu6050_calib_data->var_az ) + "\n" +
+                  "var_gx : " + std::to_string(mpu6050_calib_data->var_gx ) + "\n" +
+                  "var_gy : " + std::to_string(mpu6050_calib_data->var_gy ) + "\n" +
+                  "var_gz : " + std::to_string(mpu6050_calib_data->var_gz ) + "\n" +
+                  "offset_ax: " + std::to_string(mpu6050_calib_data->offset_ax) + "\n" +
+                  "offset_ay: " + std::to_string(mpu6050_calib_data->offset_ay) + "\n" +
+                  "offset_az: " + std::to_string(mpu6050_calib_data->offset_az) + "\n" +
+                  "offset_gx: " + std::to_string(mpu6050_calib_data->offset_gx) + "\n" +
+                  "offset_gy: " + std::to_string(mpu6050_calib_data->offset_gy) + "\n" +
+                  "offset_gz: " + std::to_string(mpu6050_calib_data->offset_gz) + "\n";
     std::cout << result_str << std::endl;
 }
 
@@ -156,7 +165,7 @@ int main(void)
 
         while(serial->isOpen())
         {
-            command = UART_REQUEST_SEND_MPU6050_DATA;//UART_REQUEST_CALIB_DATA;
+            command = UART_REQUEST_CALIB_DATA;//UART_REQUEST_CALIB_DATA;
             response = UART_NULL_RESPONSE;
             size_t command_size = sizeof(command);
 
@@ -166,9 +175,6 @@ int main(void)
             {
                 try
                 {
-                    //serial->read(buffer_data,sizeof(buffer_data));
-                    //memcpy(&data, buffer_data, sizeof(data));
-
                     serial->read((char*)&data, sizeof(data));
                 }
                 catch(...)
@@ -183,7 +189,6 @@ int main(void)
                     break;
                 }
                 construct_mpu6050_data_str(&data);
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
             else if(UART_REQUEST_CALIB_DATA == command)
             {
@@ -191,7 +196,7 @@ int main(void)
 
                 try
                 {
-                    serial->read(buffer_calib_data,sizeof(buffer_calib_data));
+                    serial->read((char *)&calib_data,sizeof(calib_data));
                 }
                 catch(...)
                 {
@@ -205,7 +210,6 @@ int main(void)
                     std::cout << "Error during reading from serial. " << std::endl;
                 }
 
-                memcpy(&calib_data, buffer_calib_data, sizeof(calib_data));
                 construct_mpu6050_calib_data_str(&calib_data);
                 serial->setTimeout(boost::posix_time::seconds(10));
             }

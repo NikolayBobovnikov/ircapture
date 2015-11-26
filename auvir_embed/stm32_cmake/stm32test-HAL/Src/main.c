@@ -70,6 +70,12 @@ typedef struct
     int mean_gx;
     int mean_gy;
     int mean_gz;
+    int var_ax;
+    int var_ay;
+    int var_az;
+    int var_gx;
+    int var_gy; 
+    int var_gz;
     int offset_ax;
     int offset_ay;
     int offset_az;
@@ -111,9 +117,8 @@ static const int buffersize=200;     //Amount of readings used to average, make 
 static const int acel_deadzone=50;     //Acelerometer error allowed, make it lower to get more precision, but sketch may not converge  (default:8)
 static const int giro_deadzone=10;     //Giro error allowed, make it lower to get more precision, but sketch may not converge  (default:1)
 
-int16_t ax, ay, az,gx, gy, gz;
-int mean_ax,mean_ay,mean_az,mean_gx,mean_gy,mean_gz,state=0;
-int offset_ax,offset_ay,offset_az,offset_gx,offset_gy,offset_gz;
+static int16_t ax, ay, az,gx, gy, gz;
+static int state=0;
 
 
 #define LED_PIN GPIO_PIN_8
@@ -178,8 +183,11 @@ int main(void)
     HAL_TIM_Base_Start(&htim4);
 
     init_led_hal();
+
     I2Cdev_hi2c = &hi2c1;
     MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
+    MPU6050_reset();
+    bool connected = MPU6050_testConnection();
     while(!MPU6050_testConnection());
     MPU6050_initialize();
     /* USER CODE END 2 */
@@ -191,7 +199,8 @@ int main(void)
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
-        usart_wait_exec_loop();
+        //usart_wait_exec_loop();
+    	mpu6050_loop();
     }
     /* USER CODE END 3 */
 
@@ -426,15 +435,15 @@ void usart_send_str(const char *input)
 void MPU6050_getAllData()
 {
     // get time of arrival
-    //motion_data.delta_time = __HAL_TIM_GET_COUNTER(&htim4);
+    motion_data.delta_time = __HAL_TIM_GET_COUNTER(&htim4);
     // get new data
     I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 1000);
     // reset timer
-    //__HAL_TIM_SET_COUNTER(&htim4, 0);
+    __HAL_TIM_SET_COUNTER(&htim4, 0);
 
     //HAL_I2C_Master_Transmit(I2Cdev_hi2c, devAddr << 1, &regAddr, 1, tout);
     //HAL_I2C_Master_Receive(I2Cdev_hi2c, devAddr << 1, motion_data_buffer, 14, tout);
-    HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW << 1, MPU6050_RA_ACCEL_XOUT_H, 1, motion_data_buffer, 14, 1000);
+    //HAL_StatusTypeDef status = HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW << 1, MPU6050_RA_ACCEL_XOUT_H, 1, motion_data_buffer, 14, 1000);
 
 
     motion_data.Accelerometer_X = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
@@ -496,20 +505,7 @@ void usart_wait_exec_loop()
 				meansensors();
 				calibration();
 				meansensors();
-
-				calibration_data.mean_ax   = mean_ax;
-				calibration_data.mean_ay   = mean_ay;
-				calibration_data.mean_az   = mean_az;
-				calibration_data.mean_gx   = mean_gx;
-				calibration_data.mean_gy   = mean_gy;
-				calibration_data.mean_gz   = mean_gz;
-				calibration_data.offset_ax = offset_ax;
-				calibration_data.offset_ay = offset_ay;
-				calibration_data.offset_az = offset_az;
-				calibration_data.offset_gx = offset_gx;
-				calibration_data.offset_gy = offset_gy;
-				calibration_data.offset_gz = offset_gz;
-
+          
 				status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
 			}
 			else if(UART_TEST_CONNECTION == command)
@@ -547,7 +543,7 @@ void mpu6050_loop()
 	HAL_StatusTypeDef status;
     if (state==0)
     {
-        usart_send_str("\nReading sensors for first time...\0");
+        //usart_send_str("\nReading sensors for first time...\0");
         meansensors();
         state++;
         HAL_Delay(1000);
@@ -555,7 +551,7 @@ void mpu6050_loop()
 
     if (state==1)
       {
-        usart_send_str("\nCalculating offsets...\0");
+        //usart_send_str("\nCalculating offsets...\0");
         calibration();
         state++;
         HAL_Delay(1000);
@@ -565,33 +561,13 @@ void mpu6050_loop()
       {
         meansensors();
 
-        while (1)
-        {
-        	calibration_data.mean_ax   = mean_ax;
-            calibration_data.mean_ay   = mean_ay;
-            calibration_data.mean_az   = mean_az;
-            calibration_data.mean_gx   = mean_gx;
-            calibration_data.mean_gy   = mean_gy;
-            calibration_data.mean_gz   = mean_gz;
-            calibration_data.offset_ax = offset_ax;
-            calibration_data.offset_ay = offset_ay;
-            calibration_data.offset_az = offset_az;
-            calibration_data.offset_gx = offset_gx;
-            calibration_data.offset_gy = offset_gy;
-            calibration_data.offset_gz = offset_gz;
-
-            status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
-            if(status != HAL_OK)
-        	{
-        	     // TODO: process error
-        	}
-            //MPU6050_getAllData();
-            //status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
-            if(status != HAL_OK)
-            {
-                // TODO: process error
-            }
-        }
+        status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
+                    if(status != HAL_OK)
+                	{
+                	     // TODO: process error
+                	}
+        // go back
+        state = 0;
       }
 }
 
@@ -612,15 +588,21 @@ void meansensors()
             buff_gx = buff_gx+gx;
             buff_gy = buff_gy+gy;
             buff_gz = buff_gz+gz;
+            calibration_data.var_ax = (calibration_data.var_ax + abs(buff_ax - ax))/i;
+            calibration_data.var_ay = (calibration_data.var_ay + abs(buff_ay - ay))/i;
+            calibration_data.var_az = (calibration_data.var_az + abs(buff_az - az))/i;
+            calibration_data.var_gx = (calibration_data.var_gx + abs(buff_gx - gx))/i;
+            calibration_data.var_gy = (calibration_data.var_gy + abs(buff_gy - gy))/i;
+            calibration_data.var_gz = (calibration_data.var_gz + abs(buff_gz - gz))/i;
         }
         if (i == (buffersize+100))
         {
-            mean_ax = buff_ax/buffersize;
-            mean_ay = buff_ay/buffersize;
-            mean_az = buff_az/buffersize;
-            mean_gx = buff_gx/buffersize;
-            mean_gy = buff_gy/buffersize;
-            mean_gz = buff_gz/buffersize;
+            calibration_data.mean_ax = buff_ax/buffersize;
+            calibration_data.mean_ay = buff_ay/buffersize;
+            calibration_data.mean_az = buff_az/buffersize;
+            calibration_data.mean_gx = buff_gx/buffersize;
+            calibration_data.mean_gy = buff_gy/buffersize;
+            calibration_data.mean_gz = buff_gz/buffersize;
         }
         i++;
         HAL_Delay(2); //Needed so we don't get repeated measures
@@ -629,45 +611,43 @@ void meansensors()
 
 void calibration()
 {
-    offset_ax = -mean_ax/8;
-    offset_ay = -mean_ay/8;
-    offset_az = (16384-mean_az)/8;
+    calibration_data.offset_ax =        -calibration_data.mean_ax /8;
+    calibration_data.offset_ay =        -calibration_data.mean_ay /8;
+    calibration_data.offset_az = (16384 -calibration_data.mean_az)/8;
+    calibration_data.offset_gx =        -calibration_data.mean_gx /4;
+    calibration_data.offset_gy =        -calibration_data.mean_gy /4;
+    calibration_data.offset_gz =        -calibration_data.mean_gz /4;
 
-    offset_gx = -mean_gx/4;
-    offset_gy = -mean_gy/4;
-    offset_gz = -mean_gz/4;
-
-    int iter_numer = 100;
+    int iter_numer = 10;
     while (iter_numer-- != 0)
     {
         int ready = 0;
-        MPU6050_setXAccelOffset(offset_ax);
-        MPU6050_setYAccelOffset(offset_ay);
-        MPU6050_setZAccelOffset(offset_az);
-
-        MPU6050_setXGyroOffset(offset_gx);
-        MPU6050_setYGyroOffset(offset_gy);
-        MPU6050_setZGyroOffset(offset_gz);
+        MPU6050_setXAccelOffset(calibration_data.offset_ax);
+        MPU6050_setYAccelOffset(calibration_data.offset_ay);
+        MPU6050_setZAccelOffset(calibration_data.offset_az);
+        MPU6050_setXGyroOffset (calibration_data.offset_gx);
+        MPU6050_setYGyroOffset (calibration_data.offset_gy);
+        MPU6050_setZGyroOffset (calibration_data.offset_gz);
 
         meansensors();
 
-        if (abs(mean_ax)<= acel_deadzone) ready++;
-        else offset_ax = offset_ax-mean_ax/acel_deadzone;
+        if (abs(calibration_data.mean_ax)<= acel_deadzone) ready++ ;
+        else calibration_data.offset_ax = calibration_data.offset_ax - calibration_data.mean_ax / acel_deadzone;
 
-        if (abs(mean_ay)<= acel_deadzone) ready++;
-        else offset_ay = offset_ay-mean_ay/acel_deadzone;
+        if (abs(calibration_data.mean_ay)<= acel_deadzone) ready++ ;
+        else calibration_data.offset_ay = calibration_data.offset_ay - calibration_data.mean_ay / acel_deadzone;
 
-        if (abs(16384-mean_az)<= acel_deadzone) ready++;
-        else offset_az = offset_az+(16384-mean_az)/acel_deadzone;
+        if (abs(16384 - calibration_data.mean_az)<= acel_deadzone) ready++ ;
+        else calibration_data.offset_az = calibration_data.offset_az + (16384 - calibration_data.mean_az) / acel_deadzone;
 
-        if (abs(mean_gx)<= giro_deadzone) ready++;
-        else offset_gx = offset_gx-mean_gx/(giro_deadzone+1);
+        if (abs(calibration_data.mean_gx)<= giro_deadzone) ready++ ;
+        else calibration_data.offset_gx = calibration_data.offset_gx - calibration_data.mean_gx / (giro_deadzone + 1);
 
-        if (abs(mean_gy)<= giro_deadzone) ready++;
-        else offset_gy = offset_gy-mean_gy/(giro_deadzone+1);
+        if (abs(calibration_data.mean_gy)<= giro_deadzone) ready++ ;
+        else calibration_data.offset_gy = calibration_data.offset_gy - calibration_data.mean_gy / (giro_deadzone + 1);
 
-        if (abs(mean_gz)<= giro_deadzone) ready++;
-        else offset_gz = offset_gz-mean_gz/(giro_deadzone+1);
+        if (abs(calibration_data.mean_gz)<= giro_deadzone) ready++ ;
+        else calibration_data.offset_gz = calibration_data.offset_gz - calibration_data.mean_gz / (giro_deadzone + 1);
 
         if (ready == 6) break;
 
