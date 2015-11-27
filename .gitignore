@@ -18,4 +18,8 @@ auvir_embed/toolchain/
 *.bin
 *.hex
 *.elf
+*.zip
+*.tar
+*.tar.gz
+*.7z
 CMakeLists.txt.user*
