@@ -142,7 +142,7 @@ int main(void)
 #ifdef __linux
         port_name = "/dev/ttyUSB0";
 #elif  WIN32
-        port_name = "COM3";
+        port_name = "COM7";
 #endif
         int baud_rate = 115200;
         boost::shared_ptr<TimeoutSerial> serial(new TimeoutSerial());
@@ -174,7 +174,7 @@ int main(void)
 
         while(serial->isOpen())
         {
-            command = UART_REQUEST_CALIB_DATA;//UART_REQUEST_CALIB_DATA;
+            command = UART_REQUEST_SEND_MPU6050_DATA;//UART_REQUEST_CALIB_DATA;
             response = UART_NULL_RESPONSE;
             size_t command_size = sizeof(command);
 
