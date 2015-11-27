@@ -184,9 +184,9 @@ int main(void)
 
     I2Cdev_hi2c = &hi2c1;
     MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
-    MPU6050_reset();
     bool connected = MPU6050_testConnection();
     while(!MPU6050_testConnection());
+    MPU6050_resetSensors();
     MPU6050_initialize();
     /* USER CODE ENDint ipow(int a, int b); 2 */
 
@@ -277,9 +277,9 @@ void MX_TIM4_Init(void)
     TIM_MasterConfigTypeDef sMasterConfig;
 
     htim4.Instance = TIM4;
-    htim4.Init.Prescaler = 24000;
+    htim4.Init.Prescaler = 24;//frequency / prescaler = 24Mhz / 24 = 1 Mhz
     htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 24000;
+    htim4.Init.Period = 1000000;
     htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim4);
 
@@ -445,9 +445,10 @@ void MPU6050_getAllData()
     // get time of arrival
     motion_data.delta_time = __HAL_TIM_GET_COUNTER(&htim4);
     // get new data
-    I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 1000);
+    I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 100);
     // reset timer
     __HAL_TIM_SET_COUNTER(&htim4, 0);
+    HAL_Delay(2);
 
     //HAL_I2C_Master_Transmit(I2Cdev_hi2c, devAddr << 1, &regAddr, 1, tout);
     //HAL_I2C_Master_Receive(I2Cdev_hi2c, devAddr << 1, motion_data_buffer, 14, tout);
@@ -469,10 +470,20 @@ void MPU6050_process_data()
         //gyro = (float)(gyro_ADC – gyro_offset) * gyro_scale;
         //angle = (0.98)*(angle + gyro * dt) + (0.02)*(x_acc);
 
-        //x_acc = (float)(x_acc_ADC – x_acc_offsetGYRO_XOUT_OFFSET) * x_acc_scale;
+
+	//filter
         angle_x = (0.98)*(angle_x + motion_data.Gyroscope_X * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_X);
-        angle_y = (0.98)*(angle_x + motion_data.Gyroscope_X * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_X);
-        angle_z = (0.98)*(angle_x + motion_data.Gyroscope_X * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_X);
+        angle_y = (0.98)*(angle_x + motion_data.Gyroscope_Y * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_Y);
+        angle_z = (0.98)*(angle_x + motion_data.Gyroscope_Z * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_Z);
+
+        //integration
+
+
+        	//
+        	//angle calculated using accelerometer are given as
+        	//\theta_x^{accel} = \tan^{-1}\frac{accel x scalled}{\sqrt{accel y scalled^2+accel z scalled^2}}
+        	//\theta_y^{accel} = \tan^{-1}\frac{accel y scalled}{\sqrt{accel x scalled^2+accel z scalled^2}}
+
 }
 
 void usart_wait_exec_loop()
