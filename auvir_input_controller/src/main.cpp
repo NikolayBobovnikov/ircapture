@@ -40,6 +40,10 @@ typedef struct
     int16_t Gyroscope_Y;
     int16_t Gyroscope_Z;
     uint32_t delta_time;
+
+    float angle_x;
+    float angle_y;
+    float angle_z;
 } MPU6050_MotionData_t;
 
 typedef struct
@@ -56,12 +60,13 @@ typedef struct
     int var_gx;
     int var_gy;
     int var_gz;
-    int offset_ax;
-    int offset_ay;
-    int offset_az;
-    int offset_gx;
-    int offset_gy;
-    int offset_gz;
+    // TODO: offsets
+    int16_t offset_ax;
+    int16_t offset_ay;
+    int16_t offset_az;
+    int16_t offset_gx;
+    int16_t offset_gy;
+    int16_t offset_gz;
 } MPU6050_CalibrationData_t;
 
 enum UART_Commands {
@@ -71,7 +76,6 @@ enum UART_Commands {
     UART_REQUEST_SEND_BYTE,
     UART_REQUEST_SEND_MPU6050_TEST_DATA,
     UART_REQUEST_SEND_MPU6050_DATA,
-
     UART_REQUEST_CALIB_DATA,
 
     UART_TEST_CONNECTION,			// request
@@ -81,7 +85,11 @@ enum UART_Commands {
     UART_MPU6050_TEST_CONNECTION,	// request
     UART_MPU6050_CONENCTION_FAILURE,
     UART_MPU6050_CONENCTION_OK,
-    UART_NULL_RESPONSE
+    UART_NULL_RESPONSE,
+
+    UART_MPU6050_RESET,              // request
+    UART_MPU6050_RESET_OK,
+    UART_MPU6050_RESET_FAILURE
 };
 
 void clearscreen()
@@ -98,13 +106,17 @@ void construct_mpu6050_data_str(MPU6050_MotionData_t * mpu6050_motion_data)
     std::string result_str = "";
     // info
     result_str +=  "A_X: " + std::to_string(mpu6050_motion_data->Accelerometer_X  ) + "\n" +
-            "A_Y: " + std::to_string(mpu6050_motion_data->Accelerometer_Y  ) + "\n" +
-            "A_Z: " + std::to_string(mpu6050_motion_data->Accelerometer_Z  ) + "\n" +
-            "T:   " + std::to_string((mpu6050_motion_data->Temperature/340 + 36.53)) + "\n" +
-            "G_X: " + std::to_string(mpu6050_motion_data->Gyroscope_X      ) + "\n" +
-            "G_Y: " + std::to_string(mpu6050_motion_data->Gyroscope_Y      ) + "\n" +
-            "G_Z: " + std::to_string(mpu6050_motion_data->Gyroscope_Z      ) + "\n" +
-            "dt:  " + std::to_string(mpu6050_motion_data->delta_time      );
+                   "A_Y: " + std::to_string(mpu6050_motion_data->Accelerometer_Y  ) + "\n" +
+                   "A_Z: " + std::to_string(mpu6050_motion_data->Accelerometer_Z  ) + "\n" +
+                   "T:   " + std::to_string((mpu6050_motion_data->Temperature/340 + 36.53)) + "\n" +
+                   "G_X: " + std::to_string(mpu6050_motion_data->Gyroscope_X      ) + "\n" +
+                   "G_Y: " + std::to_string(mpu6050_motion_data->Gyroscope_Y      ) + "\n" +
+                   "G_Z: " + std::to_string(mpu6050_motion_data->Gyroscope_Z      ) + "\n\n" +
+                   "roll:  " + std::to_string(mpu6050_motion_data->angle_x      )+ "\n" +
+                   "pitch:  " + std::to_string(mpu6050_motion_data->angle_y      )+ "\n" +
+                   "yaw:  " + std::to_string(mpu6050_motion_data->angle_z    )      + "\n\n" +
+                    "dt:  " + std::to_string(mpu6050_motion_data->delta_time      );
+
 
     std::cout << result_str << std::endl;
 }
@@ -195,6 +207,7 @@ int main(void)
                               << std::endl;
                     time_start = std::chrono::high_resolution_clock::now();
                     std::cout << "Error during reading from serial. " << std::endl;
+                    // TODO: send command to reset sensor?
                     break;
                 }
                 construct_mpu6050_data_str(&data);

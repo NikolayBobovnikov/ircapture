@@ -60,6 +60,10 @@ typedef struct
     int16_t Gyroscope_Y;
     int16_t Gyroscope_Z;
     uint32_t delta_time;
+
+    float angle_x;
+    float angle_y;
+    float angle_z;
 } MPU6050_MotionData_t;
 
 typedef struct
@@ -76,6 +80,7 @@ typedef struct
     int var_gx;
     int var_gy;
     int var_gz;
+    // TODO: offsets
     int16_t offset_ax;
     int16_t offset_ay;
     int16_t offset_az;
@@ -100,16 +105,53 @@ enum UART_Commands {
     UART_MPU6050_TEST_CONNECTION,	// request
     UART_MPU6050_CONENCTION_FAILURE,
     UART_MPU6050_CONENCTION_OK,
-    UART_NULL_RESPONSE
+    UART_NULL_RESPONSE,
+
+    UART_MPU6050_RESET,              // request
+    UART_MPU6050_RESET_OK,
+    UART_MPU6050_RESET_FAILURE
 };
 
 static MPU6050_MotionData_t motion_data;
 static MPU6050_CalibrationData_t calibration_data;
 static uint8_t motion_data_buffer[sizeof(MPU6050_MotionData_t)];
 const size_t max_string_lengh = 127;
-static float angle_x = 0.0;
-static float angle_y = 0.0;
-static float angle_z = 0.0;
+
+// TODO: define frequency automatically based on chip name (thus based on #defined symbol like STM32F100xB)
+#define CHIP_FREQUENCY    24000000
+//Timer setup. timer frequency = (chip frequency / prescaler) = (24Mhz / 24) = 1 Mhz 1*10^6
+#define TIMER_PRESCALER     24
+#define TIMER_RESET_PERIOD  1000000
+
+const int chip_frequency = CHIP_FREQUENCY;
+const int timer_prescaler =  TIMER_PRESCALER;
+const int timer_reset_period = TIMER_RESET_PERIOD;
+const float timer_frequency = CHIP_FREQUENCY / TIMER_PRESCALER;
+const float timer_period = TIMER_PRESCALER / CHIP_FREQUENCY;
+
+const float filter_gain = 0.95;
+
+// These variables are private, used in MPU6050_GetAllData(), don't use them directly.
+// Use MPU6050_ResetCalculatedData() to init them to default values before using sensor
+float timeStep= TIMER_PRESCALER / CHIP_FREQUENCY;
+bool  is_firts_sample = true;
+float acc_angle_x = 0.0;
+float acc_angle_y = 0.0;
+float acc_angle_z = 0.0;
+float gyro_angular_x = 0.0;
+float gyro_angular_y = 0.0;
+float gyro_angular_z = 0.0;
+float gyro_integrated_angle_x = 0.0;
+float gyro_integrated_angle_y = 0.0;
+float gyro_integrated_angle_z = 0.0;
+// *
+
+
+
+#define PI 3.14159265358979323846
+static const float radian = 180 / PI;
+static const int gyroScale = 131;
+
 
 
 //Change this 3 variables if you want to fine tune the skecth to your needs.
@@ -146,12 +188,13 @@ void led_hal();
 bool usart_send_str_ok(const char *input);
 void usart_send_str(const char *input);
 int ipow(int base, int exp);
+int square(int base);
 void MPU6050_getAllData();
-void MPU6050_process_data();
 void usart_wait_exec_loop();
 void mpu6050_loop();
 void meansensors();
 void calibration();
+void MPU6050_ResetCalculatedData();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -184,10 +227,11 @@ int main(void)
 
     I2Cdev_hi2c = &hi2c1;
     MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
-    bool connected = MPU6050_testConnection();
     while(!MPU6050_testConnection());
     MPU6050_resetSensors();
+    MPU6050_ResetCalculatedData();
     MPU6050_initialize();
+
     /* USER CODE ENDint ipow(int a, int b); 2 */
 
     /* Infinite loop */
@@ -277,9 +321,9 @@ void MX_TIM4_Init(void)
     TIM_MasterConfigTypeDef sMasterConfig;
 
     htim4.Instance = TIM4;
-    htim4.Init.Prescaler = 24;//frequency / prescaler = 24Mhz / 24 = 1 Mhz
+    htim4.Init.Prescaler = timer_prescaler;
     htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 1000000;
+    htim4.Init.Period = timer_period;
     htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim4);
 
@@ -440,116 +484,144 @@ int ipow(int base, int exp)
 
     return result;
 }
+int square(int base)
+{
+    return ipow(base, 2);
+}
 void MPU6050_getAllData()
 {
     // get time of arrival
     motion_data.delta_time = __HAL_TIM_GET_COUNTER(&htim4);
-    // get new data
+    // get new data to buffer
     I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 100);
     // reset timer
     __HAL_TIM_SET_COUNTER(&htim4, 0);
-    HAL_Delay(2);
 
-    //HAL_I2C_Master_Transmit(I2Cdev_hi2c, devAddr << 1, &regAddr, 1, tout);
-    //HAL_I2C_Master_Receive(I2Cdev_hi2c, devAddr << 1, motion_data_buffer, 14, tout);
-    //HAL_StatusTypeDef status = HAL_I2C_Mem_Read(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW << 1, MPU6050_RA_ACCEL_XOUT_H, 1, motion_data_buffer, 14, 1000);
-
-
+    // fill struct from buffer
     motion_data.Accelerometer_X = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
     motion_data.Accelerometer_Y = (((int16_t)motion_data_buffer[2]) << 8) | motion_data_buffer[3];
     motion_data.Accelerometer_Z = (((int16_t)motion_data_buffer[4]) << 8) | motion_data_buffer[5];
-    motion_data.Temperature    = (((int16_t)motion_data_buffer[6]) << 8) | motion_data_buffer[7];
-    motion_data.Gyroscope_X    = (((int16_t)motion_data_buffer[8]) << 8) | motion_data_buffer[9];
-    motion_data.Gyroscope_Y    = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
-    motion_data.Gyroscope_Z    = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
-}
+    motion_data.Temperature     = (((int16_t)motion_data_buffer[6]) << 8) | motion_data_buffer[7];
+    motion_data.Gyroscope_X     = (((int16_t)motion_data_buffer[8]) << 8) | motion_data_buffer[9];
+    motion_data.Gyroscope_Y     = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
+    motion_data.Gyroscope_Z     = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
 
-void MPU6050_process_data()
-{
-    //x_acc = (float)(x_acc_ADC – x_acc_offset) * x_acc_scale;
-        //gyro = (float)(gyro_ADC – gyro_offset) * gyro_scale;
-        //angle = (0.98)*(angle + gyro * dt) + (0.02)*(x_acc);
+    // delta t
+    timeStep = motion_data.delta_time * timer_period;
 
+    // apply gyro scale from datasheet
+    gyro_angular_x = motion_data.Gyroscope_X / gyroScale;
+    gyro_angular_y = motion_data.Gyroscope_Y / gyroScale;
+    gyro_angular_z = motion_data.Gyroscope_Z / gyroScale;
 
-	//filter
-        angle_x = (0.98)*(angle_x + motion_data.Gyroscope_X * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_X);
-        angle_y = (0.98)*(angle_x + motion_data.Gyroscope_Y * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_Y);
-        angle_z = (0.98)*(angle_x + motion_data.Gyroscope_Z * motion_data.delta_time) + (0.02)*(motion_data.Accelerometer_Z);
+    // calculate accelerometer angles
+    acc_angle_x = atan(motion_data.Accelerometer_X / sqrt(square(motion_data.Accelerometer_Y) + square(motion_data.Accelerometer_Z)));
+    acc_angle_y = atan(motion_data.Accelerometer_Y / sqrt(square(motion_data.Accelerometer_X) + square(motion_data.Accelerometer_Z)));
+    acc_angle_z = atan(sqrt(square(motion_data.Accelerometer_Y) + square(motion_data.Accelerometer_X)) / motion_data.Accelerometer_Z);
 
-        //integration
+    acc_angle_x *= radian;
+    acc_angle_y *= radian;
+    acc_angle_z *= radian;
 
+    // set initial values equal to accel values
+    if (is_firts_sample)
+    {
+        is_firts_sample = false;
+        gyro_integrated_angle_x = acc_angle_x;
+        gyro_integrated_angle_y = acc_angle_y;
+        gyro_integrated_angle_z = acc_angle_z;
+    }
+    // integrate to find the gyro angle
+    else
+    {
+        gyro_integrated_angle_x = gyro_integrated_angle_x + (timeStep * gyro_angular_x);
+        gyro_integrated_angle_y = gyro_integrated_angle_y + (timeStep * gyro_angular_y);
+        gyro_integrated_angle_z = gyro_integrated_angle_z + (timeStep * gyro_angular_z);
+    }
 
-        	//
-        	//angle calculated using accelerometer are given as
-        	//\theta_x^{accel} = \tan^{-1}\frac{accel x scalled}{\sqrt{accel y scalled^2+accel z scalled^2}}
-        	//\theta_y^{accel} = \tan^{-1}\frac{accel y scalled}{\sqrt{accel x scalled^2+accel z scalled^2}}
+    // apply filter
+    motion_data.angle_x = ((1-filter_gain) * acc_angle_x) + (filter_gain * gyro_integrated_angle_x);
+    motion_data.angle_y = ((1-filter_gain) * acc_angle_y) + (filter_gain * gyro_integrated_angle_y);
+    motion_data.angle_z = ((1-filter_gain) * acc_angle_z) + (filter_gain * gyro_integrated_angle_z);
 
 }
 
 void usart_wait_exec_loop()
 {
-	HAL_StatusTypeDef status;
+    HAL_StatusTypeDef status;
     while( 1 )
     {
-    	//reset command
-    	uint8_t command = UART_COMMAND_NOT_RECEIVED;
-    	uint8_t response = UART_NULL_RESPONSE;
-    	status = HAL_UART_Receive(&huart1, &command, 1, 1000);
+        //reset command
+        uint8_t command = UART_COMMAND_NOT_RECEIVED;
+        uint8_t response = UART_NULL_RESPONSE;
+        status = HAL_UART_Receive(&huart1, &command, 1, 1000);
 
         // if received command, dispatch it
         if(status == HAL_OK && UART_COMMAND_NOT_RECEIVED != command)
         {
-			if(UART_REQUEST_SEND_MPU6050_DATA == command)
-			{
-				MPU6050_getAllData();
-				HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
-				if(status != HAL_OK)
-				{
-					// TODO: process error
-				}
-			}
-			else if(UART_REQUEST_SEND_MPU6050_TEST_DATA == command)
-			{
-				motion_data.Accelerometer_X = 1;
-				motion_data.Accelerometer_Y = 2;
-				motion_data.Accelerometer_Z = 3;
-				motion_data.Temperature    = 4;
-				motion_data.Gyroscope_X    = 5;
-				motion_data.Gyroscope_Y    = 6;
-				motion_data.Gyroscope_Z    = 7;
-				status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
-			}
-			else if (UART_REQUEST_CALIB_DATA == command)
-			{
-				meansensors();
-				calibration();
-				meansensors();
-          
-				status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
-			}
-			else if(UART_TEST_CONNECTION == command)
-			{
-				response = UART_CONENCTION_OK;
-				status = HAL_UART_Transmit(&huart1, &response, sizeof(response), 1000);
-			}
-			else if(UART_MPU6050_TEST_CONNECTION == command)
-			{
-				if(MPU6050_testConnection())
-				{
-					response = UART_MPU6050_CONENCTION_OK;
-				}
-				else
-				{
-					response = UART_MPU6050_CONENCTION_FAILURE;
-				}
-				status = HAL_UART_Transmit(&huart1, &response, sizeof(response), 1000);
-			}
+            if(UART_REQUEST_SEND_MPU6050_DATA == command)
+            {
+                MPU6050_getAllData();
+                HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
+                if(status != HAL_OK)
+                {
+                    // TODO: process error
+                }
+            }
+            else if(UART_REQUEST_SEND_MPU6050_TEST_DATA == command)
+            {
+                motion_data.Accelerometer_X = 1;
+                motion_data.Accelerometer_Y = 2;
+                motion_data.Accelerometer_Z = 3;
+                motion_data.Temperature    = 4;
+                motion_data.Gyroscope_X    = 5;
+                motion_data.Gyroscope_Y    = 6;
+                motion_data.Gyroscope_Z    = 7;
+                status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
+            }
+            else if (UART_REQUEST_CALIB_DATA == command)
+            {
+                meansensors();
+                calibration();
+                meansensors();
 
-			// Process error
-			if(status != HAL_OK)
-			{
-				// TODO: process error
-			}
+                status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
+            }
+            else if(UART_TEST_CONNECTION == command)
+            {
+                response = UART_CONENCTION_OK;
+                status = HAL_UART_Transmit(&huart1, &response, sizeof(response), 1000);
+            }
+            else if(UART_MPU6050_TEST_CONNECTION == command)
+            {
+                if(MPU6050_testConnection())
+                {
+                    response = UART_MPU6050_CONENCTION_OK;
+                }
+                else
+                {
+                    response = UART_MPU6050_CONENCTION_FAILURE;
+                }
+                status = HAL_UART_Transmit(&huart1, &response, sizeof(response), 1000);
+            }
+            else if(UART_MPU6050_RESET == command)
+            {
+                MPU6050_resetSensors();
+                MPU6050_ResetCalculatedData();
+                MPU6050_initialize();
+
+                // TODO: detect error
+                // if(error) response = response = UART_MPU6050_RESET_FAILURE;
+                response = UART_MPU6050_RESET_OK;
+
+                status = HAL_UART_Transmit(&huart1, &response, sizeof(response), 1000);
+            }
+
+            // Process error
+            if(status != HAL_OK)
+            {
+                // TODO: process error
+            }
         }
 
         //reset command
@@ -559,7 +631,7 @@ void usart_wait_exec_loop()
 
 void mpu6050_loop()
 {
-	HAL_StatusTypeDef status;
+    HAL_StatusTypeDef status;
     if (state==0)
     {
         //usart_send_str("\nReading sensors for first time...\0");
@@ -582,9 +654,9 @@ void mpu6050_loop()
 
         status = HAL_UART_Transmit(&huart1, (uint8_t*)&calibration_data, sizeof(calibration_data), 1000);
                     if(status != HAL_OK)
-                	{
-                	     // TODO: process error
-                	}
+                    {
+                         // TODO: process error
+                    }
         // go back
         state = 0;
       }
@@ -593,7 +665,6 @@ void mpu6050_loop()
 void meansensors()
 {
     long i = 0, buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
-    int j = 0; // supplementary index
 
     // array of samples, each sample - array of values
     uint8_t sample_array[number_of_samples][sizeof(MPU6050_MotionData_t)];
@@ -796,13 +867,19 @@ void calibration()
 
         if (ready == 6) break;
 
-        if(true == iter_numer)
-        {
-        	int about_to_exceed_tries = 0;
-        }
     }
 }
 
+void MPU6050_ResetCalculatedData()
+{
+    memset(&motion_data, 0, sizeof(motion_data));
+
+    is_firts_sample = true;
+    timeStep= TIMER_PRESCALER / CHIP_FREQUENCY;
+    gyro_integrated_angle_x = 0.0;
+    gyro_integrated_angle_y = 0.0;
+    gyro_integrated_angle_z = 0.0;
+}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT
