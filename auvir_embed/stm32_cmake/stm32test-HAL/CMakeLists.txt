@@ -28,7 +28,7 @@ ADD_DEFINITIONS(
 #=======================================================================================================
 
 SET(THIRDPARTY_STM32LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Libraries)
-SET(I2CDevLib_STM32 ${THIRDPARTY_STM32LIB_PATH}/i2cdevlib/STM32)
+SET(I2CDevLib_STM32 ${THIRDPARTY_STM32LIB_PATH}/i2cdevlib_hal)
 
 SET(I2CDevLib_MPU6050 ${I2CDevLib_STM32}/MPU6050)
 SET(I2CDevLib_I2Cdev ${I2CDevLib_STM32}/I2Cdev)
