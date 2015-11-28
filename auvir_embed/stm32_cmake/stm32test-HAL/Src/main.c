@@ -241,8 +241,12 @@ int main(void)
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
-        usart_wait_exec_loop();
+        //usart_wait_exec_loop();
         //mpu6050_loop();
+    	led_on();
+    	HAL_Delay(200);
+    	led_off();
+    	HAL_Delay(200);
     }
     /* USER CODE END 3 */
 

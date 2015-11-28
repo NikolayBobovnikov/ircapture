@@ -1,0 +1,3 @@
+#!/bin/sh
+#openocd -f board/stm32vldiscovery.cfg -f interface/stlink-v1.cfg -c "init" -c "reset halt"
+(openocd -f ./openocd.cfg &)
