@@ -89,7 +89,9 @@ enum UART_Commands {
 
     UART_MPU6050_RESET,              // request
     UART_MPU6050_RESET_OK,
-    UART_MPU6050_RESET_FAILURE
+    UART_MPU6050_RESET_FAILURE,
+
+    UART_ECHO
 };
 
 void clearscreen()
@@ -152,7 +154,8 @@ int main(void)
 
         std::string port_name;
 #ifdef __linux
-        port_name = "/dev/ttyUSB0";
+        //port_name = "/dev/ttyUSB0";
+        port_name = "/dev/ttyACM0";
 #elif  WIN32
         port_name = "COM7";
 #endif
@@ -187,7 +190,7 @@ int main(void)
         // communication
         while(serial->isOpen())
         {
-            command = UART_REQUEST_SEND_MPU6050_DATA;//UART_REQUEST_CALIB_DATA;
+            command = UART_ECHO;//UART_REQUEST_CALIB_DATA;
             response = UART_NULL_RESPONSE;
             size_t command_size = sizeof(command);
 
@@ -293,7 +296,26 @@ int main(void)
                 }
                 serial->setTimeout(boost::posix_time::seconds(10));
             }
+            else if (UART_ECHO == command)
+            {
+                try
+                {
+                    char ch;
+                    serial->read((char*)&ch, sizeof(ch));
+                    std::cout << std::string(&ch) << std::endl;
+                }
+                catch(...)
+                {
+                    std::cout << "Time elapsed: "
+                              << std::chrono::duration_cast<std::chrono::hours>(time_start - std::chrono::high_resolution_clock::now()).count() <<"h "
+                              << std::chrono::duration_cast<std::chrono::minutes>(time_start - std::chrono::high_resolution_clock::now()).count() <<"m "
+                              << std::chrono::duration_cast<std::chrono::seconds>(time_start - std::chrono::high_resolution_clock::now()).count() <<"s "
+                              << std::endl;
+                    time_start = std::chrono::high_resolution_clock::now();
+                    std::cout << "Error during reading from serial. " << std::endl;
+                }
 
+            }
         }
 
         auto time_finish = std::chrono::high_resolution_clock::now();
