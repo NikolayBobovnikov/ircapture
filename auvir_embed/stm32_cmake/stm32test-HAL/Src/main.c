@@ -38,6 +38,8 @@
 #include <math.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
+
+#define DEBUG
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -60,10 +62,10 @@ typedef struct
     int16_t Gyroscope_Y;
     int16_t Gyroscope_Z;
     uint32_t delta_time;
-
     float angle_x;
     float angle_y;
     float angle_z;
+
 } MPU6050_MotionData_t;
 
 typedef struct
@@ -118,22 +120,25 @@ static uint8_t motion_data_buffer[sizeof(MPU6050_MotionData_t)];
 const size_t max_string_lengh = 127;
 
 // TODO: define frequency automatically based on chip name (thus based on #defined symbol like STM32F100xB)
+// Values to define constants. Are not to be used in application code
 #define CHIP_FREQUENCY    24000000
 //Timer setup. timer frequency = (chip frequency / prescaler) = (24Mhz / 24) = 1 Mhz 1*10^6
-#define TIMER_PRESCALER     24
-#define TIMER_RESET_PERIOD  1000000
+#define TIMER_PRESCALER     24000
+#define TIMER_RESET_PERIOD  1000
 
+
+// Constants to use in code
 const int chip_frequency = CHIP_FREQUENCY;
 const int timer_prescaler =  TIMER_PRESCALER;
 const int timer_reset_period = TIMER_RESET_PERIOD;
-const float timer_frequency = CHIP_FREQUENCY / TIMER_PRESCALER;
-const float timer_period = TIMER_PRESCALER / CHIP_FREQUENCY;
-
-const float filter_gain = 0.95;
+const float timer_frequency = (float)((float)(CHIP_FREQUENCY) / (float)(TIMER_PRESCALER));
+const float seconds_per_timer_tick = (float)((float)(TIMER_PRESCALER) / (float)(CHIP_FREQUENCY));
 
 // These variables are private, used in MPU6050_GetAllData(), don't use them directly.
 // Use MPU6050_ResetCalculatedData() to init them to default values before using sensor
-float timeStep= TIMER_PRESCALER / CHIP_FREQUENCY;
+#define FILTER_DEFAULT_VALUE   0.95
+float filter_gain = FILTER_DEFAULT_VALUE;
+float timeStep;
 bool  is_firts_sample = true;
 float acc_angle_x = 0.0;
 float acc_angle_y = 0.0;
@@ -146,12 +151,9 @@ float gyro_integrated_angle_y = 0.0;
 float gyro_integrated_angle_z = 0.0;
 // *
 
-
-
 #define PI 3.14159265358979323846
 static const float radian = 180 / PI;
 static const int gyroScale = 131;
-
 
 
 //Change this 3 variables if you want to fine tune the skecth to your needs.
@@ -191,7 +193,9 @@ int ipow(int base, int exp);
 int square(int base);
 void MPU6050_getAllData();
 void usart_wait_exec_loop();
+void mpu6050_start();
 void mpu6050_loop();
+void mpu6050_get_data_loop();
 void meansensors();
 void calibration();
 void MPU6050_ResetCalculatedData();
@@ -222,15 +226,8 @@ int main(void)
 
     /* USER CODE BEGIN 2 */
     HAL_TIM_Base_Start(&htim4);
-
     init_led_hal();
-
-    I2Cdev_hi2c = &hi2c1;
-    MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
-    while(!MPU6050_testConnection());
-    MPU6050_resetSensors();
-    MPU6050_ResetCalculatedData();
-    MPU6050_initialize();
+    mpu6050_start();
 
     /* USER CODE ENDint ipow(int a, int b); 2 */
 
@@ -239,14 +236,8 @@ int main(void)
     while (1)
     {
         /* USER CODE END WHILE */
-
         /* USER CODE BEGIN 3 */
-        //usart_wait_exec_loop();
-        //mpu6050_loop();
-    	led_on();
-    	HAL_Delay(200);
-    	led_off();
-    	HAL_Delay(200);
+        usart_wait_exec_loop();
     }
     /* USER CODE END 3 */
 
@@ -327,7 +318,7 @@ void MX_TIM4_Init(void)
     htim4.Instance = TIM4;
     htim4.Init.Prescaler = timer_prescaler;
     htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = timer_period;
+    htim4.Init.Period = timer_reset_period;
     htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim4);
 
@@ -494,12 +485,13 @@ int square(int base)
 }
 void MPU6050_getAllData()
 {
-    // get time of arrival
+    // get time of arrival (number of timer ticks)
     motion_data.delta_time = __HAL_TIM_GET_COUNTER(&htim4);
     // get new data to buffer
     I2Cdev_readBytes(MPU6050_ADDRESS_AD0_LOW, MPU6050_RA_ACCEL_XOUT_H, 14, motion_data_buffer, 100);
     // reset timer
     __HAL_TIM_SET_COUNTER(&htim4, 0);
+    //HAL_Delay(1);
 
     // fill struct from buffer
     motion_data.Accelerometer_X = (((int16_t)motion_data_buffer[0]) << 8) | motion_data_buffer[1];
@@ -510,8 +502,11 @@ void MPU6050_getAllData()
     motion_data.Gyroscope_Y     = (((int16_t)motion_data_buffer[10])<< 8) | motion_data_buffer[11];
     motion_data.Gyroscope_Z     = (((int16_t)motion_data_buffer[12])<< 8) | motion_data_buffer[13];
 
+#ifdef DEBUG
+    float T = (motion_data.Temperature/340 + 36.53);
+#endif
     // delta t
-    timeStep = motion_data.delta_time * timer_period;
+    timeStep = (float) motion_data.delta_time * seconds_per_timer_tick;
 
     // apply gyro scale from datasheet
     gyro_angular_x = motion_data.Gyroscope_X / gyroScale;
@@ -519,6 +514,7 @@ void MPU6050_getAllData()
     gyro_angular_z = motion_data.Gyroscope_Z / gyroScale;
 
     // calculate accelerometer angles
+    // TODO: profile; compare to LUT implementations of atan and probably others
     acc_angle_x = atan(motion_data.Accelerometer_X / sqrt(square(motion_data.Accelerometer_Y) + square(motion_data.Accelerometer_Z)));
     acc_angle_y = atan(motion_data.Accelerometer_Y / sqrt(square(motion_data.Accelerometer_X) + square(motion_data.Accelerometer_Z)));
     acc_angle_z = atan(sqrt(square(motion_data.Accelerometer_Y) + square(motion_data.Accelerometer_X)) / motion_data.Accelerometer_Z);
@@ -633,6 +629,17 @@ void usart_wait_exec_loop()
     } // end while
 }
 
+void mpu6050_start()
+{
+    I2Cdev_hi2c = &hi2c1;
+    MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
+    while(!MPU6050_testConnection());
+    MPU6050_resetSensors();
+    MPU6050_ResetCalculatedData();
+    MPU6050_initialize();
+
+}
+
 void mpu6050_loop()
 {
     HAL_StatusTypeDef status;
@@ -664,6 +671,16 @@ void mpu6050_loop()
         // go back
         state = 0;
       }
+}
+
+void mpu6050_get_data_loop()
+{
+    MPU6050_getAllData();
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&motion_data, sizeof(motion_data), 1000);
+    if(status != HAL_OK)
+    {
+        // TODO: process error
+    }
 }
 
 void meansensors()
@@ -877,9 +894,9 @@ void calibration()
 void MPU6050_ResetCalculatedData()
 {
     memset(&motion_data, 0, sizeof(motion_data));
-
+    filter_gain = FILTER_DEFAULT_VALUE;
     is_firts_sample = true;
-    timeStep= TIMER_PRESCALER / CHIP_FREQUENCY;
+    timeStep= seconds_per_timer_tick;
     gyro_integrated_angle_x = 0.0;
     gyro_integrated_angle_y = 0.0;
     gyro_integrated_angle_z = 0.0;
