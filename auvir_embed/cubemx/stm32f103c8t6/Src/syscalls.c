@@ -4,7 +4,8 @@
 #include <sys/unistd.h>
 #include "stm32f1xx_hal.h"
 
-UART_HandleTypeDef huart;
+extern UART_HandleTypeDef * huart;
+
 int _write(int file, char *ptr, int len);
 
 extern uint32_t __get_MSP(void);
@@ -111,7 +112,7 @@ int _read(int file, char *ptr, int len)
     {
     case STDIN_FILENO:
         //TODO: check conversion below
-        HAL_UART_Receive(&huart, (uint8_t*)ptr, len, 1000);
+        HAL_UART_Receive(huart, (uint8_t*)ptr, len, 1000);
         break;
     default:
         errno = EBADF;
@@ -154,11 +155,11 @@ int _write(int file, char *ptr, int len)
     {
     case STDOUT_FILENO: /*stdout*/
         //TODO: check conversion below
-        HAL_UART_Transmit(&huart, (uint8_t*)ptr, len, 1000);
+        HAL_UART_Transmit(huart, (uint8_t*)ptr, len, 1000);
         break;
     case STDERR_FILENO: /* stderr */
         //TODO: check conversion below
-        HAL_UART_Transmit(&huart, (uint8_t*)ptr, len, 1000);
+        HAL_UART_Transmit(huart, (uint8_t*)ptr, len, 1000);
         break;
     default:
         errno = EBADF;

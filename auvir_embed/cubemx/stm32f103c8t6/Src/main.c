@@ -48,7 +48,7 @@ UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+UART_HandleTypeDef * huart = &huart3;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
