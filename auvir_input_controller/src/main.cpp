@@ -117,8 +117,8 @@ void construct_mpu6050_data_str(MPU6050_MotionData_t * mpu6050_motion_data)
                    "yaw:  " + std::to_string(mpu6050_motion_data->angle_z    )      + "\n\n" +
                     "dt:  " + std::to_string(mpu6050_motion_data->delta_time      );
 
-
     std::cout << result_str << std::endl;
+    //std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 void construct_mpu6050_calib_data_str(MPU6050_CalibrationData_t * mpu6050_calib_data)
 {
@@ -184,6 +184,7 @@ int main(void)
         // start clock
         auto time_start = std::chrono::high_resolution_clock::now();
 
+        // communication
         while(serial->isOpen())
         {
             command = UART_REQUEST_SEND_MPU6050_DATA;//UART_REQUEST_CALIB_DATA;
