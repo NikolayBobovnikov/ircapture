@@ -32,6 +32,7 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
+#include "usb_device.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -55,11 +56,9 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
-PCD_HandleTypeDef hpcd_USB_FS;
-
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+int b;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,7 +76,6 @@ static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_USB_PCD_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -85,7 +83,7 @@ static void MX_USB_PCD_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+int a = 0;
 /* USER CODE END 0 */
 
 int main(void)
@@ -117,7 +115,7 @@ int main(void)
   MX_TIM4_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  MX_USB_PCD_Init();
+  MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -439,21 +437,6 @@ void MX_USART2_UART_Init(void)
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   HAL_UART_Init(&huart2);
-
-}
-
-/* USB init function */
-void MX_USB_PCD_Init(void)
-{
-
-  hpcd_USB_FS.Instance = USB;
-  hpcd_USB_FS.Init.dev_endpoints = 8;
-  hpcd_USB_FS.Init.speed = PCD_SPEED_FULL;
-  hpcd_USB_FS.Init.ep0_mps = DEP0CTL_MPS_8;
-  hpcd_USB_FS.Init.low_power_enable = DISABLE;
-  hpcd_USB_FS.Init.lpm_enable = DISABLE;
-  hpcd_USB_FS.Init.battery_charging_enable = DISABLE;
-  HAL_PCD_Init(&hpcd_USB_FS);
 
 }
 
