@@ -1,182 +1,68 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <history>
-   <processor signature="arm-none-eabi-gcc noversion nomachine -mcpu=cortex-m3 -mthumb -g2 -Wall -O0 -c -DSTM32F103C8T6 -DSTM32F103x6 -DUSE_HAL_DRIVER -D__arm__ -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Device\ST\STM32F1xx -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Middlewares\ST\STM32_USB_Device_Library\Core\Inc -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\coocox\motionsensor -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\STM32F1xx_HAL_Driver -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Device\ST -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\STM32F1xx_HAL_Driver\Inc -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Middlewares\ST\STM32_USB_Device_Library\Class\CustomHID\Inc -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Inc -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6 -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Include -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Device\ST\STM32F1xx\Include -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Middlewares\ST\STM32_USB_Device_Library\Class -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Middlewares\ST\STM32_USB_Device_Library\Class\CustomHID -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Middlewares\ST\STM32_USB_Device_Library -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Middlewares\ST\STM32_USB_Device_Library\Core">
-      <target file="stm32f1xx_hal_msp_template.o" lastModified="1515258aef0">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_msp_template.c" lastModified="1514e9fc9b4"/>
-      </target>
-      <target file="usb_device.o" lastModified="1515258ada8">
-         <source file="..\..\..\..\..\Src\usb_device.c" lastModified="151525463df"/>
-      </target>
-      <target file="usbd_custom_hid_if.o" lastModified="1515258a82c">
-         <source file="..\..\..\..\..\Src\usbd_custom_hid_if.c" lastModified="151525464e8"/>
-      </target>
-      <target file="stm32f1xx_hal.o" lastModified="151525897e7">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c" lastModified="1514e9fc947"/>
-      </target>
-      <target file="stm32f1xx_hal_adc_ex.o" lastModified="1515258a530">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_adc_ex.c" lastModified="1514e9fc947"/>
-      </target>
-      <target file="stm32f1xx_hal_uart.o" lastModified="15152589df0">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_uart.c" lastModified="1514e9fdcab"/>
-      </target>
-      <target file="stm32f1xx_hal_usart.o" lastModified="15152589f66">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_usart.c" lastModified="1514e9fdcab"/>
-      </target>
-      <target file="stm32f1xx_hal_cec.o" lastModified="1515258a178">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cec.c" lastModified="1514e9fc985"/>
-      </target>
-      <target file="stm32f1xx_hal_eth.o" lastModified="1515258a88a">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_eth.c" lastModified="1514e9fc995"/>
-      </target>
-      <target file="usbd_ioreq.o" lastModified="1515258ac9f">
-         <source file="..\..\..\..\..\Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_ioreq.c" lastModified="1514ea12075"/>
-      </target>
-      <target file="stm32f1xx_ll_fsmc.o" lastModified="1515258a8d8">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_fsmc.c" lastModified="1514e9fdecd"/>
-      </target>
-      <target file="stm32f1xx_hal_flash_ex.o" lastModified="1515258aaac">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash_ex.c" lastModified="1514e9fc995"/>
-      </target>
-      <target file="stm32f1xx_hal_rtc.o" lastModified="1515258a936">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rtc.c" lastModified="1514e9fca31"/>
-      </target>
-      <target file="startup_stm32f103xb.o" lastModified="15152589eca">
-         <source file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xb.s" lastModified="1514e9f0c00"/>
-      </target>
-      <target file="stm32f1xx_hal_rcc.o" lastModified="15152589b32">
+   <processor signature="arm-none-eabi-gcc noversion nomachine -mcpu=cortex-m3 -mthumb -g2 -Wall -O0 -c -DSTM32F103C8T6 -DSTM32F103x6 -DUSE_HAL_DRIVER -D__arm__ -DARM_MATH_CM3 -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\STM32F1xx_HAL_Driver\Inc -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Device\ST\STM32F1xx -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Inc -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6 -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Device\ST\STM32F1xx\Include -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Include -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\coocox\motionsensor -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\STM32F1xx_HAL_Driver -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS\Device\ST -I..\..\..\..\..\..\..\..\..\home\dev\auvir\auvir_embed\cubemx\stm32f103c8t6\Drivers\CMSIS">
+      <target file="stm32f1xx_hal_rcc.o" lastModified="15152766a6b">
          <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rcc.c" lastModified="1514e9fca21"/>
       </target>
-      <target file="stm32f1xx_hal_can.o" lastModified="1515258977a">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_can.c" lastModified="1514e9fc985"/>
-      </target>
-      <target file="stm32f1xx_hal_dac.o" lastModified="15152589893">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_dac.c" lastModified="1514e9fc985"/>
-      </target>
-      <target file="stm32f1xx_hal_pwr.o" lastModified="1515258972c">
+      <target file="stm32f1xx_hal_pwr.o" lastModified="1515276683e">
          <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_pwr.c" lastModified="1514e9fca21"/>
       </target>
-      <target file="stm32f1xx_hal_sram.o" lastModified="1515258ad4b">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_sram.c" lastModified="1514e9fca7f"/>
+      <target file="startup_stm32f103xb.o" lastModified="15152766be1">
+         <source file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xb.s" lastModified="15152765d38"/>
       </target>
-      <target file="stm32f1xx_hal_adc.o" lastModified="15152589c1c">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_adc.c" lastModified="1514e9fc947"/>
-      </target>
-      <target file="stm32f1xx_hal_cortex.o" lastModified="1515258999c">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c" lastModified="1514e9fc985"/>
-      </target>
-      <target file="startup_stm32f103x6.o" lastModified="1515258a697">
-         <source file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103x6.s" lastModified="1514e9f0c00"/>
-      </target>
-      <target file="stm32f1xx_hal_flash.o" lastModified="1515258a2a1">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash.c" lastModified="1514e9fc995"/>
-      </target>
-      <target file="usbd_desc.o" lastModified="1515258a427">
-         <source file="..\..\..\..\..\Src\usbd_desc.c" lastModified="151525464aa"/>
-      </target>
-      <target file="usbd_conf_template.o" lastModified="1515258a234">
-         <source file="..\..\..\..\..\Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_conf_template.c" lastModified="1514ea11f6c"/>
-      </target>
-      <target file="stm32f1xx_ll_usb.o" lastModified="1515258a06f">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_usb.c" lastModified="1514e9fdecd"/>
-      </target>
-      <target file="stm32f1xx_hal_dac_ex.o" lastModified="15152589b8f">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_dac_ex.c" lastModified="1514e9fc985"/>
-      </target>
-      <target file="stm32f1xx_hal_dma.o" lastModified="1515258a37b">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_dma.c" lastModified="1514e9fc985"/>
-      </target>
-      <target file="stm32f1xx_hal_pccard.o" lastModified="1515258aced">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_pccard.c" lastModified="1514e9fc9b4"/>
-      </target>
-      <target file="usbd_core.o" lastModified="15152589e6c">
-         <source file="..\..\..\..\..\Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_core.c" lastModified="1514ea11f6c"/>
-      </target>
-      <target file="stm32f1xx_hal_rcc_ex.o" lastModified="151525896ce">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rcc_ex.c" lastModified="1514e9fca21"/>
-      </target>
-      <target file="stm32f1xx_hal_rtc_ex.o" lastModified="1515258ae06">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rtc_ex.c" lastModified="1514e9fca31"/>
-      </target>
-      <target file="stm32f1xx_hal_sd.o" lastModified="1515258a5dc">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_sd.c" lastModified="1514e9fca31"/>
-      </target>
-      <target file="stm32f1xx_hal_crc.o" lastModified="151525899fa">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_crc.c" lastModified="1514e9fc985"/>
-      </target>
-      <target file="stm32f1xx_hal_nor.o" lastModified="15152589fb4">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_nor.c" lastModified="1514e9fc9b4"/>
-      </target>
-      <target file="stm32f1xx_hal_gpio_ex.o" lastModified="151525898e1">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio_ex.c" lastModified="1514e9fc995"/>
-      </target>
-      <target file="stm32f1xx_ll_sdmmc.o" lastModified="1515258af3e">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_sdmmc.c" lastModified="1514e9fdecd"/>
-      </target>
-      <target file="usbd_customhid.o" lastModified="1515258ac42">
-         <source file="..\..\..\..\..\Middlewares\ST\STM32_USB_Device_Library\Class\CustomHID\Src\usbd_customhid.c" lastModified="1514ea05508"/>
-      </target>
-      <target file="stm32f1xx_hal_i2c.o" lastModified="1515258a781">
+      <target file="stm32f1xx_hal_i2c.o" lastModified="15152766e47">
          <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_i2c.c" lastModified="1514e9fc995"/>
       </target>
-      <target file="stm32f1xx_hal_spi.o" lastModified="1515258a697">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_spi.c" lastModified="1514e9fca31"/>
+      <target file="stm32f1xx_hal_gpio_ex.o" lastModified="15152766930">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio_ex.c" lastModified="1514e9fc995"/>
       </target>
-      <target file="stm32f1xx_it.o" lastModified="15152589835">
-         <source file="..\..\..\..\..\Src\stm32f1xx_it.c" lastModified="15152546526"/>
+      <target file="stm32f1xx_hal_rcc_ex.o" lastModified="151527667e3">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rcc_ex.c" lastModified="1514e9fca21"/>
       </target>
-      <target file="startup_stm32f103xg.o" lastModified="1515258a4a4">
-         <source file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xg.s" lastModified="1514e9f0c00"/>
+      <target file="stm32f1xx_hal_flash_ex.o" lastModified="15152766ffd">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash_ex.c" lastModified="1514e9fc995"/>
       </target>
-      <target file="stm32f1xx_hal_pcd.o" lastModified="15152589d44">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_pcd.c" lastModified="1514e9fc9b4"/>
-      </target>
-      <target file="usbd_conf.o" lastModified="1515258a4a4">
-         <source file="..\..\..\..\..\Src\usbd_conf.c" lastModified="1515254643c"/>
-      </target>
-      <target file="stm32f1xx_hal_spi_ex.o" lastModified="1515258a0cd">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_spi_ex.c" lastModified="1514e9fca50"/>
-      </target>
-      <target file="stm32f1xx_hal_iwdg.o" lastModified="15152589a48">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_iwdg.c" lastModified="1514e9fc9b4"/>
-      </target>
-      <target file="stm32f1xx_hal_gpio.o" lastModified="1515258a2fe">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio.c" lastModified="1514e9fc995"/>
-      </target>
-      <target file="stm32f1xx_hal_i2s.o" lastModified="15152589c6a">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_i2s.c" lastModified="1514e9fc9b4"/>
-      </target>
-      <target file="stm32f1xx_hal_nand.o" lastModified="1515258abd4">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_nand.c" lastModified="1514e9fc9b4"/>
-      </target>
-      <target file="system_stm32f1xx.o" lastModified="15152589aa5">
+      <target file="system_stm32f1xx.o" lastModified="151527669e1">
          <source file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\system_stm32f1xx.c" lastModified="1514e9f0c10"/>
       </target>
-      <target file="stm32f1xx_hal_irda.o" lastModified="1515258a58e">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_irda.c" lastModified="1514e9fc9b4"/>
+      <target file="stm32f1xx_it.o" lastModified="151527668e3">
+         <source file="..\..\..\..\..\Src\stm32f1xx_it.c" lastModified="15152745f9c"/>
       </target>
-      <target file="usbd_ctlreq.o" lastModified="1515258ab29">
-         <source file="..\..\..\..\..\Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_ctlreq.c" lastModified="1514ea11f6c"/>
+      <target file="stm32f1xx_hal_msp.o" lastModified="15152766ea0">
+         <source file="..\..\..\..\..\Src\stm32f1xx_hal_msp.c" lastModified="1515274602d"/>
       </target>
-      <target file="stm32f1xx_hal_tim_ex.o" lastModified="1515258ae92">
+      <target file="stm32f1xx_hal_uart.o" lastModified="15152766b7d">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_uart.c" lastModified="1514e9fdcab"/>
+      </target>
+      <target file="stm32f1xx_hal.o" lastModified="15152766895">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c" lastModified="1514e9fc947"/>
+      </target>
+      <target file="stm32f1xx_hal_tim_ex.o" lastModified="15152767084">
          <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_tim_ex.c" lastModified="1514e9fdcab"/>
       </target>
-      <target file="stm32f1xx_hal_pcd_ex.o" lastModified="1515258ab77">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_pcd_ex.c" lastModified="1514e9fca21"/>
-      </target>
-      <target file="stm32f1xx_hal_smartcard.o" lastModified="15152589cb8">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_smartcard.c" lastModified="1514e9fca31"/>
-      </target>
-      <target file="stm32f1xx_hal_hcd.o" lastModified="1515258a1c6">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_hcd.c" lastModified="1514e9fc995"/>
-      </target>
-      <target file="startup_stm32f103xe.o" lastModified="1515258a234">
-         <source file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xe.s" lastModified="1514e9f0c00"/>
-      </target>
-      <target file="stm32f1xx_hal_wwdg.o" lastModified="1515258993e">
-         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_wwdg.c" lastModified="1514e9fdecd"/>
-      </target>
-      <target file="stm32f1xx_hal_tim.o" lastModified="1515258aa3f">
+      <target file="stm32f1xx_hal_tim.o" lastModified="15152766f9c">
          <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_tim.c" lastModified="1514e9fdc5d"/>
+      </target>
+      <target file="stm32f1xx_hal_adc.o" lastModified="15152766aee">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_adc.c" lastModified="1514e9fc947"/>
+      </target>
+      <target file="stm32f1xx_hal_adc_ex.o" lastModified="15152766d72">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_adc_ex.c" lastModified="1514e9fc947"/>
+      </target>
+      <target file="stm32f1xx_hal_dma.o" lastModified="15152766d01">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_dma.c" lastModified="1514e9fc985"/>
+      </target>
+      <target file="stm32f1xx_hal_flash.o" lastModified="15152766c3e">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_flash.c" lastModified="1514e9fc995"/>
+      </target>
+      <target file="stm32f1xx_hal_cortex.o" lastModified="15152766991">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c" lastModified="1514e9fc985"/>
+      </target>
+      <target file="stm32f1xx_hal_gpio.o" lastModified="15152766c99">
+         <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio.c" lastModified="1514e9fc995"/>
+      </target>
+      <target file="main.o" lastModified="15152766bd8">
+         <source file="..\..\..\..\..\Src\main.c" lastModified="15152746112"/>
       </target>
    </processor>
 </history>
