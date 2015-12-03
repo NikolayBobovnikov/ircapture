@@ -4,7 +4,7 @@
 #include <sys/unistd.h>
 #include "stm32f1xx_hal.h"
 
-extern UART_HandleTypeDef * huart;
+//TODO: io using UART //extern UART_HandleTypeDef * huart;
 
 int _write(int file, char *ptr, int len);
 
@@ -112,7 +112,7 @@ int _read(int file, char *ptr, int len)
     {
     case STDIN_FILENO:
         //TODO: check conversion below
-        HAL_UART_Receive(huart, (uint8_t*)ptr, len, 1000);
+    	//TODO: io using UART //HAL_UART_Receive(huart, (uint8_t*)ptr, len, 1000);
         break;
     default:
         errno = EBADF;
@@ -155,11 +155,11 @@ int _write(int file, char *ptr, int len)
     {
     case STDOUT_FILENO: /*stdout*/
         //TODO: check conversion below
-        HAL_UART_Transmit(huart, (uint8_t*)ptr, len, 1000);
+    	//TODO: io using UART //HAL_UART_Transmit(huart, (uint8_t*)ptr, len, 1000);
         break;
     case STDERR_FILENO: /* stderr */
         //TODO: check conversion below
-        HAL_UART_Transmit(huart, (uint8_t*)ptr, len, 1000);
+    	//TODO: io using UART //HAL_UART_Transmit(huart, (uint8_t*)ptr, len, 1000);
         break;
     default:
         errno = EBADF;
