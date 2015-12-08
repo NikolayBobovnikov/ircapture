@@ -36,7 +36,10 @@
 #include "stm32f1xx_it.h"
 
 /* USER CODE BEGIN 0 */
+#include <stdbool.h>
+
 int counter = 0;
+extern received_ir_signal;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -111,7 +114,8 @@ void TIM2_IRQHandler(void)
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_2);
+  received_ir_signal = true;
+
   /* USER CODE END TIM2_IRQn 1 */
 }
 
@@ -135,12 +139,12 @@ void TIM3_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-	counter = __HAL_TIM_GET_COUNTER(&htim2);
+//	counter = __HAL_TIM_GET_COUNTER(&htim2);
 
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4); // carrier 38kHz
+  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4); // carrier 38kHz
   /* USER CODE END TIM4_IRQn 1 */
 }
 

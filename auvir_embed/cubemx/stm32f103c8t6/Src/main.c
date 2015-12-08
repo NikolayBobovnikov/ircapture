@@ -34,7 +34,7 @@
 #include "stm32f1xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -51,6 +51,7 @@ TIM_HandleTypeDef htim4;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 //TODO: io using UART //UART_HandleTypeDef * huart = &huart3;
+bool received_ir_signal = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,7 +66,11 @@ static void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-
+void IR_DeInit(void);
+void IR_Init(void);
+void IR_Encode(uint8_t *byte);
+void IR_Decode(uint8_t *byte);
+void IR_ResetPacket(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -97,9 +102,10 @@ int main(void)
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim4); // 38 KHz
-  HAL_TIM_Base_Start_IT(&htim3); // 1 Hz
+  //HAL_TIM_Base_Start_IT(&htim4); // 38 KHz
+  //HAL_TIM_Base_Start_IT(&htim3); // 1 Hz
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start_IT(&htim4, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -253,20 +259,29 @@ void MX_TIM4_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_OC_InitTypeDef sConfigOC;
 
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 948;
+  htim4.Init.Period = 947;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim4);
 
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
 
+  HAL_TIM_PWM_Init(&htim4);
+
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 200;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
 
 }
 
@@ -303,16 +318,22 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
   __GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pins : PA2 PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_4;
+  /*Configure GPIO pin : PA2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA3 */
   GPIO_InitStruct.Pin = GPIO_PIN_3;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
