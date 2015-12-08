@@ -50,7 +50,13 @@ TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+///TODO: refactor constants below
 bool received_ir_signal = false;
+const uint8_t byte = 0b10000110;
+const uint8_t total_bits = 8;
+volatile uint8_t current_bit_position = 0;
+volatile uint8_t bit = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,11 +71,6 @@ static void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void IR_DeInit(void);
-void IR_Init(void);
-void IR_Encode(uint8_t *byte);
-void IR_Decode(uint8_t *byte);
-void IR_ResetPacket(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -86,15 +87,14 @@ void enable_config_ir_gpio();
 void choose_message();
 void send_data_frame();
 void send_protocol_frame();
+void send_bit();
 
 // level 3
-void disable_tim_interrupts();
 void generate_binary_for_ir_frame();
 void convert_ir_frame_to_manchester_format();
 void transform_binary_from_msb_to_lsb();
 void convert_binary_to_pwm_format();
 void set_send_operation_ready();
-void enable_tim_interrupts();
 
 // level 4
 void force_envelop_timer_output_active();
@@ -127,9 +127,10 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   //HAL_TIM_Base_Start_IT(&htim4);
-  //HAL_TIM_Base_Start_IT(&htim3);
-  HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_1); // envelop
-  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
+  HAL_TIM_Base_Start_IT(&htim3);
+
+  //HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_1); // envelop
+  //HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -218,7 +219,6 @@ void MX_TIM2_Init(void)
 {
 
   TIM_ClockConfigTypeDef sClockSourceConfig;
-  TIM_SlaveConfigTypeDef sSlaveConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_OC_InitTypeDef sConfigOC;
 
@@ -234,16 +234,12 @@ void MX_TIM2_Init(void)
 
   HAL_TIM_PWM_Init(&htim2);
 
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_GATED;
-  sSlaveConfig.InputTrigger = TIM_TS_ITR2;
-  HAL_TIM_SlaveConfigSynchronization(&htim2, &sSlaveConfig);
-
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1REF;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 200;
+  sConfigOC.Pulse = 100;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2);
@@ -256,29 +252,20 @@ void MX_TIM3_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
-  TIM_OC_InitTypeDef sConfigOC;
 
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 72;
+  htim3.Init.Prescaler = 720;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 10000;
+  htim3.Init.Period = 1000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim3);
 
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
 
-  HAL_TIM_OC_Init(&htim3);
-
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1REF;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
-
-  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
-  sConfigOC.Pulse = 2000;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
 
 }
 
@@ -385,32 +372,54 @@ void pwm_receive()
 void enable_config_timer_carrier(){}
 void enable_config_timer_envelop(){}
 void enable_config_ir_gpio(){}
-void choose_message(){}
+void choose_message()
+{
+
+}
 void send_data_frame()
 {
-    disable_tim_interrupts();
+    // disable_tim_interrupts
+    __HAL_TIM_DISABLE_IT(&htim3, TIM_IT_CC1);
+
     generate_binary_for_ir_frame();
     convert_ir_frame_to_manchester_format();
     set_send_operation_ready();
-    enable_tim_interrupts();
+
+    // enable_tim_interrupts
+    __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_CC1);
 }
 void send_protocol_frame()
 {
-    generate_binary_for_ir_frame();
-    transform_binary_from_msb_to_lsb();
-    convert_binary_to_pwm_format();
+    ///generate_binary_for_ir_frame();
+    ///transform_binary_from_msb_to_lsb();
+    ///convert_binary_to_pwm_format();
 
     // TODO: get total bit number
-    uint8_t total_bit_number = 0;
-    uint8_t BitsSent_Counter = 0;
-    uint8_t bit;
     do
     {
-        // get bit to be sent
-        // TODO
+        // k-th bit of n: (n >> k) & 1
+        bit = (byte >> current_bit_position) & 1;
+        if(bit == 1)
+        {
+            force_envelop_timer_output_active();
 
-        //
+        }
+        else // bit == 0
+        {
+            force_envelop_timer_output_inactive();
 
+        }
+
+        current_bit_position++;
+    } while (current_bit_position < total_bits);
+
+}
+void send_bit()
+{
+    if (current_bit_position < total_bits)
+    {
+        // k-th bit of n: (n >> k) & 1
+        bit = (byte >> current_bit_position) & 1;
         if(bit == 1)
         {
             force_envelop_timer_output_active();
@@ -419,14 +428,15 @@ void send_protocol_frame()
         {
             force_envelop_timer_output_inactive();
         }
-
-        BitsSent_Counter++;
-
-    } while (BitsSent_Counter < total_bit_number);
-
+        current_bit_position++;
+    }
+    else
+    {
+        force_envelop_timer_output_inactive();
+        current_bit_position = 0;
+    }
 }
 
-void disable_tim_interrupts(){}
 void generate_binary_for_ir_frame(){}
 void convert_ir_frame_to_manchester_format(){}
 void transform_binary_from_msb_to_lsb(){}
@@ -435,10 +445,22 @@ void set_send_operation_ready()
 {
     Send_Operation_Ready = true;
 }
-void enable_tim_interrupts(){}
 
-void force_envelop_timer_output_active(){}
-void force_envelop_timer_output_inactive(){}
+void force_envelop_timer_output_active()
+{
+    HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
+    //TIM_OC_InitTypeDef sConfigOC;
+    //sConfigOC.OCMode = TIM_OCMODE_FORCED_ACTIVE;
+    //HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
+}
+void force_envelop_timer_output_inactive()\
+{
+    HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
+
+    //TIM_OC_InitTypeDef sConfigOC;
+    //sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
+    //HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
+}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT

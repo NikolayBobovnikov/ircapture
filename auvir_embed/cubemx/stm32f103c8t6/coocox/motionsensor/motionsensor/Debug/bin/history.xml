@@ -1,29 +1,29 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <history>
-   <processor signature="arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -g2 -Map=motionsensor.map -O0 --gc-sections -LC:\Users\nbobovnikov\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\motionsensor -TC:\Users\nbobovnikov\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\motionsensor/arm-gcc-link.ld -g">
-      <target file="motionsensor.elf" lastModified="15181b7a36b">
-         <source file="..\obj\stm32f1xx_hal_dma.o" lastModified="151819f65fa"/>
-         <source file="..\obj\stm32f1xx_hal_i2c.o" lastModified="151819f67f2"/>
-         <source file="..\obj\stm32f1xx_hal_flash_ex.o" lastModified="151819f69c7"/>
-         <source file="..\obj\system_stm32f1xx.o" lastModified="151819f6311"/>
-         <source file="..\obj\stm32f1xx_hal_cortex.o" lastModified="151819f62bc"/>
-         <source file="..\obj\stm32f1xx_hal_gpio.o" lastModified="151819f658a"/>
-         <source file="..\obj\stm32f1xx_hal_spi.o" lastModified="151819f66ab"/>
-         <source file="..\obj\stm32f1xx_hal_tim_ex.o" lastModified="151819f6a57"/>
-         <source file="..\obj\stm32f1xx_hal_rcc_ex.o" lastModified="151819f60d0"/>
-         <source file="..\obj\stm32f1xx_hal_spi_ex.o" lastModified="151819f64c3"/>
-         <source file="..\obj\stm32f1xx_hal.o" lastModified="151819f619e"/>
-         <source file="..\obj\stm32f1xx_hal_gpio_ex.o" lastModified="151819f624d"/>
-         <source file="..\obj\stm32f1xx_it.o" lastModified="15181b7a16b"/>
-         <source file="..\obj\startup_stm32f103xb.o" lastModified="151819f646e"/>
-         <source file="..\obj\infrared.o" lastModified="151819f6464"/>
-         <source file="..\obj\main.o" lastModified="151819f6417"/>
-         <source file="..\obj\syscalls.o" lastModified="151819f670e"/>
-         <source file="..\obj\stm32f1xx_hal_msp.o" lastModified="151819f6852"/>
-         <source file="..\obj\stm32f1xx_hal_flash.o" lastModified="151819f6527"/>
-         <source file="..\obj\stm32f1xx_hal_tim.o" lastModified="151819f695b"/>
-         <source file="..\obj\stm32f1xx_hal_pwr.o" lastModified="151819f6135"/>
-         <source file="..\obj\stm32f1xx_hal_rcc.o" lastModified="151819f63ad"/>
+   <processor signature="4.9.3 -mcpu=cortex-m3 -mthumb -g2 -Map=motionsensor.map -O0 --gc-sections -LC:\Users\nikolay\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\motionsensor -TC:\Users\nikolay\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\motionsensor/arm-gcc-link.ld -g">
+      <target file="motionsensor.elf" lastModified="15183bc6ce0">
+         <source file="..\obj\stm32f1xx_hal_dma.o" lastModified="15183bc62f4"/>
+         <source file="..\obj\stm32f1xx_hal_i2c.o" lastModified="15183bc64c0"/>
+         <source file="..\obj\stm32f1xx_hal_flash_ex.o" lastModified="15183bc6754"/>
+         <source file="..\obj\system_stm32f1xx.o" lastModified="15183bc6048"/>
+         <source file="..\obj\stm32f1xx_hal_cortex.o" lastModified="15183bc5ff8"/>
+         <source file="..\obj\stm32f1xx_hal_gpio.o" lastModified="15183bc6290"/>
+         <source file="..\obj\stm32f1xx_hal_spi.o" lastModified="15183bc6394"/>
+         <source file="..\obj\stm32f1xx_hal_tim_ex.o" lastModified="15183bc67ea"/>
+         <source file="..\obj\stm32f1xx_hal_rcc_ex.o" lastModified="15183bc5d78"/>
+         <source file="..\obj\stm32f1xx_hal_spi_ex.o" lastModified="15183bc61d2"/>
+         <source file="..\obj\stm32f1xx_hal.o" lastModified="15183bc5e2c"/>
+         <source file="..\obj\stm32f1xx_hal_gpio_ex.o" lastModified="15183bc5eea"/>
+         <source file="..\obj\stm32f1xx_it.o" lastModified="15183bc5e7c"/>
+         <source file="..\obj\startup_stm32f103xb.o" lastModified="15183bc618c"/>
+         <source file="..\obj\infrared.o" lastModified="15183bc6182"/>
+         <source file="..\obj\main.o" lastModified="15183bc6132"/>
+         <source file="..\obj\syscalls.o" lastModified="15183bc63ee"/>
+         <source file="..\obj\stm32f1xx_hal_msp.o" lastModified="15183bc651a"/>
+         <source file="..\obj\stm32f1xx_hal_flash.o" lastModified="15183bc6236"/>
+         <source file="..\obj\stm32f1xx_hal_tim.o" lastModified="15183bc6614"/>
+         <source file="..\obj\stm32f1xx_hal_pwr.o" lastModified="15183bc5dd2"/>
+         <source file="..\obj\stm32f1xx_hal_rcc.o" lastModified="15183bc60ce"/>
       </target>
    </processor>
 </history>

@@ -40,6 +40,7 @@
 
 int counter = 0;
 extern received_ir_signal;
+extern send_bit();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -110,11 +111,16 @@ void DMA1_Channel3_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_2);
+    if(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) != RESET)
+    {
+      if(__HAL_TIM_GET_IT_SOURCE(&htim2, TIM_IT_UPDATE) !=RESET)
+      {
+        HAL_TIM_Base_Stop_IT(&htim2);
+      }
+    }
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-  received_ir_signal = true;
 
   /* USER CODE END TIM2_IRQn 1 */
 }
@@ -124,68 +130,36 @@ void TIM2_IRQHandler(void)
 */
 void TIM3_IRQHandler(void)
 {
-//	typedef struct
-//	{
-//	  __IO uint32_t CR1;             /*!< TIM control register 1,                      Address offset: 0x00 */
-//	  __IO uint32_t CR2;             /*!< TIM control register 2,                      Address offset: 0x04 */
-//	  __IO uint32_t SMCR;            /*!< TIM slave Mode Control register,             Address offset: 0x08 */
-//	  __IO uint32_t DIER;            /*!< TIM DMA/interrupt enable register,           Address offset: 0x0C */
-//	  __IO uint32_t SR;              /*!< TIM status register,                         Address offset: 0x10 */
-//	  __IO uint32_t EGR;             /*!< TIM event generation register,               Address offset: 0x14 */
-//	  __IO uint32_t CCMR1;           /*!< TIM  capture/compare mode register 1,        Address offset: 0x18 */
-//	  __IO uint32_t CCMR2;           /*!< TIM  capture/compare mode register 2,        Address offset: 0x1C */
-//	  __IO uint32_t CCER;            /*!< TIM capture/compare enable register,         Address offset: 0x20 */
-//	  __IO uint32_t CNT;             /*!< TIM counter register,                        Address offset: 0x24 */
-//	  __IO uint32_t PSC;             /*!< TIM prescaler register,                      Address offset: 0x28 */
-//	  __IO uint32_t ARR;             /*!< TIM auto-reload register,                    Address offset: 0x2C */
-//	  __IO uint32_t RCR;             /*!< TIM  repetition counter register,            Address offset: 0x30 */
-//	  __IO uint32_t CCR1;            /*!< TIM capture/compare register 1,              Address offset: 0x34 */
-//	  __IO uint32_t CCR2;            /*!< TIM capture/compare register 2,              Address offset: 0x38 */
-//	  __IO uint32_t CCR3;            /*!< TIM capture/compare register 3,              Address offset: 0x3C */
-//	  __IO uint32_t CCR4;            /*!< TIM capture/compare register 4,              Address offset: 0x40 */
-//	  __IO uint32_t BDTR;            /*!< TIM break and dead-time register,            Address offset: 0x44 */
-//	  __IO uint32_t DCR;             /*!< TIM DMA control register,                    Address offset: 0x48 */
-//	  __IO uint32_t DMAR;            /*!< TIM DMA address for full transfer register,  Address offset: 0x4C */
-//	  __IO uint32_t OR;              /*!< TIM option register,                         Address offset: 0x50 */
-//	}TIM_TypeDef;
-
-
   /* USER CODE BEGIN TIM3_IRQn 0 */
-  uint32_t CR1    = htim3.Instance->CR1  ;
-  uint32_t CR2    = htim3.Instance->CR2  ;
-  uint32_t SMCR   = htim3.Instance->SMCR ;
-  uint32_t DIER   = htim3.Instance->DIER ;
-  uint32_t SR     = htim3.Instance->SR   ;
-  uint32_t EGR    = htim3.Instance->EGR  ;
-  uint32_t CCMR1  = htim3.Instance->CCMR1;
-  uint32_t CCMR2  = htim3.Instance->CCMR2;
-  uint32_t CCER   = htim3.Instance->CCER ;
-  uint32_t CNT    = htim3.Instance->CNT  ;
-  uint32_t PSC    = htim3.Instance->PSC  ;
-  uint32_t ARR    = htim3.Instance->ARR  ;
-  uint32_t RCR    = htim3.Instance->RCR  ;
-  uint32_t CCR1   = htim3.Instance->CCR1 ;
-  uint32_t CCR2   = htim3.Instance->CCR2 ;
-  uint32_t CCR3   = htim3.Instance->CCR3 ;
-  uint32_t CCR4   = htim3.Instance->CCR4 ;
-  uint32_t BDTR   = htim3.Instance->BDTR ;
-  uint32_t DCR    = htim3.Instance->DCR  ;
-  uint32_t DMAR   = htim3.Instance->DMAR ;
-  uint32_t OR     = htim3.Instance->OR   ;
+//  uint32_t CR1    = htim3.Instance->CR1  ;
+//  uint32_t CR2    = htim3.Instance->CR2  ;
+//  uint32_t SMCR   = htim3.Instance->SMCR ;
+//  uint32_t DIER   = htim3.Instance->DIER ;
+//  uint32_t SR     = htim3.Instance->SR   ;
+//  uint32_t EGR    = htim3.Instance->EGR  ;
+//  uint32_t CCMR1  = htim3.Instance->CCMR1;
+//  uint32_t CCMR2  = htim3.Instance->CCMR2;
+//  uint32_t CCER   = htim3.Instance->CCER ;
+//  uint32_t CNT    = htim3.Instance->CNT  ;
+//  uint32_t PSC    = htim3.Instance->PSC  ;
+//  uint32_t ARR    = htim3.Instance->ARR  ;
+//  uint32_t RCR    = htim3.Instance->RCR  ;
+//  uint32_t CCR1   = htim3.Instance->CCR1 ;
+//  uint32_t CCR2   = htim3.Instance->CCR2 ;
+//  uint32_t CCR3   = htim3.Instance->CCR3 ;
+//  uint32_t CCR4   = htim3.Instance->CCR4 ;
+//  uint32_t BDTR   = htim3.Instance->BDTR ;
+//  uint32_t DCR    = htim3.Instance->DCR  ;
+//  uint32_t DMAR   = htim3.Instance->DMAR ;
+//  uint32_t OR     = htim3.Instance->OR   ;
+//  uint32_t cap = HAL_TIM_ReadCapturedValue(&htim3, TIM_CHANNEL_1);
 
-  uint32_t cap = HAL_TIM_ReadCapturedValue(&htim3, TIM_CHANNEL_1);
-
+  send_bit();
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
-  __HAL_TIM_SET_COUNTER(&htim2, htim2.Init.Period);
-  if(__HAL_TIM_GET_IT_SOURCE(&htim3, TIM_IT_CC1) == SET)
-    {
-        int a = 0;
-    }
-  //if(IS_TIM_OC_MODE(TIM_OCMODE_ACTIVE))
-
-  //htim3.Instance->CCMR1;
+  //__HAL_TIM_SET_COUNTER(&htim2, htim2.Init.Period);
+  //if(__HAL_TIM_GET_IT_SOURCE(&htim3, TIM_IT_CC1) == SET)
 
   /* USER CODE END TIM3_IRQn 1 */
 }
