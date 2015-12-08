@@ -173,9 +173,19 @@ void TIM3_IRQHandler(void)
   uint32_t DMAR   = htim3.Instance->DMAR ;
   uint32_t OR     = htim3.Instance->OR   ;
 
+  uint32_t cap = HAL_TIM_ReadCapturedValue(&htim3, TIM_CHANNEL_1);
+
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
+  __HAL_TIM_SET_COUNTER(&htim2, htim2.Init.Period);
+  if(__HAL_TIM_GET_IT_SOURCE(&htim3, TIM_IT_CC1) == SET)
+    {
+        int a = 0;
+    }
+  //if(IS_TIM_OC_MODE(TIM_OCMODE_ACTIVE))
+
+  //htim3.Instance->CCMR1;
 
   /* USER CODE END TIM3_IRQn 1 */
 }
