@@ -58,7 +58,7 @@
       <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h" lastModified="1514e9fc5be">
          <include file="..\..\..\..\..\Inc\stm32f1xx_hal_conf.h"/>
       </source>
-      <source file="..\..\..\..\..\Src\stm32f1xx_it.c" lastModified="15183bc5990">
+      <source file="..\..\..\..\..\Src\stm32f1xx_it.c" lastModified="1518859b22a">
          <include file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h"/>
          <include file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h"/>
          <include file="..\..\..\..\..\Inc\stm32f1xx_it.h"/>
@@ -97,7 +97,7 @@
          <include file="..\..\..\..\..\Drivers\CMSIS\Include\core_cm3.h"/>
          <include file="..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h"/>
       </source>
-      <source file="..\..\..\..\..\Src\main.c" lastModified="15183bc0fb9">
+      <source file="..\..\..\..\..\Src\main.c" lastModified="1518863461b">
          <include file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h"/>
       </source>
       <source file="..\..\..\..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_i2c.c" lastModified="1514e9fc995">

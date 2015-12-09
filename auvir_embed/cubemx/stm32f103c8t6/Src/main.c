@@ -56,6 +56,8 @@ const uint8_t byte = 0b10000110;
 const uint8_t total_bits = 8;
 volatile uint8_t current_bit_position = 0;
 volatile uint8_t bit = 0;
+bool start_bit_sent = false;
+bool data_frame_sent = false;
 
 /* USER CODE END PV */
 
@@ -87,7 +89,7 @@ void enable_config_ir_gpio();
 void choose_message();
 void send_data_frame();
 void send_protocol_frame();
-void send_bit();
+void transmit_handler();
 
 // level 3
 void generate_binary_for_ir_frame();
@@ -360,14 +362,30 @@ void pwm_transmit()
     enable_config_timer_carrier();
     enable_config_timer_envelop();
     enable_config_ir_gpio();
-    while(true)
-    {
-        choose_message();
-        send_data_frame();
-    }
+    choose_message();
+    send_data_frame();
+
 }
 void pwm_receive()
-{}
+{
+    /* Receive data frame
+     * 1. start bit
+     * 2. data
+     * 3. data repeated
+     * 4. stop bit
+     *
+     * After receiving, check data integrity. If OK, data is received
+     */
+
+    /* 1. Waiting for start bit
+     * 2. Input capture channel: rising edge detected. Start timer, wait 1/2 of period
+     * 3. 1/2 period check: if signal is high, start bit is received, goto 4, otherwise stop timer, goto 1
+     * 4. 1/2 + i period check: read timer signal, increment received bits count
+     * 5. If rbc == total_bits, wait for stop bit
+     * 6. Check stop bit: if signal is high, stop timer, save received data, update event (?), goto 1
+     *
+     */
+}
 
 void enable_config_timer_carrier(){}
 void enable_config_timer_envelop(){}
@@ -414,9 +432,23 @@ void send_protocol_frame()
     } while (current_bit_position < total_bits);
 
 }
-void send_bit()
+void transmit_handler()
 {
-    if (current_bit_position < total_bits)
+    /* Send data frame
+     * 1. start bit
+     * 2. data
+     * 3. data repeated
+     * 4. stop bit
+     */
+
+    // start bit
+    if(!start_bit_sent)
+    {
+        force_envelop_timer_output_active();
+        start_bit_sent = true;
+    }
+    // data bits
+    else if(current_bit_position < total_bits)
     {
         // k-th bit of n: (n >> k) & 1
         bit = (byte >> current_bit_position) & 1;
@@ -430,10 +462,19 @@ void send_bit()
         }
         current_bit_position++;
     }
+    // stop bit
+    else if(!data_frame_sent)
+    {
+        force_envelop_timer_output_active();
+        data_frame_sent = true;
+    }
+    // delay after sending data frame
     else
     {
-        force_envelop_timer_output_inactive();
+        force_envelop_timer_output_active();
+        data_frame_sent = false;
         current_bit_position = 0;
+        start_bit_sent = false;
     }
 }
 

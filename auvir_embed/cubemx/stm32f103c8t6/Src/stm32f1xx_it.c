@@ -40,7 +40,7 @@
 
 int counter = 0;
 extern received_ir_signal;
-extern send_bit();
+extern send_current_bit();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -131,30 +131,9 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-//  uint32_t CR1    = htim3.Instance->CR1  ;
-//  uint32_t CR2    = htim3.Instance->CR2  ;
-//  uint32_t SMCR   = htim3.Instance->SMCR ;
-//  uint32_t DIER   = htim3.Instance->DIER ;
-//  uint32_t SR     = htim3.Instance->SR   ;
-//  uint32_t EGR    = htim3.Instance->EGR  ;
-//  uint32_t CCMR1  = htim3.Instance->CCMR1;
-//  uint32_t CCMR2  = htim3.Instance->CCMR2;
-//  uint32_t CCER   = htim3.Instance->CCER ;
-//  uint32_t CNT    = htim3.Instance->CNT  ;
-//  uint32_t PSC    = htim3.Instance->PSC  ;
-//  uint32_t ARR    = htim3.Instance->ARR  ;
-//  uint32_t RCR    = htim3.Instance->RCR  ;
-//  uint32_t CCR1   = htim3.Instance->CCR1 ;
-//  uint32_t CCR2   = htim3.Instance->CCR2 ;
-//  uint32_t CCR3   = htim3.Instance->CCR3 ;
-//  uint32_t CCR4   = htim3.Instance->CCR4 ;
-//  uint32_t BDTR   = htim3.Instance->BDTR ;
-//  uint32_t DCR    = htim3.Instance->DCR  ;
-//  uint32_t DMAR   = htim3.Instance->DMAR ;
-//  uint32_t OR     = htim3.Instance->OR   ;
-//  uint32_t cap = HAL_TIM_ReadCapturedValue(&htim3, TIM_CHANNEL_1);
 
-  send_bit();
+  send_current_bit();
+
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
