@@ -76,7 +76,36 @@ static void MX_TIM4_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-bool Send_Operation_Ready = false;
+
+//TODO: specify timer constants
+const uint16_t StartBitPeriod = 10;//ms
+const uint16_t DataBitPeriod = 20;//ms
+enum ReceiverStates
+{
+    RX_WAITING_FOR_START_BIT,
+    RX_START_BIT_SENDING_LOW,
+    RX_START_BIT_SENDING_HIGH,
+    RX_START_BIT_SENT,
+    RX_DATA_SENDING,
+    RX_DATA_SENT,
+    RX_STOP_BIT_SENDING,
+    RX_STOP_BIT_SENT
+};
+volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
+
+
+
+enum TransmitterStates
+{
+    TX_WAITING_FOR_TRANSMISSION,
+    TX_START_BIT_SENDING,
+    TX_START_BIT_SENT,
+    TX_DATA_SENDING,
+    TX_DATA_SENT,
+    TX_STOP_BIT_SENDING,
+    TX_STOP_BIT_SENT
+};
+volatile uint8_t TransmitterState = TX_WAITING_FOR_TRANSMISSION;
 
 // level 1
 void pwm_transmit();
@@ -96,7 +125,6 @@ void generate_binary_for_ir_frame();
 void convert_ir_frame_to_manchester_format();
 void transform_binary_from_msb_to_lsb();
 void convert_binary_to_pwm_format();
-void set_send_operation_ready();
 
 // level 4
 void force_envelop_timer_output_active();
@@ -359,6 +387,7 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void pwm_transmit()
 {
+
     enable_config_timer_carrier();
     enable_config_timer_envelop();
     enable_config_ir_gpio();
@@ -369,7 +398,7 @@ void pwm_transmit()
 void pwm_receive()
 {
     /* Receive data frame
-     * 1. start bit
+     * 1. start bit sequence: 1-0-1 with StartBitPeriod time in between
      * 2. data
      * 3. data repeated
      * 4. stop bit
@@ -385,6 +414,56 @@ void pwm_receive()
      * 6. Check stop bit: if signal is high, stop timer, save received data, update event (?), goto 1
      *
      */
+    switch(ReceiverState)
+    {
+        case RX_WAITING_FOR_START_BIT:
+        {
+            if(rising_edge_detected)
+            {
+                ReceiverState = RX_START_BIT_SENDING_LOW;
+                // timer.period is still StartBitPeriod
+                wait_for_zero_signal()
+            }
+
+            break;
+        }
+        case RX_START_BIT_SENDING_LOW:
+        {
+            if(current_signal_level_is_logic_zero)
+            {
+                ReceiverState = RX_START_BIT_SENDING_HIGH;
+                // timer.period is still StartBitPeriod
+                wait_for_high_signal()
+            }
+            else // reset starting state
+            {
+                ReceiverState = RX_WAITING_FOR_START_BIT;
+            }
+
+            break;
+        }
+        case RX_START_BIT_SENT:
+        {
+            break;
+        }
+        case RX_DATA_SENDING:
+        {
+            break;
+        }
+        case RX_DATA_SENT:
+        {
+            break;
+        }
+        case RX_STOP_BIT_SENDING:
+        {
+            break;
+        }
+        case RX_STOP_BIT_SENT:
+        {
+            break;
+        }
+    } // switch(ReceiverState)
+
 }
 
 void enable_config_timer_carrier(){}
@@ -401,7 +480,6 @@ void send_data_frame()
 
     generate_binary_for_ir_frame();
     convert_ir_frame_to_manchester_format();
-    set_send_operation_ready();
 
     // enable_tim_interrupts
     __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_CC1);
@@ -482,10 +560,7 @@ void generate_binary_for_ir_frame(){}
 void convert_ir_frame_to_manchester_format(){}
 void transform_binary_from_msb_to_lsb(){}
 void convert_binary_to_pwm_format(){}
-void set_send_operation_ready()
-{
-    Send_Operation_Ready = true;
-}
+
 
 void force_envelop_timer_output_active()
 {

@@ -40,7 +40,7 @@
 
 int counter = 0;
 extern received_ir_signal;
-extern send_current_bit();
+extern transmit_handler();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -132,7 +132,7 @@ void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
 
-  send_current_bit();
+  transmit_handler();
 
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
