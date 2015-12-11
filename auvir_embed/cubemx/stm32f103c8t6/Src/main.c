@@ -84,8 +84,7 @@ const uint16_t PeriodOfDataBits = 2000;// timer ticks
 enum ReceiverStates
 {
     RX_WAITING_FOR_START_BIT,
-    RX_START_BIT_SENDING_LOW,
-    RX_START_BIT_SENDING_HIGH,
+    RX_START_BIT_SENDING,
     RX_START_BIT_SENT,
     RX_DATA_SENDING,
     RX_DATA_SENT,
@@ -113,7 +112,8 @@ enum StartStopSequenceStates
     STAGE_OFF,
     STAGE_ON2
 };
-volatile uint8_t StartStopSequenceState = STAGE_0;
+volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
+volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
 
 // level 1
 void pwm_transmit();
@@ -483,23 +483,23 @@ void transmit_handler()
             htim3.Instance->ARR = PeriodOfStartStopBits;
 
             // Start sequence consists of signal sequence {1,0,1}
-            switch(StartStopSequenceState)
+            switch(StartStopSequenceTransmitState)
             {
                 case STAGE_0:
                 {
-                    StartStopSequenceState = STAGE_ON1;
+                    StartStopSequenceTransmitState = STAGE_ON1;
                     force_envelop_timer_output_on();
                     break;
                 }
                 case STAGE_ON1:
                 {
-                    StartStopSequenceState = STAGE_OFF;
+                    StartStopSequenceTransmitState = STAGE_OFF;
                     force_envelop_timer_output_off();
                     break;
                 }
                 case STAGE_OFF:
                 {
-                    StartStopSequenceState = STAGE_ON2;
+                    StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
                     break;
                 }
@@ -510,7 +510,7 @@ void transmit_handler()
                 {
 
                     //reset StartStopSequenceState
-                    StartStopSequenceState = STAGE_0;
+                    StartStopSequenceTransmitState = STAGE_0;
                     // move to next state
                     TransmitterState = TX_START_BIT_SENT;
                     break;
@@ -566,23 +566,23 @@ void transmit_handler()
             htim3.Instance->ARR = PeriodOfStartStopBits;
 
             // Start sequence consists of signal sequence {1,0,1}
-            switch(StartStopSequenceState)
+            switch(StartStopSequenceTransmitState)
             {
                 case STAGE_0:
                 {
-                    StartStopSequenceState = STAGE_ON1;
+                    StartStopSequenceTransmitState = STAGE_ON1;
                     force_envelop_timer_output_on();
                     break;
                 }
                 case STAGE_ON1:
                 {
-                    StartStopSequenceState = STAGE_OFF;
+                    StartStopSequenceTransmitState = STAGE_OFF;
                     force_envelop_timer_output_off();
                     break;
                 }
                 case STAGE_OFF:
                 {
-                    StartStopSequenceState = STAGE_ON2;
+                    StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
                     break;
                 }
@@ -593,7 +593,7 @@ void transmit_handler()
                 {
 
                     //reset StartStopSequenceState
-                    StartStopSequenceState = STAGE_0;
+                    StartStopSequenceTransmitState = STAGE_0;
                     // move to next state
                     TransmitterState = TX_STOP_BIT_SENT;
                     break;
@@ -646,6 +646,42 @@ void receive_handler()
                 //wait_for_timer_update();
             }
 
+            break;
+        }
+        case RX_START_BIT_SENDING:
+        {
+            // Start sequence consists of signal sequence {1,0,1}
+            switch(StartStopSequenceReceiveState)
+            {
+                case STAGE_0:
+                {
+                    StartStopSequenceTransmitState = STAGE_ON1;
+                    break;
+                }
+                case STAGE_ON1:
+                {
+                    StartStopSequenceTransmitState = STAGE_OFF;
+                    break;
+                }
+                case STAGE_OFF:
+                {
+                    StartStopSequenceTransmitState = STAGE_ON2;
+                    break;
+                }
+
+                // transitional state
+                // TODO: check if possible to move to beginning of next state (thus remove delay)
+                case STAGE_ON2:
+                {
+
+                    //reset StartStopSequenceState
+                    StartStopSequenceTransmitState = STAGE_0;
+                    // move to next state
+                    TransmitterState = TX_START_BIT_SENT;
+                    break;
+                }
+            }
+            break;
             break;
         }
         case RX_START_BIT_SENDING_LOW:
