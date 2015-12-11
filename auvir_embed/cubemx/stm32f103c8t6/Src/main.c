@@ -78,8 +78,9 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN 0 */
 
 //TODO: specify timer constants
-const uint16_t StartBitPeriod = 10;//ms
-const uint16_t DataBitPeriod = 20;//ms
+const uint16_t PeriodOfStartStopBits = 1000;// timer ticks
+const uint16_t PeriodOfDataBits = 2000;// timer ticks
+
 enum ReceiverStates
 {
     RX_WAITING_FOR_START_BIT,
@@ -93,8 +94,6 @@ enum ReceiverStates
 };
 volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
 
-
-
 enum TransmitterStates
 {
     TX_WAITING_FOR_TRANSMISSION,
@@ -106,6 +105,15 @@ enum TransmitterStates
     TX_STOP_BIT_SENT
 };
 volatile uint8_t TransmitterState = TX_WAITING_FOR_TRANSMISSION;
+
+enum StartStopSequenceStates
+{
+    STAGE_0,
+    STAGE_ON1,
+    STAGE_OFF,
+    STAGE_ON2
+};
+volatile uint8_t StartStopSequenceState = STAGE_0;
 
 // level 1
 void pwm_transmit();
@@ -119,6 +127,7 @@ void choose_message();
 void send_data_frame();
 void send_protocol_frame();
 void transmit_handler();
+void receive_handler();
 
 // level 3
 void generate_binary_for_ir_frame();
@@ -127,8 +136,12 @@ void transform_binary_from_msb_to_lsb();
 void convert_binary_to_pwm_format();
 
 // level 4
-void force_envelop_timer_output_active();
-void force_envelop_timer_output_inactive();
+void force_envelop_timer_output_on();
+void force_envelop_timer_output_off();
+void send_start_stop_sequence();
+
+inline void nop();
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -284,9 +297,9 @@ void MX_TIM3_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 720;
+  htim3.Init.Prescaler = 72;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1000;
+  htim3.Init.Period = 2000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim3);
 
@@ -397,72 +410,7 @@ void pwm_transmit()
 }
 void pwm_receive()
 {
-    /* Receive data frame
-     * 1. start bit sequence: 1-0-1 with StartBitPeriod time in between
-     * 2. data
-     * 3. data repeated
-     * 4. stop bit
-     *
-     * After receiving, check data integrity. If OK, data is received
-     */
 
-    /* 1. Waiting for start bit
-     * 2. Input capture channel: rising edge detected. Start timer, wait 1/2 of period
-     * 3. 1/2 period check: if signal is high, start bit is received, goto 4, otherwise stop timer, goto 1
-     * 4. 1/2 + i period check: read timer signal, increment received bits count
-     * 5. If rbc == total_bits, wait for stop bit
-     * 6. Check stop bit: if signal is high, stop timer, save received data, update event (?), goto 1
-     *
-     */
-    switch(ReceiverState)
-    {
-        case RX_WAITING_FOR_START_BIT:
-        {
-            if(rising_edge_detected)
-            {
-                ReceiverState = RX_START_BIT_SENDING_LOW;
-                // timer.period is still StartBitPeriod
-                wait_for_zero_signal()
-            }
-
-            break;
-        }
-        case RX_START_BIT_SENDING_LOW:
-        {
-            if(current_signal_level_is_logic_zero)
-            {
-                ReceiverState = RX_START_BIT_SENDING_HIGH;
-                // timer.period is still StartBitPeriod
-                wait_for_high_signal()
-            }
-            else // reset starting state
-            {
-                ReceiverState = RX_WAITING_FOR_START_BIT;
-            }
-
-            break;
-        }
-        case RX_START_BIT_SENT:
-        {
-            break;
-        }
-        case RX_DATA_SENDING:
-        {
-            break;
-        }
-        case RX_DATA_SENT:
-        {
-            break;
-        }
-        case RX_STOP_BIT_SENDING:
-        {
-            break;
-        }
-        case RX_STOP_BIT_SENT:
-        {
-            break;
-        }
-    } // switch(ReceiverState)
 
 }
 
@@ -497,12 +445,12 @@ void send_protocol_frame()
         bit = (byte >> current_bit_position) & 1;
         if(bit == 1)
         {
-            force_envelop_timer_output_active();
+            force_envelop_timer_output_on();
 
         }
         else // bit == 0
         {
-            force_envelop_timer_output_inactive();
+            force_envelop_timer_output_off();
 
         }
 
@@ -513,47 +461,246 @@ void send_protocol_frame()
 void transmit_handler()
 {
     /* Send data frame
-     * 1. start bit
+     * 1. start sequence
      * 2. data
-     * 3. data repeated
-     * 4. stop bit
+     *  2.1 Coded angle
+     *  2.2 Time of emission
+     *  2.3 Beamer ID
+     * 3. data redundancy (repeated, or use error correction code)
+     * 4. stop sequence
      */
 
-    // start bit
-    if(!start_bit_sent)
+    switch(TransmitterState)
     {
-        force_envelop_timer_output_active();
-        start_bit_sent = true;
-    }
-    // data bits
-    else if(current_bit_position < total_bits)
-    {
-        // k-th bit of n: (n >> k) & 1
-        bit = (byte >> current_bit_position) & 1;
-        if(bit == 1)
+        case TX_WAITING_FOR_TRANSMISSION:
         {
-            force_envelop_timer_output_active();
+            nop();
+            break;
         }
-        else // bit == 0
+        case TX_START_BIT_SENDING:
         {
-            force_envelop_timer_output_inactive();
+            // Set the Autoreload value for start sequence bits
+            htim3.Instance->ARR = PeriodOfStartStopBits;
+
+            // Start sequence consists of signal sequence {1,0,1}
+            switch(StartStopSequenceState)
+            {
+                case STAGE_0:
+                {
+                    StartStopSequenceState = STAGE_ON1;
+                    force_envelop_timer_output_on();
+                    break;
+                }
+                case STAGE_ON1:
+                {
+                    StartStopSequenceState = STAGE_OFF;
+                    force_envelop_timer_output_off();
+                    break;
+                }
+                case STAGE_OFF:
+                {
+                    StartStopSequenceState = STAGE_ON2;
+                    force_envelop_timer_output_on();
+                    break;
+                }
+
+                // transitional state
+                // TODO: check if possible to move to beginning of next state (thus remove delay)
+                case STAGE_ON2:
+                {
+
+                    //reset StartStopSequenceState
+                    StartStopSequenceState = STAGE_0;
+                    // move to next state
+                    TransmitterState = TX_START_BIT_SENT;
+                    break;
+                }
+            }
+            break;
         }
-        current_bit_position++;
+        case TX_START_BIT_SENT:
+        {
+            /* Set the Autoreload value for data bits*/
+            htim3.Instance->ARR = PeriodOfDataBits;
+            // prepare to start sending data
+            current_bit_position = 0;
+            // change to next state
+            TransmitterState = TX_DATA_SENDING;
+            break;
+        }
+        case TX_DATA_SENDING:
+        {
+            if(current_bit_position < total_bits)
+            {
+                // k-th bit of n: (n >> k) & 1
+                bit = (byte >> current_bit_position) & 1;
+                if(bit == 1)
+                {
+                    force_envelop_timer_output_on();
+                }
+                else // bit == 0
+                {
+                    force_envelop_timer_output_off();
+                }
+                current_bit_position++;
+            }
+            else // change to next state
+            {
+                // TODO: check if worth to move ARR update here
+                TransmitterState = TX_DATA_SENT;
+            }
+            // TODO: check if some errors or other options are possible here?
+            break;
+        }
+
+        // transitional state
+        case TX_DATA_SENT:
+        {
+            TransmitterState = TX_STOP_BIT_SENDING;
+            break;
+        }
+        case TX_STOP_BIT_SENDING:
+        {
+            // TODO: check if worth to move ARR update to step abore
+            /* Set the Autoreload value for start sequence bits*/
+            htim3.Instance->ARR = PeriodOfStartStopBits;
+
+            // Start sequence consists of signal sequence {1,0,1}
+            switch(StartStopSequenceState)
+            {
+                case STAGE_0:
+                {
+                    StartStopSequenceState = STAGE_ON1;
+                    force_envelop_timer_output_on();
+                    break;
+                }
+                case STAGE_ON1:
+                {
+                    StartStopSequenceState = STAGE_OFF;
+                    force_envelop_timer_output_off();
+                    break;
+                }
+                case STAGE_OFF:
+                {
+                    StartStopSequenceState = STAGE_ON2;
+                    force_envelop_timer_output_on();
+                    break;
+                }
+
+                // transitional state
+                // TODO: check if possible to move to beginning of next state (thus remove delay)
+                case STAGE_ON2:
+                {
+
+                    //reset StartStopSequenceState
+                    StartStopSequenceState = STAGE_0;
+                    // move to next state
+                    TransmitterState = TX_STOP_BIT_SENT;
+                    break;
+                }
+            }
+            break;
+        }
+        case TX_STOP_BIT_SENT:
+        {
+            // TODO: check if it is needed to wait after sending data
+            force_envelop_timer_output_off();
+            // TODO: probably need wait more?
+
+            // reset to initial state
+            TransmitterState = TX_WAITING_FOR_TRANSMISSION;
+            break;
+        }
     }
-    // stop bit
-    else if(!data_frame_sent)
+}
+void receive_handler()
+{
+    /* Receive data frame
+     * 1. start sequence
+     * 2. data
+     *  2.1 Coded angle
+     *  2.2 Time of emission
+     *  2.3 Beamer ID
+     * 3. data redundancy (repeated, or use error correction code)
+     * 4. stop sequence
+     *
+     * Check data integrity. If OK, data is received
+     */
+
+    /* 1. Waiting for start bit
+     * 2. Input capture channel: rising edge detected. Start timer, wait 1/2 of period
+     * 3. 1/2 period check: if signal is high, start bit is received, goto 4, otherwise stop timer, goto 1
+     * 4. 1/2 + i period check: read timer signal, increment received bits count
+     * 5. If rbc == total_bits, wait for stop bit
+     * 6. Check stop bit: if signal is high, stop timer, save received data, update event (?), goto 1
+     *
+     */
+    switch(ReceiverState)
     {
-        force_envelop_timer_output_active();
-        data_frame_sent = true;
-    }
-    // delay after sending data frame
-    else
-    {
-        force_envelop_timer_output_active();
-        data_frame_sent = false;
-        current_bit_position = 0;
-        start_bit_sent = false;
-    }
+        case RX_WAITING_FOR_START_BIT:
+        {
+            if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) !=RESET) // rising edge detected
+            {
+                ReceiverState = RX_START_BIT_SENDING_LOW;
+                // timer.period is still StartBitPeriod
+                //wait_for_timer_update();
+            }
+
+            break;
+        }
+        case RX_START_BIT_SENDING_LOW:
+        {
+            //TODO: set GPIO port and pins to actual values
+            if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2) == GPIO_PIN_RESET)//current_signal_level_is_low
+            {
+                ReceiverState = RX_START_BIT_SENDING_HIGH;
+                // timer.period is still StartBitPeriod
+                //wait_for_timer_update();
+            }
+            else // reset starting state
+            {
+                ReceiverState = RX_WAITING_FOR_START_BIT;
+            }
+
+            break;
+        }
+        case RX_START_BIT_SENDING_HIGH:
+        {
+            if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2) == GPIO_PIN_SET)//current_signal_level_is_high
+            {
+                ReceiverState = RX_START_BIT_SENT;
+                // now change timer.period to distance between data bits
+                htim4.Instance->ARR = PeriodOfDataBits;
+                //wait_for_timer_update();
+            }
+            else // reset starting state
+            {
+                ReceiverState = RX_WAITING_FOR_START_BIT;
+            }
+
+            break;
+        }
+        case RX_START_BIT_SENT:
+        {
+            break;
+        }
+        case RX_DATA_SENDING:
+        {
+            break;
+        }
+        case RX_DATA_SENT:
+        {
+            break;
+        }
+        case RX_STOP_BIT_SENDING:
+        {
+            break;
+        }
+        case RX_STOP_BIT_SENT:
+        {
+            break;
+        }
+    } // switch(ReceiverState)
 }
 
 void generate_binary_for_ir_frame(){}
@@ -562,21 +709,20 @@ void transform_binary_from_msb_to_lsb(){}
 void convert_binary_to_pwm_format(){}
 
 
-void force_envelop_timer_output_active()
+void force_envelop_timer_output_on()
 {
+    htim3.Instance->ARR = PeriodOfStartStopBits;
     HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
-    //TIM_OC_InitTypeDef sConfigOC;
-    //sConfigOC.OCMode = TIM_OCMODE_FORCED_ACTIVE;
-    //HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
 }
-void force_envelop_timer_output_inactive()\
+void force_envelop_timer_output_off()
 {
     HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
-
-    //TIM_OC_InitTypeDef sConfigOC;
-    //sConfigOC.OCMode = TIM_OCMODE_FORCED_INACTIVE;
-    //HAL_TIM_OC_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
 }
+void send_start_stop_sequence()
+{
+
+}
+void nop(){}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT
