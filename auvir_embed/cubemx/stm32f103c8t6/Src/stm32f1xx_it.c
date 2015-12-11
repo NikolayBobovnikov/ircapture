@@ -39,8 +39,7 @@
 #include <stdbool.h>
 
 int counter = 0;
-extern received_ir_signal;
-extern transmit_handler();
+extern void transmit_handler();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
