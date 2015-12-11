@@ -52,7 +52,7 @@ TIM_HandleTypeDef htim4;
 /* Private variables ---------------------------------------------------------*/
 ///TODO: refactor constants below
 bool received_ir_signal = false;
-const uint8_t byte = 0b10011001;
+const uint8_t byte = 0b10101101;
 const uint8_t total_bits = 8;
 volatile uint8_t current_bit_position = 0;
 volatile uint8_t bit = 0;
@@ -80,6 +80,7 @@ static void MX_TIM4_Init(void);
 //TODO: specify timer constants
 const uint16_t PeriodOfStartStopBits = 1000;// timer ticks
 const uint16_t PeriodOfDataBits = 2000;// timer ticks
+const uint16_t PeriodBetweenDataFrames = 5000;// timer ticks
 
 enum ReceiverStates
 {
@@ -96,12 +97,10 @@ volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
 enum TransmitterStates
 {
     TX_WAITING_FOR_TRANSMISSION,
-    TX_START_BIT_SENDING,
-    TX_START_BIT_SENT,
-    TX_DATA_SENDING,
-    TX_DATA_SENT,
-    TX_STOP_BIT_SENDING,
-    TX_STOP_BIT_SENT
+    TX_SENDING_START_BIT,
+    TX_SENDING_DATA,
+    TX_SENDING_STOP_BIT,
+    TX_DELAY
 };
 volatile uint8_t TransmitterState = TX_WAITING_FOR_TRANSMISSION;
 
@@ -312,7 +311,7 @@ void MX_TIM3_Init(void)
   HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
 
 }
@@ -422,7 +421,7 @@ void send_data()
 {
     if(TX_WAITING_FOR_TRANSMISSION == TransmitterState)
     {
-        TransmitterState = TX_START_BIT_SENDING;
+        TransmitterState = TX_SENDING_START_BIT;
     }
     else
     {
@@ -496,10 +495,8 @@ void transmit_handler()
             nop();
             break;
         }
-        case TX_START_BIT_SENDING:
+        case TX_SENDING_START_BIT:
         {
-            // TODO: remove timer period setting below since it shoud be redundant (defaul value shoud be suitable)
-            // Set the Autoreload value for start sequence bits
             htim3.Instance->ARR = PeriodOfStartStopBits;
 
             // Start sequence consists of signal sequence {1,0,1}
@@ -514,7 +511,7 @@ void transmit_handler()
                 case STAGE_ON1:
                 {
                     StartStopSequenceTransmitState = STAGE_OFF;
-                    force_envelop_timer_output_off();
+                    //force_envelop_timer_output_off(); done anyway in timer interrupt handler
                     break;
                 }
                 case STAGE_OFF:
@@ -528,29 +525,19 @@ void transmit_handler()
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_ON2:
                 {
-                    //reset StartStopSequenceState
                     StartStopSequenceTransmitState = STAGE_0;
-                    // move to next state
-                    TransmitterState = TX_START_BIT_SENT;
+                    TransmitterState = TX_SENDING_DATA;
                     break;
                 }
             }
             break;
-        }
-        case TX_START_BIT_SENT:
+        } 
+        case TX_SENDING_DATA:
         {
-            /* Set the Autoreload value for data bits*/
             htim3.Instance->ARR = PeriodOfDataBits;
 
-            // prepare to start sending data
-            current_bit_position = 0;
-            // change to next state
-            TransmitterState = TX_DATA_SENDING;
-            break;
-        }
-        case TX_DATA_SENDING:
-        {
-            if(current_bit_position < total_bits)
+            // send current bit of data
+            if(current_bit_position < total_bits)  // change to next state
             {
                 // k-th bit of n: (n >> k) & 1
                 bit = (byte >> current_bit_position) & 1;
@@ -564,30 +551,24 @@ void transmit_handler()
                 }
                 current_bit_position++;
             }
-            else // change to next state
+
+            // TODO: check nessesity of condition below
+            else  // change to next state
             {
-                // TODO: check if worth to move ARR update here
-                TransmitterState = TX_DATA_SENT;
+                current_bit_position = 0;
+
+                //TransmitterState = TX_DATA_SENT;
+                TransmitterState = TX_SENDING_STOP_BIT;
+
+                /* Set the Autoreload value for start sequence bits*/
+                htim3.Instance->ARR = PeriodOfStartStopBits;
             }
             // TODO: check if some errors or other options are possible here?
             break;
         }
-
-        // transitional state
-        case TX_DATA_SENT:
-        {
-            // Set the Autoreload value for start sequence bits
-            htim3.Instance->ARR = PeriodOfStartStopBits;
-
-            // move on to next state
-            TransmitterState = TX_STOP_BIT_SENDING;
-            break;
-        }
-        case TX_STOP_BIT_SENDING:
+        case TX_SENDING_STOP_BIT:
         {
             // TODO: check if worth to move ARR update to step abore
-            /* Set the Autoreload value for start sequence bits*/
-            htim3.Instance->ARR = PeriodOfStartStopBits;
 
             // Start sequence consists of signal sequence {1,0,1}
             switch(StartStopSequenceTransmitState)
@@ -615,26 +596,23 @@ void transmit_handler()
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_ON2:
                 {
-                    //reset StartStopSequenceState
+                    htim3.Instance->ARR = PeriodBetweenDataFrames;
                     StartStopSequenceTransmitState = STAGE_0;
-                    // move to next state
-                    TransmitterState = TX_STOP_BIT_SENT;
+                    TransmitterState = TX_DELAY;
                     break;
                 }
             }
             break;
         }
-        case TX_STOP_BIT_SENT:
+        case TX_DELAY:
         {
-            // TODO: check if it is needed to wait after sending data
-            force_envelop_timer_output_off();
-            // TODO: probably need wait more?
-
-            // reset to initial state
+            htim3.Instance->ARR = PeriodOfStartStopBits;
+            StartStopSequenceTransmitState = STAGE_0;
             TransmitterState = TX_WAITING_FOR_TRANSMISSION;
+
             break;
         }
-    }
+    } // switch(TransmitterState)
 }
 void receive_handler()
 {
