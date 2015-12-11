@@ -52,7 +52,7 @@ TIM_HandleTypeDef htim4;
 /* Private variables ---------------------------------------------------------*/
 ///TODO: refactor constants below
 bool received_ir_signal = false;
-const uint8_t byte = 0b01000011;
+const uint8_t byte = 0b10011001;
 const uint8_t total_bits = 8;
 volatile uint8_t current_bit_position = 0;
 volatile uint8_t bit = 0;
@@ -118,6 +118,7 @@ volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
 // level 1
 void pwm_transmit();
 void pwm_receive();
+void send_data();
 
 // level 2
 void enable_config_timer_carrier();
@@ -173,7 +174,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim3);
 
   //HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_1); // envelop
-  //HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
+  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -181,7 +182,7 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-
+    send_data();
   /* USER CODE BEGIN 3 */
 
   }
@@ -281,6 +282,10 @@ void MX_TIM2_Init(void)
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 
+  //TIM_SlaveConfigTypeDef sSlaveConfig;
+  //sSlaveConfig.SlaveMode = TIM_SLAVEMODE_GATED;
+  //sSlaveConfig.InputTrigger = TIM_TS_ITR0;
+
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 100;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -307,7 +312,7 @@ void MX_TIM3_Init(void)
   HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
 
 }
@@ -413,6 +418,18 @@ void pwm_receive()
 
 
 }
+void send_data()
+{
+    if(TX_WAITING_FOR_TRANSMISSION == TransmitterState)
+    {
+        TransmitterState = TX_START_BIT_SENDING;
+    }
+    else
+    {
+        //TODO: handle this case
+        // data is still being transmitted. Need to finish previous transmission before starting next one
+    }
+}
 
 void enable_config_timer_carrier(){}
 void enable_config_timer_envelop(){}
@@ -511,7 +528,6 @@ void transmit_handler()
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_ON2:
                 {
-
                     //reset StartStopSequenceState
                     StartStopSequenceTransmitState = STAGE_0;
                     // move to next state
@@ -599,7 +615,6 @@ void transmit_handler()
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_ON2:
                 {
-
                     //reset StartStopSequenceState
                     StartStopSequenceTransmitState = STAGE_0;
                     // move to next state
@@ -721,7 +736,7 @@ void receive_handler()
             //TODO: check that current level is low?
 
             // change timer period to value corresponding to data bits period
-            htim4.Instance->ARR = PeriodOfDataBits;
+            //htim4.Instance->ARR = PeriodOfDataBits;
             break;
         }
         case RX_DATA_SENDING:

@@ -130,14 +130,15 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-
-  transmit_handler();
-
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
-  //__HAL_TIM_SET_COUNTER(&htim2, htim2.Init.Period);
-  //if(__HAL_TIM_GET_IT_SOURCE(&htim3, TIM_IT_CC1) == SET)
+
+  // ensure carrier is not generating
+  HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
+  // process transmit
+  transmit_handler();
+
 
   /* USER CODE END TIM3_IRQn 1 */
 }
