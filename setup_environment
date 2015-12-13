@@ -1,0 +1,59 @@
+#!/bin/bash
+sudo -S apt-get update
+sudo -S apt-get install -y aptitude
+sudo -S aptitude update
+mkdir ~/gitclones
+sudo -S aptitude install -y --with-recommends \
+
+# package utilities
+sudo -S aptitude install -y --with-recommends checkinstall pkg-config gdebi \
+
+# helper utilities 
+sudo -S aptitude install -y --with-recommends zip unzip \
+
+# console stuff
+sudo -S aptitude install -y --with-recommends vim tmux zsh mc \
+
+# dev tools
+sudo -S aptitude install -y --with-recommends git mercurial subversion autoconf automake make cmake build-essential valgrind ddd doxygen 
+
+# compilers and debuggers
+sudo -S aptitude install -y --with-recommends gcc-arm-none-eabi gdb-arm-none-eabi clang libclang-dev 
+
+# embedded tools
+sudo -S aptitude install -y --with-recommends libusb-dev libusb-1.0-0-dev
+# stlink
+cd ~/gitclones && git clone git://github.com/texane/stlink.git && cd stlink && ./autogen.sh && ./configure && make
+sudo checkinstall -y --pkgversion=1 
+sudo cp 49-stlinkv1.rules /etc/udev/rules.d && sudo cp 49-stlinkv2.rules /etc/udev/rules.d && sudo udevadm control --reload-rules
+# openocd
+#sudo -S aptitude install -y --with-recommends openocd
+cd ~/gitclones && git clone git://openocd.git.sourceforge.net/gitroot/openocd/openocd  && cd openocd && ./bootstrap && ./configure && make
+
+# general purpose libraries
+sudo -S aptitude install -y --with-recommends libboost-all-dev libeigen3-dev libflann-dev libtbb-dev libpoco-dev 
+
+# testing libraries
+sudo -S aptitude install -y --with-recommends libgtest-dev libcunit1-dev libcppunit-dev 
+
+# environments and window managers
+sudo -S aptitude install -y --with-recommends xfce4 awesome
+
+# ide
+sudo -S aptitude install -y --with-recommends qtcreator eclipse-cdt \
+eclipse-cdt-autotools eclipse-cdt-jni eclipse-cdt-qt \
+eclipse-cdt-perf eclipse-cdt-valgrind eclipse-cdt-pkg-config eclipse-cdt-profiling-framework \
+eclipse-cdt-profiling-framework-remote eclipse-cdt-launch-remote 
+
+# remote access
+#openssh-server xrdp \
+
+#install other: yandex disk, web browser, etc
+sudo gdebi --n ~/distr/deb/yandex-scdisk_latest_amd65.deb 
+sudo gdebi --n ~/distr/deb/google-chrome-stable_current_amd64.deb 
+
+# Setup git (username, email, etc)
+git config --global user.name "Nikolay Bobovnikov"
+git config --global user.email "nbobovnikov@gmail.com"
+git config --global credential.helper cache
+
