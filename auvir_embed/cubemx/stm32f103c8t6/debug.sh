@@ -17,3 +17,6 @@ ps axf | grep openocd | grep -v grep | awk '{print "kill -9 " $1}' | sh
 #(st-util -1 &)
 
 arm-none-eabi-gdb ./build/motionsensor -command=./gdb_start_script
+
+#kill hanging openocd if any
+ps axf | grep openocd | grep -v grep | awk '{print "kill -9 " $1}' | sh
