@@ -130,16 +130,13 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
+	// ensure carrier is not generating
+	  HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
+	  // process transmit
+	  transmit_handler();
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
-
-  // ensure carrier is not generating
-  HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
-  // process transmit
-  transmit_handler();
-
-
   /* USER CODE END TIM3_IRQn 1 */
 }
 
@@ -149,12 +146,10 @@ void TIM3_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-//	counter = __HAL_TIM_GET_COUNTER(&htim2);
-
+	receive_handler();
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */
-  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4); // carrier 38kHz
   /* USER CODE END TIM4_IRQn 1 */
 }
 
