@@ -40,6 +40,7 @@
 
 int counter = 0;
 extern void transmit_handler();
+extern void receive_handler();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -149,12 +150,10 @@ void TIM3_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-//	counter = __HAL_TIM_GET_COUNTER(&htim2);
-
+  receive_handler();
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */
-  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4); // carrier 38kHz
   /* USER CODE END TIM4_IRQn 1 */
 }
 
