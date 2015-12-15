@@ -41,6 +41,8 @@
 int counter = 0;
 extern void transmit_handler();
 extern void receive_handler();
+extern void force_envelop_timer_output_on();
+extern void force_envelop_timer_output_off();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -136,7 +138,7 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 1 */
 
   // ensure carrier is not generating
-  HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
+  force_envelop_timer_output_off();
   // process transmit
   transmit_handler();
 

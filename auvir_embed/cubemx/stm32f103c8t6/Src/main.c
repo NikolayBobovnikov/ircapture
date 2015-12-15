@@ -889,10 +889,14 @@ void convert_binary_to_pwm_format(){}
 void force_envelop_timer_output_on()
 {
     HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
 }
 void force_envelop_timer_output_off()
 {
     HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 void send_start_stop_sequence()
 {
