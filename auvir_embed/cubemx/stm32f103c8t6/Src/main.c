@@ -63,6 +63,9 @@ volatile uint8_t tx_bit = 0;
 volatile uint8_t rx_current_bit_position = 0;
 volatile uint8_t rx_bit = 0;
 
+
+uint16_t array[100];
+uint8_t ind = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -171,16 +174,16 @@ int main(void)
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_SPI1_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
+  //MX_TIM2_Init();
+  //MX_TIM3_Init();
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
   //HAL_TIM_Base_Start_IT(&htim4);
-  HAL_TIM_Base_Start_IT(&htim3);
+  //HAL_TIM_Base_Start_IT(&htim3);
 
   //HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_1); // envelop
-  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
+  //HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
   HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
@@ -348,7 +351,7 @@ void MX_TIM4_Init(void)
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
-  sConfigIC.ICFilter = 1;
+  sConfigIC.ICFilter = 0;
   sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1);
@@ -404,6 +407,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_INPUT;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
@@ -622,6 +631,17 @@ void transmit_handler()
 }
 void receive_handler()
 {
+    if(ind < 100)
+    {
+        array[ind] = htim4.Instance->CCR1;
+        htim4.Instance->CNT = 0;
+    }
+    else
+    {
+        int a = 0;
+    }
+    ind++;
+
     /* Receive data frame
      * 1. start sequence
      * 2. data
