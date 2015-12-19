@@ -179,12 +179,7 @@ int main(void)
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  //HAL_TIM_Base_Start_IT(&htim4);
-  //HAL_TIM_Base_Start_IT(&htim3);
-
-  //HAL_TIM_OC_Start_IT(&htim3, TIM_CHANNEL_1); // envelop
-  //HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2); // carrier
-  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
+  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1); // receive envelop
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -192,7 +187,7 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-    send_data();
+	  send_data();
   /* USER CODE BEGIN 3 */
 
   }
@@ -292,10 +287,6 @@ void MX_TIM2_Init(void)
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 
-  //TIM_SlaveConfigTypeDef sSlaveConfig;
-  //sSlaveConfig.SlaveMode = TIM_SLAVEMODE_GATED;
-  //sSlaveConfig.InputTrigger = TIM_TS_ITR0;
-
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 100;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -312,9 +303,9 @@ void MX_TIM3_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 72;
+  htim3.Init.Prescaler = 720;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 2000;
+  htim3.Init.Period = 1000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim3);
 
@@ -336,9 +327,9 @@ void MX_TIM4_Init(void)
   TIM_IC_InitTypeDef sConfigIC;
 
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 1;
+  htim4.Init.Prescaler = 720;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 949;
+  htim4.Init.Period = 1000;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim4);
 
@@ -355,6 +346,7 @@ void MX_TIM4_Init(void)
   sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1);
+
 }
 
 /** 
