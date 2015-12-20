@@ -156,6 +156,8 @@ void send_start_stop_sequence();
 
 inline void nop();
 
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -183,7 +185,7 @@ int main(void)
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1); // receive envelop
+  HAL_TIM_IC_PWM_Start_IT(&htim4); // receive envelop
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -970,6 +972,27 @@ void send_start_stop_sequence()
 
 }
 void nop(){}
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
+  assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
+
+  /* Enable the TIM Capture/Compare 1 interrupt */
+  __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC1);
+  /* Enable the TIM Capture/Compare 2 interrupt */
+  __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC2);
+
+  /* Enable the Input Capture channel */
+  TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+  TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_ENABLE);
+
+  /* Enable the Peripheral */
+  __HAL_TIM_ENABLE(htim);
+
+  /* Return function status */
+  return HAL_OK;
+}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT
