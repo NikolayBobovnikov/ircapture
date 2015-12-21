@@ -8,7 +8,7 @@ SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 
 #=======================================================================================================
 
-PROJECT(motionsensor)
+PROJECT(motionsensor_receiver)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.82.8)
 ENABLE_LANGUAGE(ASM)
 
