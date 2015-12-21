@@ -185,14 +185,13 @@ int main(void)
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_SPI1_Init();
-  //MX_TIM2_Init();
-  //MX_TIM3_Init();
-  TIM3_Init_helper();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_IC_PWM_Start_IT(&htim4); // receive envelop
-  //HAL_TIM_Base_Start_IT(&htim3); // receive envelop
+  //HAL_TIM_IC_PWM_Start_IT(&htim4); // receive envelop
+  HAL_TIM_Base_Start_IT(&htim3); // receive envelop
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -200,7 +199,7 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-      send_data();
+  send_data();
   /* USER CODE BEGIN 3 */
 
   }
