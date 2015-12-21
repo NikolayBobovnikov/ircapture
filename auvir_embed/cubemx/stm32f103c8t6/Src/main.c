@@ -64,7 +64,10 @@ volatile uint8_t rx_current_bit_position = 0;
 volatile uint8_t rx_bit = 0;
 
 
-uint16_t array[100];
+uint8_t level[100] = {0};
+uint8_t level_ind = 0;
+
+uint16_t pwm[100] = {0};
 uint8_t ind = 0;
 uint16_t ccr1_tn_1;
 uint16_t ccr1_tn;
@@ -80,6 +83,7 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
+static void TIM3_Init_helper(void);
 static void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN PFP */
@@ -142,6 +146,7 @@ void send_data_frame();
 void send_protocol_frame();
 void transmit_handler();
 void receive_handler();
+void test_input_signal_high_low();
 
 // level 3
 void generate_binary_for_ir_frame();
@@ -182,10 +187,12 @@ int main(void)
   MX_SPI1_Init();
   //MX_TIM2_Init();
   //MX_TIM3_Init();
+  TIM3_Init_helper();
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
   HAL_TIM_IC_PWM_Start_IT(&htim4); // receive envelop
+  //HAL_TIM_Base_Start_IT(&htim3); // receive envelop
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -278,7 +285,7 @@ void MX_TIM2_Init(void)
   TIM_OC_InitTypeDef sConfigOC;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 1;
+  htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 949;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -310,6 +317,28 @@ void MX_TIM3_Init(void)
 
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 720;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 1000;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim3);
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
+
+}
+
+void TIM3_Init_helper(void)
+{
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 72;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 1000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -653,8 +682,16 @@ void receive_handler()
 
     if(ind < 100)
     {
-        array[ind] = ccr1;
-        array[ind + 1] = ccr2;
+        pwm[ind] = ccr1;
+        pwm[ind + 1] = ccr2;
+        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+        {
+            if(level_ind < 100)
+            {
+                level[ind] = 1;
+                level[ind + 1] = 1;
+            }
+        }
     }
     else
     {
@@ -947,6 +984,11 @@ void receive_handler()
             break;
         }
     } // switch(ReceiverState)
+}
+
+void test_input_signal_high_low()
+{
+
 }
 
 void generate_binary_for_ir_frame(){}

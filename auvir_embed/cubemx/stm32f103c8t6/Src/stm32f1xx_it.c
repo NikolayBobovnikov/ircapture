@@ -41,6 +41,7 @@
 int counter = 0;
 extern void transmit_handler();
 extern void receive_handler();
+extern void test_input_signal_high_low();
 extern void force_envelop_timer_output_on();
 extern void force_envelop_timer_output_off();
 /* USER CODE END 0 */
@@ -49,6 +50,7 @@ extern void force_envelop_timer_output_off();
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
@@ -107,6 +109,7 @@ void DMA1_Channel3_IRQHandler(void)
   /* USER CODE END DMA1_Channel3_IRQn 1 */
 }
 
+
 /**
 * @brief This function handles TIM2 global interrupt.
 */
@@ -127,26 +130,23 @@ void TIM2_IRQHandler(void)
   /* USER CODE END TIM2_IRQn 1 */
 }
 
+
 /**
 * @brief This function handles TIM3 global interrupt.
 */
 void TIM3_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM3_IRQn 0 */
-	// ensure carrier is not generating
-	  HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
-	  // process transmit
-	  transmit_handler();
-  /* USER CODE END TIM3_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim3);
-  /* USER CODE BEGIN TIM3_IRQn 1 */
-
-  // ensure carrier is not generating
-  force_envelop_timer_output_off();
-  // process transmit
-  transmit_handler();
-
-  /* USER CODE END TIM3_IRQn 1 */
+    /* USER CODE BEGIN TIM3_IRQn 0 */
+    /// ensure carrier is not generating
+    ///HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
+    /// process transmit
+    ///transmit_handler();
+    /* USER CODE END TIM3_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim3);
+    /* USER CODE BEGIN TIM3_IRQn 1 */
+    HAL_TIM_Base_Stop_IT(&htim3);
+    test_input_signal_high_low();
+    /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**
@@ -155,6 +155,7 @@ void TIM3_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
+    HAL_TIM_Base_Start_IT(&htim3);
     receive_handler();
 
   /* USER CODE END TIM4_IRQn 0 */
