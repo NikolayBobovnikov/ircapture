@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<history>
+   <processor signature="4.9.3 -mcpu=cortex-m3 -mthumb -g2 -Map=motionsensor.map -O0 --gc-sections -LC:\Users\nikolay\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\motionsensor -TC:\Users\nikolay\AppData\Roaming\CooCox\CoIDE\configuration\ProgramData\motionsensor/arm-gcc-link.ld -g">
+      <target file="motionsensor.elf" lastModified="151886373de">
+         <source file="..\obj\stm32f1xx_hal_dma.o" lastModified="15188636df4"/>
+         <source file="..\obj\stm32f1xx_hal_i2c.o" lastModified="15188636fc0"/>
+         <source file="..\obj\stm32f1xx_hal_flash_ex.o" lastModified="15188637178"/>
+         <source file="..\obj\system_stm32f1xx.o" lastModified="15188636b4c"/>
+         <source file="..\obj\stm32f1xx_hal_cortex.o" lastModified="15188636afc"/>
+         <source file="..\obj\stm32f1xx_hal_gpio.o" lastModified="15188636d86"/>
+         <source file="..\obj\stm32f1xx_hal_spi.o" lastModified="15188636e94"/>
+         <source file="..\obj\stm32f1xx_hal_tim_ex.o" lastModified="151886371fa"/>
+         <source file="..\obj\stm32f1xx_hal_rcc_ex.o" lastModified="15188636944"/>
+         <source file="..\obj\stm32f1xx_hal_spi_ex.o" lastModified="15188636cd2"/>
+         <source file="..\obj\stm32f1xx_hal.o" lastModified="151886369f8"/>
+         <source file="..\obj\stm32f1xx_hal_gpio_ex.o" lastModified="15188636a98"/>
+         <source file="..\obj\stm32f1xx_it.o" lastModified="15188636a48"/>
+         <source file="..\obj\startup_stm32f103xb.o" lastModified="15188636c82"/>
+         <source file="..\obj\infrared.o" lastModified="15188636c78"/>
+         <source file="..\obj\main.o" lastModified="15188636c32"/>
+         <source file="..\obj\syscalls.o" lastModified="15188636eee"/>
+         <source file="..\obj\stm32f1xx_hal_msp.o" lastModified="1518863701a"/>
+         <source file="..\obj\stm32f1xx_hal_flash.o" lastModified="15188636d2c"/>
+         <source file="..\obj\stm32f1xx_hal_tim.o" lastModified="15188637114"/>
+         <source file="..\obj\stm32f1xx_hal_pwr.o" lastModified="1518863699e"/>
+         <source file="..\obj\stm32f1xx_hal_rcc.o" lastModified="15188636bce"/>
+      </target>
+   </processor>
+</history>
