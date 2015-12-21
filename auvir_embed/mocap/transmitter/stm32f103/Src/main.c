@@ -676,6 +676,7 @@ void transmit_handler()
 }
 void receive_handler()
 {
+    /*
     ccr1 = htim4.Instance->CCR1;
     ccr2 = htim4.Instance->CCR2;
 
@@ -698,34 +699,8 @@ void receive_handler()
         ind = 0;
     }
     ind = ind + 2;
-
-    /*
-    if (ind == 0)
-    {
-        array[ind] = ccr1;
-        ccr1_tn = ccr1_tn_1;
-    }
-    if(ind < 100)
-    {
-        //If CCRx_tn < CCRx_tn+1: capture = CCRx_tn+1 - CCRx_tn
-        if(ccr1_tn < ccr1_tn_1)
-        {
-            array[ind] = ccr1_tn_1 - ccr1_tn;
-        }
-        //If CCRx_tn > CCRx_tn+1: capture = (ARR_max - CCRx_tn) + CCRx_tn+1
-        else
-        {
-            array[ind] = htim4.Instance->ARR - ccr1_tn + ccr1_tn_1;
-        }
-    }
-    else
-    {
-        int a = 0;
-        ind = 0;
-    }
-    ind++;
-
     */
+
 
     /* Receive data frame
      * 1. start sequence
