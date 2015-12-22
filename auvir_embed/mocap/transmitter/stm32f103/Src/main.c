@@ -726,6 +726,7 @@ void receive_handler()
     {
         case RX_WAITING_FOR_START_BIT:
         {
+            /// start receiving on input capture
             if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
             {
               if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) !=RESET)
@@ -774,7 +775,7 @@ void receive_handler()
                     }
                     break;
                 }
-                    //High: STAGE_OFF -> STAGE_ON2
+                //High: STAGE_OFF -> STAGE_ON2
                 case STAGE_OFF:
                 {
                     //if current level is high, reading start sequence is done

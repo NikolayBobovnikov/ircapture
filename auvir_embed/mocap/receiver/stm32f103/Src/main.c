@@ -126,14 +126,19 @@ enum StartStopSequenceStates
 {
     STAGE_0,
     STAGE_ON1,
-    STAGE_ON1_OFF,
-    STAGE_OFF_ON2,
-    STAGE_ON2_OFF,
+    STAGE_ON1_OFF1,
+    STAGE_OFF1,
+    STAGE_OFF1_ON2,
+    STAGE_FALL2,
+    STAGE_OFF2,
     STAGE_OFF,
     STAGE_ON2
 };
 volatile uint8_t StartStopSequenceTransmitState = STAGE_ON1;
 volatile uint8_t StartStopSequenceReceiveState = STAGE_ON1;
+
+const uint8_t max_delta_pwm_period = 2;
+const uint8_t max_delta_pwm_width = 1;
 
 // level 1
 void pwm_transmit();
@@ -570,12 +575,12 @@ void transmit_handler()
                     // High
                 case STAGE_ON1:
                 {
-                    StartStopSequenceTransmitState = STAGE_ON1_OFF;
+                    StartStopSequenceTransmitState = STAGE_ON1_OFF1;
                     force_envelop_timer_output_on();
                     break;
                 }
                     // Low
-                case STAGE_ON1_OFF:
+                case STAGE_ON1_OFF1:
                 {
                     StartStopSequenceTransmitState = STAGE_OFF;
                     //force_envelop_timer_output_off(); done anyway in timer interrupt handler
@@ -640,11 +645,11 @@ void transmit_handler()
             {
                 case STAGE_ON1:
                 {
-                    StartStopSequenceTransmitState = STAGE_ON1_OFF;
+                    StartStopSequenceTransmitState = STAGE_ON1_OFF1;
                     force_envelop_timer_output_on();
                     break;
                 }
-                case STAGE_ON1_OFF:
+                case STAGE_ON1_OFF1:
                 {
                     StartStopSequenceTransmitState = STAGE_OFF;
                     force_envelop_timer_output_off();
@@ -781,7 +786,7 @@ void receive_handler()
                     if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET) //high level is confirmed, continue reading start sequence
                     {
                         htim4.Instance->ARR = PeriodOfStartStopBits;
-                        StartStopSequenceTransmitState = STAGE_ON1_OFF;
+                        StartStopSequenceTransmitState = STAGE_ON1_OFF1;
                     }
                     else  // in the start sequence current level should be high, reset the state
                     {
@@ -791,7 +796,7 @@ void receive_handler()
                     break;
                 }
                     //Low: STAGE_ON1 -> STAGE_OFF
-                case STAGE_ON1_OFF:
+                case STAGE_ON1_OFF1:
                 {
                     if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET) //current level is low, continue reading start sequence
                     {
@@ -913,7 +918,7 @@ void receive_handler()
                     {
                         // continue reading stop bit sequence with PeriodOfStartStopBits interval
                         htim3.Instance->ARR = PeriodOfStartStopBits;
-                        StartStopSequenceReceiveState = STAGE_ON1_OFF;
+                        StartStopSequenceReceiveState = STAGE_ON1_OFF1;
                     }
                     else
                     {
@@ -922,7 +927,7 @@ void receive_handler()
                     }
                     break;
                 }
-                case STAGE_ON1_OFF:
+                case STAGE_ON1_OFF1:
                 {
                     // we are in the place of first bit of stop sequence, line should be high
                     if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
@@ -1042,7 +1047,7 @@ void IC_receive_handler()
             // This should be on IC event
             if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
             {
-              if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) !=RESET)
+              if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
               {
                   htim4.Instance->ARR = HalfPeriodOfStartStopBits;
                   ReceiverState = RX_START_BIT_SENDING;
@@ -1066,7 +1071,7 @@ void IC_receive_handler()
                         if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET) //high level is confirmed, continue reading start sequence
                         {
                             htim4.Instance->ARR = PeriodOfStartStopBits;
-                            StartStopSequenceTransmitState = STAGE_ON1_OFF;
+                            StartStopSequenceTransmitState = STAGE_ON1_OFF1;
                             break;
                         }
                     }
@@ -1074,36 +1079,66 @@ void IC_receive_handler()
                     StartStopSequenceReceiveState = STAGE_0;
                     break;
                 }
-                //Low: STAGE_ON1 -> STAGE_OFF
-                case STAGE_ON1_OFF:
+                //Low: STAGE_ON1 -> STAGE_OFF1 input capture
+                case STAGE_ON1_OFF1:
                 {
-                    // This should be on update event
+                    // falling edge should be detected
+                    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC2) != RESET)
+                    {
+                        if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC2) != RESET) //current level is low, continue reading start sequence
+                        {
+                            // TODO: check pulse width, should be HalfPeriodOfStartStopBits
+                            if( abs(htim4.Instance->CCR2 - HalfPeriodOfStartStopBits) <  max_delta_pwm_period)
+                            {
+                                StartStopSequenceTransmitState = STAGE_OFF1;
+                                break;
+                            }
+                        }
+                    }
+                    ReceiverState = RX_WAITING_FOR_START_BIT;
+                    StartStopSequenceReceiveState = STAGE_0;
+                    break;
+                }
+                //Low: STAGE_OFF1 confirmation
+                case STAGE_OFF1:
+                {
+                    // This should be on update
                     if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_UPDATE) != RESET)
                     {
-                        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET) //current level is low, continue reading start sequence
+                        if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_UPDATE) != RESET)
                         {
-                            StartStopSequenceTransmitState = STAGE_OFF_ON2;
-                            break;
+                            if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)
+                            {
+                                htim4.Instance->ARR = HalfPeriodOfStartStopBits;
+                                StartStopSequenceReceiveState = STAGE_OFF1_ON2;
+                                // wait for half a period of startstop bit sequence
+                                break;
+                            }
                         }
                     }
                     ReceiverState = RX_WAITING_FOR_START_BIT;
                     StartStopSequenceReceiveState = STAGE_0;
                     break;
                 }
-                //High: STAGE_OFF -> STAGE_ON2 input capture
-                case STAGE_OFF_ON2:
+                //High: STAGE_OFF1 -> STAGE_ON2 input capture
+                case STAGE_OFF1_ON2:
                 {
                     // This should be on IC event (2nd bit - rising edge)
-                    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != SET)
+                    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
                     {
-                      if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != SET)
+                      if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
                       {
-                          // TODO: check width of first bit pulse (HalfPeriodOfStartStopBits)
+                          // TODO: check width of first bit pulse (HalfPeriodOfStartStopBits): here or at STAGE_ON1_OFF1?
+
                           // TODO: check period (should be PeriodOfStartStopBits)
-                          htim4.Instance->ARR = HalfPeriodOfStartStopBits;
-                          ReceiverState = RX_START_BIT_SENDING;
-                          StartStopSequenceReceiveState = STAGE_ON2;
-                          // wait for half a period of startstop bit sequence
+                          if( abs(htim4.Instance->CCR1 - PeriodOfStartStopBits) <  max_delta_pwm_period)
+                          {
+                              htim4.Instance->ARR = HalfPeriodOfStartStopBits;
+                              ReceiverState = RX_START_BIT_SENDING;
+                              StartStopSequenceReceiveState = STAGE_ON2;
+                              // wait for half a period of startstop bit sequence
+                              break;
+                          }
                       }
                     }
                     ReceiverState = RX_WAITING_FOR_START_BIT;
@@ -1114,12 +1149,36 @@ void IC_receive_handler()
                 case STAGE_ON2:
                 {
                     // This should be on update
-                    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_UPDATE) != SET)
+                    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_UPDATE) != RESET)
                     {
-                        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+                        if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_UPDATE) != RESET)
                         {
+                            if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+                            {
+                                htim4.Instance->ARR = HalfPeriodOfStartStopBits;
+                                StartStopSequenceReceiveState = STAGE_FALL2;
+                                // wait for half a period of startstop bit sequence
+                                break;
+                            }
+                        }
+                    }
+                    ReceiverState = RX_WAITING_FOR_START_BIT;
+                    StartStopSequenceReceiveState = STAGE_0;
+                    break;
+                }
+                //Low: STAGE_ON2 -> STAGE_OFF2 input capture
+                case STAGE_FALL2:
+                {
+                    // This should be on IC event (2nd bit - rising edge)
+                    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
+                    {
+                        if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
+                        {
+                            // TODO: check width of first bit pulse (HalfPeriodOfStartStopBits)
+                            // TODO: check period (should be PeriodOfStartStopBits)
                             htim4.Instance->ARR = HalfPeriodOfStartStopBits;
-                            StartStopSequenceReceiveState = STAGE_ON2_OFF;
+                            ReceiverState = RX_START_BIT_SENDING;
+                            StartStopSequenceReceiveState = STAGE_OFF2;
                             // wait for half a period of startstop bit sequence
                             break;
                         }
@@ -1128,23 +1187,29 @@ void IC_receive_handler()
                     StartStopSequenceReceiveState = STAGE_0;
                     break;
                 }
-
-                //Low: STAGE_OFF(2) confirmation
-                case STAGE_ON2_OFF:
+                //Low: STAGE_OFF2 confirmation
+                case STAGE_OFF2:
                 {
-                    // final "delay" before data
-                    if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)
+                    // This should be on update
+                    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_UPDATE) != RESET)
                     {
-                        // from now on, data will come after HalfPeriodOfStartStopBits ticks
-                        //htim4.Instance->ARR = HalfPeriodOfStartStopBits;
+                        if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_UPDATE) != RESET)
+                        {
+                            // final "delay" before data
+                            if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)
+                            {
+                                // from now on, data will come after HalfPeriodOfStartStopBits ticks
+                                //htim4.Instance->ARR = HalfPeriodOfStartStopBits;
 
-                        //TODO: check that current level is low?
-                        //reset StartStopSequenceState
-                        StartStopSequenceTransmitState = STAGE_0;
-                        // move on to the next receiver state
-                        //ReceiverState = RX_START_BIT_SENT;
-                        ReceiverState = RX_DATA_RECEIVING;
-                        break;
+                                //TODO: check that current level is low?
+                                //reset StartStopSequenceState
+                                StartStopSequenceTransmitState = STAGE_0;
+                                // move on to the next receiver state
+                                //ReceiverState = RX_START_BIT_SENT;
+                                ReceiverState = RX_DATA_RECEIVING;
+                                break;
+                            }
+                        }
                     }
                     ReceiverState = RX_WAITING_FOR_START_BIT;
                     StartStopSequenceReceiveState = STAGE_0;
@@ -1217,7 +1282,7 @@ void IC_receive_handler()
                     {
                         // continue reading stop bit sequence with PeriodOfStartStopBits interval
                         htim3.Instance->ARR = PeriodOfStartStopBits;
-                        StartStopSequenceReceiveState = STAGE_ON1_OFF;
+                        StartStopSequenceReceiveState = STAGE_ON1_OFF1;
                     }
                     else
                     {
@@ -1226,7 +1291,7 @@ void IC_receive_handler()
                     }
                     break;
                 }
-                case STAGE_ON1_OFF:
+                case STAGE_ON1_OFF1:
                 {
                     // we are in the place of first bit of stop sequence, line should be high
                     if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
