@@ -194,7 +194,7 @@ int main(void)
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_SPI1_Init();
-  MX_TIM2_Init();
+  //MX_TIM2_Init();
   //MX_TIM3_Init();
   //TIM3_Init_helper();
   MX_TIM4_Init();
@@ -205,7 +205,7 @@ int main(void)
   //HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
   //HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
 
-  HAL_TIM_IC_PWM_Start_IT(&htim2);
+  //HAL_TIM_IC_PWM_Start_IT(&htim2);
   HAL_TIM_IC_PWM_Start_IT(&htim4);
 
   //HAL_TIM_Base_Start_IT(&htim3); // receive envelop
