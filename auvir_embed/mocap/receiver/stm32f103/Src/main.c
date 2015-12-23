@@ -64,15 +64,10 @@ volatile uint8_t rx_current_bit_position = 0;
 volatile uint8_t rx_bit = 0;
 
 
-uint8_t level[100] = {0};
-uint8_t level_ind = 0;
-
-uint16_t pwm[100] = {0};
-uint8_t ind = 0;
-uint16_t ccr1_tn_1;
-uint16_t ccr1_tn;
-uint16_t ccr1;
-uint16_t ccr2;
+int level[100] = {0};
+int pwm[100] = {0};
+int pwidth[100] = {0};
+int ind = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -740,28 +735,9 @@ void transmit_handler()
 }
 void receive_handler()
 {
-    ccr1 = htim4.Instance->CCR1;
-    ccr2 = htim4.Instance->CCR2;
 
-    if(ind < 100)
-    {
-        pwm[ind] = ccr1;
-        pwm[ind + 1] = ccr2;
-        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
-        {
-            if(level_ind < 100)
-            {
-                level[ind] = 1;
-                level[ind + 1] = 1;
-            }
-        }
-    }
-    else
-    {
-        int a = 0;
-        ind = 0;
-    }
-    ind = ind + 2;
+
+
 
     /*
     if (ind == 0)
@@ -1049,31 +1025,16 @@ void receive_handler()
     } // switch(ReceiverState)
 }
 
-void IC_receive_handler()
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-    ccr1 = htim4.Instance->CCR1;
-    ccr2 = htim4.Instance->CCR2;
-
-    if(ind < 100)
+    if(ind == 100)
     {
-        pwm[ind] = ccr1;
-        pwm[ind + 1] = ccr2;
-        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
-        {
-            if(level_ind < 100)
-            {
-                level[ind] = 1;
-                level[ind + 1] = 1;
-            }
-        }
-    }
-    else
-    {
-        int a = 0;
         ind = 0;
     }
-    ind = ind + 2;
+}
 
+void IC_receive_handler()
+{
     /* Receive data frame
      * 1. start sequence
      * 2. data
