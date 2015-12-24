@@ -736,7 +736,36 @@ void transmit_handler()
 void receive_handler()
 {
 
-
+    if(ind < 100)
+    {
+        if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
+        {
+            if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
+            {
+                pwm[ind] = htim4.Instance->CCR1;
+            }
+        }
+        if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC2) != RESET)
+        {
+            if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC2) != RESET)
+            {
+                pwidth[ind] = htim4.Instance->CCR2;
+            }
+        }
+        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+        {
+            level[ind] = 1;
+        }
+        else
+        {
+            level[ind] = 0;
+        }
+        ind = ind + 1;
+    }
+    else
+    {
+        ind = 0;
+    }
 
 
     /*
