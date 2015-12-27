@@ -171,7 +171,9 @@ enum OutputChannelsStates
     Timer4Channel3, // 11 PB8 - reserved
     Timer4Channel4  // 12 PB9 - without mask
 };
-const uint8_t default_output_channel = Timer4Channel4;
+//LED on primary output channel works without mask, so used for sending
+//start/stop sequence, beamer ID, time
+const uint8_t primary_output_channel = Timer4Channel4;
 uint8_t currentOutputTimChannel = Timer4Channel4;
 uint8_t input_channel_per_message_bit[TOTAL_BITS] =    {Timer2Channel1, // 1
                                                         Timer2Channel2, // 2
@@ -503,10 +505,6 @@ void transmit_handler()
     /// ensure carrier is not generating
     force_envelop_timer_output_off();  // stop carrier // TODO: check neseccity
 
-
-    // set PWM output channel to default. This will be used for sending non spatial information:
-    // start/stop bit sequence, beamer ID, time
-
     /* Send data frame
      * 1. start sequence
      * 2. data
@@ -598,7 +596,7 @@ void transmit_handler()
                 //reset current bit number
                 tx_current_bit_position = 0;
                 //reset current PWM output channel - set back to default value
-                currentOutputTimChannel = default_output_channel;
+                currentOutputTimChannel = primary_output_channel;
 
                 //TransmitterState = TX_DATA_SENT;
                 TransmitterState = TX_SENDING_STOP_BIT;
