@@ -52,7 +52,7 @@ TIM_HandleTypeDef htim4;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 //PWM timer configuration
-TIM_HandleTypeDef * htim_envelop = &htim1;
+TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
 const uint16_t pwm_timer_period = 949;
 const uint16_t pwm_pulse_width = 475;
@@ -67,7 +67,7 @@ volatile uint8_t tx_current_bit_position = 0;
 volatile uint8_t tx_bit = 0;
 
          uint8_t rx_data = 0;
-         uint8_t rx_total_bits = 8;
+         uint8_t rx_total_bits = TOTAL_BITS;
 volatile uint8_t rx_current_bit_position = 0;
 volatile uint8_t rx_bit = 0;
 
@@ -218,15 +218,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_I2C2_Init();
-  MX_SPI1_Init();
+  //MX_I2C2_Init();
+  //MX_SPI1_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim1); // envelop
+  HAL_TIM_Base_Start_IT(phtim_envelop); // envelop
   //HAL_TIM_Base_Start_IT(&htim2); // pwm
   //HAL_TIM_Base_Start_IT(&htim3); // pwm
   //HAL_TIM_Base_Start_IT(&htim4); // pwm
@@ -373,7 +373,7 @@ void MX_TIM2_Init(void)
 /* TIM3 init function */
 void MX_TIM3_Init(void)
 {
-    TIM_ClockConfigTypeDef sClockSourceConfig;
+      TIM_ClockConfigTypeDef sClockSourceConfig;
       TIM_MasterConfigTypeDef sMasterConfig;
       TIM_OC_InitTypeDef sConfigOC;
 
@@ -528,7 +528,7 @@ void transmit_handler()
         }
         case TX_SENDING_START_BIT:
         {
-            htim_envelop->Instance->ARR = PeriodOfStartStopBits;
+            phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
 
             // Start sequence consists of signal sequence {1,0,1}
             switch(StartStopSequenceTransmitState)
@@ -567,7 +567,7 @@ void transmit_handler()
         } 
         case TX_SENDING_DATA:
         {
-            htim_envelop->Instance->ARR = PeriodOfDataBits;
+            phtim_envelop->Instance->ARR = PeriodOfDataBits;
 
             // send current bit of data
             if(tx_current_bit_position < tx_total_bits)  // change to next state
@@ -604,7 +604,7 @@ void transmit_handler()
                 TransmitterState = TX_SENDING_STOP_BIT;
 
                 /* Set the Autoreload value for start sequence bits*/
-                htim_envelop->Instance->ARR = PeriodOfStartStopBits;
+                phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
             }
             // TODO: check if some errors or other options are possible here?
             break;
@@ -639,7 +639,7 @@ void transmit_handler()
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_ON2:
                 {
-                    htim_envelop->Instance->ARR = PeriodBetweenDataFrames;
+                    phtim_envelop->Instance->ARR = PeriodBetweenDataFrames;
                     StartStopSequenceTransmitState = STAGE_0;
                     TransmitterState = TX_DELAY;
                     break;
@@ -649,7 +649,7 @@ void transmit_handler()
         }
         case TX_DELAY:
         {
-            htim_envelop->Instance->ARR = PeriodOfStartStopBits;
+            phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
             StartStopSequenceTransmitState = STAGE_0;
             TransmitterState = TX_WAITING_FOR_TRANSMISSION;
 
