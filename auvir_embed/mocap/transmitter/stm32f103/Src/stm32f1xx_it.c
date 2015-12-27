@@ -109,54 +109,17 @@ void DMA1_Channel3_IRQHandler(void)
 
 
 /**
-* @brief This function handles TIM2 global interrupt.
+* @brief This function handles TIM1 global interrupt.
 */
-void TIM2_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM2_IRQn 0 */
-    if(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) != RESET)
-    {
-      if(__HAL_TIM_GET_IT_SOURCE(&htim2, TIM_IT_UPDATE) !=RESET)
-      {
-        HAL_TIM_Base_Stop_IT(&htim2);
-      }
-    }
-  /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
-
-  /* USER CODE END TIM2_IRQn 1 */
-}
-
-
-/**
-* @brief This function handles TIM3 global interrupt.
-*/
-void TIM3_IRQHandler(void)
+void TIM1_UP_IRQHandler(void)
 {
     /* USER CODE BEGIN TIM3_IRQn 0 */
-    /// ensure carrier is not generating
-    //TODO: not needed anymore? force_envelop_timer_output_off(); // stop carrier
     /// process transmit
     transmit_handler();
     /* USER CODE END TIM3_IRQn 0 */
-    HAL_TIM_IRQHandler(&htim3);
+    HAL_TIM_IRQHandler(&htim1);
     /* USER CODE BEGIN TIM3_IRQn 1 */
     /* USER CODE END TIM3_IRQn 1 */
-}
-
-/**
-* @brief This function handles TIM4 global interrupt.
-*/
-void TIM4_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM4_IRQn 0 */
-    HAL_TIM_Base_Start_IT(&htim3);
-
-  /* USER CODE END TIM4_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim4);
-  /* USER CODE BEGIN TIM4_IRQn 1 */
-  /* USER CODE END TIM4_IRQn 1 */
 }
 
 /**
