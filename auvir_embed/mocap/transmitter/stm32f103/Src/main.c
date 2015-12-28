@@ -38,9 +38,6 @@
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c2;
-
-SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
@@ -87,8 +84,6 @@ uint16_t ccr2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_I2C2_Init(void);
-static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
@@ -231,7 +226,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(phtim_envelop); // envelop
   //HAL_TIM_Base_Start_IT(&htim2); // pwm
   //HAL_TIM_Base_Start_IT(&htim3); // pwm
-  //HAL_TIM_Base_Start_IT(&htim4); // pwm
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1); // pwm
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -276,43 +271,6 @@ void SystemClock_Config(void)
 
       /* SysTick_IRQn interrupt configuration */
       HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-}
-
-/* I2C1 init function */
-void MX_I2C2_Init(void)
-{
-
-  hi2c2.Instance = I2C1;
-  hi2c2.Init.ClockSpeed = 100000;
-  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c2.Init.OwnAddress1 = 0;
-  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-  hi2c2.Init.OwnAddress2 = 0;
-  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
-  HAL_I2C_Init(&hi2c2);
-
-}
-
-/* SPI1 init function */
-void MX_SPI1_Init(void)
-{
-
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-  hspi1.Init.CRCPolynomial = 10;
-  HAL_SPI_Init(&hspi1);
-
 }
 
 /* TIM1 init function */
@@ -485,6 +443,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -502,6 +466,7 @@ void send_data()
 }
 void transmit_handler()
 {
+
     /// ensure carrier is not generating
     force_envelop_timer_output_off();  // stop carrier // TODO: check neseccity
 

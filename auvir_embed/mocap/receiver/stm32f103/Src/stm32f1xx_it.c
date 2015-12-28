@@ -38,12 +38,7 @@
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
 
-int counter = 0;
-extern void transmit_handler();
 extern void receive_handler();
-extern void test_input_signal_high_low();
-extern void force_envelop_timer_output_on();
-extern void force_envelop_timer_output_off();
 
 extern int level[100];
 extern int pwm[100];
@@ -135,15 +130,9 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
     /* USER CODE BEGIN TIM3_IRQn 0 */
-    /// ensure carrier is not generating
-    ///HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2); // carrier
-    /// process transmit
-    ///transmit_handler();
     /* USER CODE END TIM3_IRQn 0 */
     HAL_TIM_IRQHandler(&htim3);
     /* USER CODE BEGIN TIM3_IRQn 1 */
-    HAL_TIM_Base_Stop_IT(&htim3);
-    test_input_signal_high_low();
     /* USER CODE END TIM3_IRQn 1 */
 }
 
@@ -152,8 +141,41 @@ void TIM3_IRQHandler(void)
 */
 void TIM4_IRQHandler(void)
 {
-
-    IC_receive_handler();
+    if(ind < 100)
+    {
+        pwm[ind] = htim4.Instance->CCR1;
+         pwidth[ind] = htim4.Instance->CCR2;
+         /*
+        if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
+        {
+            if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
+            {
+                pwm[ind] = htim4.Instance->CCR1;
+            }
+        }
+        if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC2) != RESET)
+        {
+            if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC2) != RESET)
+            {
+                pwidth[ind] = htim4.Instance->CCR2;
+            }
+        }
+        */
+        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+        {
+            level[ind] = 1;
+        }
+        else
+        {
+            level[ind] = 0;
+        }
+        ind = ind + 1;
+    }
+    else
+    {
+        ind = 0;
+    }
+    receive_handler();
 
   /* USER CODE BEGIN TIM4_IRQn 0 */
 
