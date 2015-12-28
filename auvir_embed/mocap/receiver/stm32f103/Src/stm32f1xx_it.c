@@ -130,9 +130,11 @@ void TIM2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
     /* USER CODE BEGIN TIM3_IRQn 0 */
+    receive_handler();
     /* USER CODE END TIM3_IRQn 0 */
     HAL_TIM_IRQHandler(&htim3);
     /* USER CODE BEGIN TIM3_IRQn 1 */
+    ///HAL_TIM_Base_Stop_IT(&htim3);
     /* USER CODE END TIM3_IRQn 1 */
 }
 
@@ -144,23 +146,7 @@ void TIM4_IRQHandler(void)
     if(ind < 100)
     {
         pwm[ind] = htim4.Instance->CCR1;
-         pwidth[ind] = htim4.Instance->CCR2;
-         /*
-        if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
-        {
-            if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
-            {
-                pwm[ind] = htim4.Instance->CCR1;
-            }
-        }
-        if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC2) != RESET)
-        {
-            if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC2) != RESET)
-            {
-                pwidth[ind] = htim4.Instance->CCR2;
-            }
-        }
-        */
+        pwidth[ind] = htim4.Instance->CCR2;
         if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
         {
             level[ind] = 1;

@@ -53,6 +53,15 @@ TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
 const uint16_t pwm_timer_period = 949;
 const uint16_t pwm_pulse_width = 475;
+const uint16_t envelop_timer_prescaler = 72 - 1;
+//TODO: specify timer constants
+// values below are numbers of timer ticks
+const uint16_t PeriodOfStartStopBits = 1000 - 1;
+const uint16_t PeriodOfDataBits = 2000 - 1;
+const uint16_t PeriodBetweenDataFrames = 5000 - 1;
+const uint16_t HalfPeriodOfStartStopBits = 500 - 1;
+const uint16_t HalfPeriodOfDataBits = 1000 - 1;
+
 
 ///TODO: refactor constants below
 bool received_ir_signal = false;
@@ -94,14 +103,6 @@ static void MX_TIM4_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
-//TODO: specify timer constants
-// values below are numbers of timer ticks
-const uint16_t PeriodOfStartStopBits = 1000;
-const uint16_t PeriodOfDataBits = 2000;
-const uint16_t PeriodBetweenDataFrames = 5000;
-const uint16_t HalfPeriodOfStartStopBits = 500;
-const uint16_t HalfPeriodOfDataBits = 1000;
 
 enum ReceiverStates
 {
@@ -279,9 +280,9 @@ void MX_TIM1_Init(void)
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 35;
+  htim1.Init.Prescaler = envelop_timer_prescaler;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 999;
+  htim1.Init.Period = PeriodOfStartStopBits;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim1);
 
