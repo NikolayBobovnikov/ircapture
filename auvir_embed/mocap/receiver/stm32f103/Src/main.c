@@ -673,26 +673,29 @@ void receive_handler()
                     rx_data;// received data is here
                     rx_current_bit_position = 0;
                     ReceiverState = RX_DATA_RECEIVED;
-                    // wait remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
+                    // wait for the end of data frame
+                    // e.g.remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
                     htim3.Instance->ARR = HalfPeriodOfDataBits;
                     HAL_TIM_Base_Start_IT(&htim3);
                 }
             }// end of is_timer_update()
-            /// else - input capture, nothing to do
+            /// else - input capture during data receiving, nothing to do
             break;
         }
         case RX_DATA_RECEIVED:
         {
             if(is_timer_update())
             {
-                // wait half of the delay before stop bit sequence
+                // wait for the middle of low level part of stop sequence
+                // e.g. half of the delay before the first immpulse of stop bit sequence
+                // after the delay
                 //HAL_TIM_IC_PWM_Start_IT(&htim4); TODO
                 htim3.Instance->ARR = HalfPeriodOfStartStopBits;
                 TransmitterState = RX_STOP_BIT_RECEIVING;
                 StartStopSequenceReceiveState = STAGE_OFF0;
                 break;
             }
-            /// else - input capture, nothing to do
+            /// else - input capture during data receiving, nothing to do
             break;
         }
         case RX_STOP_BIT_RECEIVING:
@@ -712,7 +715,7 @@ void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                //high: input capture
+                //high rising edge: STAGE_OFF1 -> STAGE_ON1
                 case STAGE_OFF0_ON1:
                 {
                     // rising edge input capture
@@ -735,7 +738,7 @@ void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                //low: STAGE_ON1 -> STAGE_OFF1
+                //low falling edge: STAGE_ON1 -> STAGE_OFF1
                 case STAGE_ON1_OFF1:
                 {
                     if(is_falling_edge_in_correct_time())
@@ -757,7 +760,7 @@ void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                // high: STAGE_OFF1 -> STAGE_ON2
+                // high rising edge: STAGE_OFF1 -> STAGE_ON2
                 case STAGE_OFF1_ON2:
                 {
                     // rising edge input capture
@@ -781,10 +784,10 @@ void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                // low: STAGE_ON2 -> STAGE_OFFF2
+                // low falling edge: STAGE_ON2 -> STAGE_OFFF2
                 case STAGE_ON2_OFF2:
                 {
-                    if(is_rising_edge_in_correct_time())
+                    if(is_falling_edge_in_correct_time())
                     {
                         ReceiverState = RX_STOP_BIT_RECEIVED;
                         StartStopSequenceReceiveState = STAGE_0;
@@ -804,6 +807,7 @@ void receive_handler()
         case RX_STOP_BIT_RECEIVED:
         {
             // immediately after stop sequence, line should be low
+            // low confirmation
             if(is_low_level_in_correct_time())
             {
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
