@@ -64,29 +64,26 @@ const uint16_t HalfPeriodOfDataBits = 1000 - 1;
 
 
 ///TODO: refactor constants below
-bool received_ir_signal = false;
+typedef struct
+{
+    uint16_t _0_beamer_id;
+    uint16_t _1_angle_graycode;
+    uint32_t _2_timer32_value;
+} DataFrame_t;
 
-const    uint8_t tx_data = 0b11111111;
-#define  TOTAL_BITS 8
-const    uint8_t tx_total_bits = TOTAL_BITS;
-volatile uint8_t tx_current_bit_position = 0;
+DataFrame_t tx_data_frame;
+const    uint8_t tx_data = 0b11111111; //sample byte
+#define  TX_BUF_SIZE 1
+#define  TX_TOTAL_BITS 8
+const    uint8_t tx_total_bits = TX_TOTAL_BITS;
+volatile uint8_t tx_current_bit_pos = 0;
 volatile uint8_t tx_bit = 0;
-
-         uint8_t rx_data = 0;
-         uint8_t rx_total_bits = TOTAL_BITS;
-volatile uint8_t rx_current_bit_position = 0;
-volatile uint8_t rx_bit = 0;
+volatile uint8_t tx_current_byte_pos = 0;
 
 
 uint8_t level[100] = {0};
-uint8_t level_ind = 0;
-
-uint16_t pwm[100] = {0};
-uint8_t ind = 0;
-uint16_t ccr1_tn_1;
-uint16_t ccr1_tn;
-uint16_t ccr1;
-uint16_t ccr2;
+uint16_t pwm_period[100] = {0};
+uint8_t index = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,13 +115,13 @@ volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
 
 enum TransmitterStates
 {
-    TX_WAITING_FOR_TRANSMISSION,
-    TX_SENDING_START_BIT,
-    TX_SENDING_DATA,
-    TX_SENDING_STOP_BIT,
+    TX_WAITING,
+    TX_START_BIT,
+    TX_DATA,
+    TX_STOP_BIT,
     TX_DELAY
 };
-volatile uint8_t TransmitterState = TX_WAITING_FOR_TRANSMISSION;
+volatile uint8_t TransmitterState = TX_WAITING;
 
 enum StartStopSequenceStates
 {
@@ -171,15 +168,17 @@ enum OutputChannelsStates
 //start/stop sequence, beamer ID, time
 const uint8_t primary_output_channel = Timer4Channel4;
 uint8_t currentOutputTimChannel = Timer4Channel4;
-uint8_t input_channel_per_message_bit[TOTAL_BITS] =    {Timer2Channel1, // 1
-                                                        Timer2Channel2, // 2
-                                                        Timer2Channel3, // 3
-                                                        Timer2Channel4, // 4
-                                                        Timer3Channel1, // 5
-                                                        Timer3Channel2, // 6
-                                                        Timer3Channel3, // 7
-                                                        Timer3Channel4  // 8
-                                                       };
+uint8_t input_channel_per_message_bit[TX_TOTAL_BITS] =
+    {
+        Timer2Channel1, // 1
+        Timer2Channel2, // 2
+        Timer2Channel3, // 3
+        Timer2Channel4, // 4
+        Timer3Channel1, // 5
+        Timer3Channel2, // 6
+        Timer3Channel3, // 7
+        Timer3Channel4  // 8
+    };
 
 
 // level 1
@@ -455,9 +454,18 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void send_data()
 {
-    if(TX_WAITING_FOR_TRANSMISSION == TransmitterState)
+    // fill tx_data_frame with data
+
+    // sample data. TODO: use actual one
+    tx_data_frame._0_beamer_id = 0b1111111111111111;
+    tx_data_frame._1_angle_graycode = 0b1111111111111111;
+    tx_data_frame._2_timer32_value = 0b11111111111111111111111111111111;
+
+    // just repetition of the same data for now.
+    // TODO: send updated time
+    if(TX_WAITING == TransmitterState)
     {
-        TransmitterState = TX_SENDING_START_BIT;
+        TransmitterState = TX_START_BIT;
     }
     else
     {
@@ -485,12 +493,12 @@ void transmit_handler()
 
     switch(TransmitterState)
     {
-        case TX_WAITING_FOR_TRANSMISSION:
+        case TX_WAITING:
         {
             nop();
             break;
         }
-        case TX_SENDING_START_BIT:
+        case TX_START_BIT:
         {
             phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
 
@@ -521,59 +529,69 @@ void transmit_handler()
                    // Low
                 case STAGE_ON2:
                 {
+                    TransmitterState = TX_DATA;
                     StartStopSequenceTransmitState = STAGE_0;
-                    TransmitterState = TX_SENDING_DATA;
+                    tx_current_byte_pos = 0;
+                    tx_current_bit_pos = 0;
                     force_envelop_timer_output_off();
                     break;
                 }
             }
             break;
         } 
-        case TX_SENDING_DATA:
+        case TX_DATA:
         {
             phtim_envelop->Instance->ARR = PeriodOfDataBits;
 
-            // send current bit of data
-            if(tx_current_bit_position < tx_total_bits)  // change to next state
+            // process current byte from buffer
+            if(tx_current_byte_pos < sizeof(DataFrame_t)) /// FIXME: check sizeof correctness.
             {
-                //set PWM output channel according to current bit number
-                currentOutputTimChannel = input_channel_per_message_bit[tx_current_bit_position];
-                if(Timer3Channel1 == currentOutputTimChannel)
+                // process current bit of current byte
+                if(tx_current_bit_pos < tx_total_bits)
                 {
-                    int a = 0;
-                }
-                // get k-th bit of n: (n >> k) & 1
-                tx_bit = (tx_data >> (tx_total_bits - tx_current_bit_position - 1)) & 1;
+                    //set PWM output channel according to current bit number
+                    currentOutputTimChannel = input_channel_per_message_bit[tx_current_bit_pos];
+                    // get k-th bit of n: (n >> k) & 1
+                    //tx_bit = (tx_data >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+                    tx_bit = (((uint8_t* )&tx_data_frame)[tx_current_byte_pos] >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
 
-                if(tx_bit == 1)
+                    if(tx_bit == 1)
+                    {
+                        force_envelop_timer_output_on();
+                    }
+                    else // bit == 0
+                    {
+                        force_envelop_timer_output_off();
+                    }
+                    // go to next bit
+                    tx_current_bit_pos++;
+                }// if(tx_current_bit_pos < tx_total_bits)
+                else
                 {
-                    force_envelop_timer_output_on();
+                    //go to next byte
+                    tx_current_byte_pos++;
+                    //reset current bit position
+                    tx_current_bit_pos = 0;
                 }
-                else // bit == 0
-                {
-                    force_envelop_timer_output_off();
-                }
-                // go to next bit
-                tx_current_bit_position++;
-            }
-            // TODO: check nessesity of condition below
-            else  // change to next state
-            {
-                //reset current bit number
-                tx_current_bit_position = 0;
-                //reset current PWM output channel - set back to default value
+            }///if(tx_current_byte_pos < tx_buffer_size)
+            else
+            {\
+                // sending data using separate PWM channels is finished,
+                // return to default PWM channel
                 currentOutputTimChannel = primary_output_channel;
 
-                //TransmitterState = TX_DATA_SENT;
-                TransmitterState = TX_SENDING_STOP_BIT;
+                // move on to next stage
+                // TransmitterState = TX_DATA_SENT;
+                TransmitterState = TX_STOP_BIT;
 
                 /* Set the Autoreload value for start sequence bits*/
                 phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
             }
+
             // TODO: check if some errors or other options are possible here?
             break;
         }
-        case TX_SENDING_STOP_BIT:
+        case TX_STOP_BIT:
         {
             // TODO: check if worth to move ARR update to step abore
 
@@ -615,7 +633,7 @@ void transmit_handler()
         {
             phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
             StartStopSequenceTransmitState = STAGE_0;
-            TransmitterState = TX_WAITING_FOR_TRANSMISSION;
+            TransmitterState = TX_WAITING;
 
             break;
         }

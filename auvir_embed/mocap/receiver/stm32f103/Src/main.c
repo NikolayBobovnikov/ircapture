@@ -37,6 +37,21 @@
 #include <stdbool.h>
 /* USER CODE END Includes */
 
+/*
+ * TODO list:
+ * beamer hub: detect when new beamer is being connected, assign new ID and send it to the beamer
+ * beamer hub: synchronize beamers with each other. send signals to each beamer when it is its turn to beam
+ *
+ * beamer: get ID, synchhronize time when initialize
+ * beamer: start sending data on external signal
+ *
+ * receiver: signal when buffer with data frames is ready to be read from
+ *
+ * receiver hub: read from the buffer using spi&dma
+ * receiver hub: send data to comp using usb / wifi / sockets
+ * 4.
+ * /
+
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
@@ -51,23 +66,34 @@ TIM_HandleTypeDef htim4;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 ///TODO: refactor constants below
-bool received_ir_signal = false;
+///TODO: learn about typedefs and structs
+typedef struct
+{
+    uint16_t beamer_id;
+    uint16_t angle_graycode;
+    uint32_t timer32_value;
+} DataFrame_t;
 
-const    uint8_t tx_data = 0b10101101;
-const    uint8_t tx_total_bits = 8;
-volatile uint8_t tx_current_bit_position = 0;
-volatile uint8_t tx_bit = 0;
+DataFrame_t data_frame;
+#define  RX_BUF_SIZE 10
+DataFrame_t arr[RX_BUF_SIZE];
+int index;
 
-         uint8_t rx_data = 0;
-         uint8_t rx_total_bits = 8;
-volatile uint8_t rx_current_bit_position = 0;
+inline void copy_data_frame_to_buffer(DataFrame_t* df);
+
+uint8_t rx_data = 0;
+#define  RX_TOTAL_BITS 8
+const    uint8_t rx_total_bits = RX_TOTAL_BITS;
+volatile uint8_t rx_current_byte_pos = 0;
+volatile uint8_t rx_current_bit_pos = 0;
 volatile uint8_t rx_bit = 0;
 
 
+
 int level[100] = {0};
-int pwm[100] = {0};
-int pwidth[100] = {0};
-int ind = 0;
+int pwm_period[100] = {0};
+int pwm_length[100] = {0};
+int index = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -88,7 +114,7 @@ static void MX_TIM4_Init(void);
 
 //TODO: specify timer constants
 const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 949;
+const uint16_t pwm_timer_period = 950 - 1;
 const uint16_t pwm_pulse_width = 475;
 const uint16_t envelop_timer_prescaler = 72 - 1;
 //TODO: specify timer constants
@@ -102,12 +128,12 @@ const uint16_t HalfPeriodOfDataBits = 1000 - 1;
 enum ReceiverStates
 {
     RX_WAITING_FOR_START_BIT,
-    RX_START_BIT_SENDING,
-    RX_START_BIT_SENT,
-    RX_DATA_RECEIVING,
-    RX_DATA_RECEIVED,
-    RX_STOP_BIT_RECEIVING,
-    RX_STOP_BIT_RECEIVED
+    RX_START_BIT_PROCESSING,
+    RX_START_BIT_DONE,
+    RX_DATA_PROCESSNG,
+    RX_DATA_DONE,
+    RX_STOP_BIT_PROCESSING,
+    RX_STOP_BIT_DONE
 };
 volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
 
@@ -457,9 +483,6 @@ void MX_DMA_Init(void)
 */
 void MX_GPIO_Init(void)
 {
-
-  GPIO_InitTypeDef GPIO_InitStruct;
-
   // GPIO Ports Clock Enable
   __GPIOD_CLK_ENABLE();
   __GPIOA_CLK_ENABLE();
@@ -471,7 +494,7 @@ void MX_GPIO_Init(void)
 void receive_handler()
 {
 
-    if(ind == 100)
+    if(index == 100)
     {
         int a  = 0;
     }
@@ -507,7 +530,7 @@ void receive_handler()
                 // wait for first point
                 HAL_TIM_Base_Start_IT(&htim3);
                 htim3.Instance->ARR = HalfPeriodOfStartStopBits;
-                ReceiverState = RX_START_BIT_SENDING;
+                ReceiverState = RX_START_BIT_PROCESSING;
                 StartStopSequenceReceiveState = STAGE_ON1;
                 // wait for half a period of startstop bit sequence
                 break;
@@ -515,7 +538,7 @@ void receive_handler()
             // no necessity in reset_receiver_state here, because nothing to change
             break;
         }
-        case RX_START_BIT_SENDING:
+        case RX_START_BIT_PROCESSING:
         {
             // Start sequence consists of signal sequence {1,0,1,0}, each bit of length PeriodOfStartStopBits
             switch(StartStopSequenceReceiveState)
@@ -607,7 +630,7 @@ void receive_handler()
                         //wait for the beginning of data transmission
                         // HAL_TIM_IC_PWM_Stop_IT(&htim4); TODO
                         StartStopSequenceTransmitState = STAGE_0;
-                        ReceiverState = RX_START_BIT_SENT;
+                        ReceiverState = RX_START_BIT_DONE;
                         break;
                     }
                     reset_receiver_state();
@@ -622,67 +645,77 @@ void receive_handler()
             break;
         }
         // Transitiolal state, adjust timer period so that we start readind data bits in the middle of each signal
-        case RX_START_BIT_SENT:
+        case RX_START_BIT_DONE:
         {
             if(is_timer_update())
             {
+                ///Prepare to read data frame
+
                 // start reading data bits after the middle of the first pulse,
                 // so wait for another HalfPeriodOfDataBits
-
                 htim3.Instance->ARR = HalfPeriodOfDataBits;
-                ReceiverState = RX_DATA_RECEIVING;
+                ReceiverState = RX_DATA_PROCESSNG;
                 // initialize buffer with all zeros
-                rx_data = 0;
+                // TODO: fill buffer with zeros
+                memset(&data_frame, 0, sizeof(DataFrame_t));
+                // reset positions
+                rx_current_byte_pos = 0;
+                rx_current_bit_pos = 0;
+
             }
-            /// else - input capture, nothing to do
+            /// else - input capture, nothing to do.
+            /// TODO: turn off input capture timer when it is not supposed to be used
             break;
         }
-
-        case RX_DATA_RECEIVING:
+        case RX_DATA_PROCESSNG:
         {
             if(is_timer_update())
             {
-                //now reading data bits with period of PeriodOfDataBits ticks
-                // start reading values from the middle of the first bit
-                if(0 == rx_current_bit_position)
+                // reading data bits with period of PeriodOfDataBits ticks
+                // start reading values from the middle of the very first bit of data (of the first byte)
+                if(0 == rx_current_byte_pos && 0 == rx_current_bit_pos)
                 {
                     htim3.Instance->ARR = PeriodOfDataBits;
                 }
 
-                // send current bit of data
-                if(rx_current_bit_position < rx_total_bits)  // change to next state
+                if(rx_current_byte_pos < sizeof(DataFrame_t))///FIXME: check correctness of sizeof here
                 {
-                    // k-th bit of n: (n >> k) & 1
-                    if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+                    // send current bit of current byte
+                    if(rx_current_bit_pos < rx_total_bits)  // change to next state
                     {
-                        // set bit at the inversed position
-                        rx_data |= 1 << (rx_total_bits - rx_current_bit_position -1);
+                        // k-th bit of n: (n >> k) & 1
+                        if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
+                        {
+                            // set bit at the inversed position
+                            ((uint8_t*)(&data_frame))[rx_current_byte_pos] |= 1 << (rx_total_bits - rx_current_bit_pos - 1);
+                        }
+                        /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
+                        rx_current_bit_pos++;
                     }
-                    /*
-                     * below is redundant since all rx_data bits are initialized to zeros
                     else
                     {
-                        //rx_bit = 0;
-                        rx_data |= 0 << rx_current_bit_position;
+                        // process next word
+                        rx_current_byte_pos++;
+                        // reset current bit position
+                        rx_current_bit_pos = 0;
                     }
-                    */
-                    rx_current_bit_position++;
-                }
+                }// if(rx_current_byte_pos < rx_buffer_size)
                 else
                 {
-                    rx_data;// received data is here
-                    rx_current_bit_position = 0;
-                    ReceiverState = RX_DATA_RECEIVED;
+                    // data has been received
+                    // TODO: process data buffer
+                    ReceiverState = RX_DATA_DONE;
                     // wait for the end of data frame
                     // e.g.remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
                     htim3.Instance->ARR = HalfPeriodOfDataBits;
                     HAL_TIM_Base_Start_IT(&htim3);
                 }
             }// end of is_timer_update()
-            /// else - input capture during data receiving, nothing to do
+            /// else - input capture during data receiving, nothing to do.
+            /// TODO: turn off input capture timer when it is not supposed to be used
             break;
         }
-        case RX_DATA_RECEIVED:
+        case RX_DATA_DONE:
         {
             if(is_timer_update())
             {
@@ -691,14 +724,15 @@ void receive_handler()
                 // after the delay
                 //HAL_TIM_IC_PWM_Start_IT(&htim4); TODO
                 htim3.Instance->ARR = HalfPeriodOfStartStopBits;
-                TransmitterState = RX_STOP_BIT_RECEIVING;
+                TransmitterState = RX_STOP_BIT_PROCESSING;
                 StartStopSequenceReceiveState = STAGE_OFF0;
                 break;
             }
-            /// else - input capture during data receiving, nothing to do
+            /// else - input capture during data receiving, nothing to do.
+            /// TODO: turn off input capture timer when it is not supposed to be used
             break;
         }
-        case RX_STOP_BIT_RECEIVING:
+        case RX_STOP_BIT_PROCESSING:
         {
             switch (StartStopSequenceReceiveState)
             {
@@ -789,7 +823,7 @@ void receive_handler()
                 {
                     if(is_falling_edge_in_correct_time())
                     {
-                        ReceiverState = RX_STOP_BIT_RECEIVED;
+                        ReceiverState = RX_STOP_BIT_DONE;
                         StartStopSequenceReceiveState = STAGE_0;
                     }
                     reset_receiver_state();
@@ -804,7 +838,7 @@ void receive_handler()
 
             break;
         }
-        case RX_STOP_BIT_RECEIVED:
+        case RX_STOP_BIT_DONE:
         {
             // immediately after stop sequence, line should be low
             // low confirmation
@@ -812,7 +846,7 @@ void receive_handler()
             {
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
                 // TODO
-                rx_data;
+                copy_data_frame_to_buffer(&data_frame);
             }
             reset_receiver_state();
             break;
@@ -829,7 +863,6 @@ void reset_receiver_state()
     ReceiverState = RX_WAITING_FOR_START_BIT;
     StartStopSequenceReceiveState = STAGE_0;
     HAL_TIM_Base_Stop_IT(&htim3);
-    rx_data = 0;
 }
 
 bool is_rising_edge_in_correct_time()
@@ -909,6 +942,13 @@ bool is_rising_edge()
         }
     }
     return false;
+}
+void copy_data_frame_to_buffer(DataFrame_t* df)
+{
+    arr[index].angle_graycode = df->angle_graycode;
+    arr[index].beamer_id = df->beamer_id;
+    arr[index].timer32_value = df->timer32_value;
+    //memcpy(df, rx_data_frame_array, sizeof(rx_data_frame));
 }
 
 void nop(){}
