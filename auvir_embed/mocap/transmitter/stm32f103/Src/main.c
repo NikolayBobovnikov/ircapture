@@ -66,24 +66,20 @@ const uint16_t HalfPeriodOfDataBits = 1000 - 1;
 ///TODO: refactor constants below
 typedef struct
 {
-    uint16_t _0_beamer_id;
-    uint16_t _1_angle_graycode;
-    uint32_t _2_timer32_value;
+    uint8_t _1_beamer_id;
+    uint8_t _2_angle_graycode;
+    uint16_t _3_timer_cnt;
 } DataFrame_t;
 
 DataFrame_t tx_data_frame;
-const    uint8_t tx_data = 0b11111111; //sample byte
 #define  TX_BUF_SIZE 1
-#define  TX_TOTAL_BITS 8
-const    uint8_t tx_total_bits = TX_TOTAL_BITS;
+volatile size_t tx_total_bits = 0;
 volatile uint8_t tx_current_bit_pos = 0;
 volatile uint8_t tx_bit = 0;
-volatile uint8_t tx_current_byte_pos = 0;
-
 
 uint8_t level[100] = {0};
 uint16_t pwm_period[100] = {0};
-uint8_t index = 0;
+uint8_t arr_index = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -122,6 +118,16 @@ enum TransmitterStates
     TX_DELAY
 };
 volatile uint8_t TransmitterState = TX_WAITING;
+
+enum DataFrameStates
+{
+    DATAFRAME_0_NODATA,
+    DATAFRAME_1_BEAMER_ID,
+    DATAFRAME_2_ANGLE,
+    DATAFRAME_3_TIME
+};
+volatile uint8_t DataFrameState = DATAFRAME_0_NODATA;
+
 
 enum StartStopSequenceStates
 {
@@ -168,7 +174,7 @@ enum OutputChannelsStates
 //start/stop sequence, beamer ID, time
 const uint8_t primary_output_channel = Timer4Channel4;
 uint8_t currentOutputTimChannel = Timer4Channel4;
-uint8_t input_channel_per_message_bit[TX_TOTAL_BITS] =
+uint8_t input_channel_per_message_bit[sizeof(tx_data_frame._2_angle_graycode) * 8] =
     {
         Timer2Channel1, // 1
         Timer2Channel2, // 2
@@ -186,12 +192,16 @@ void send_data();
 
 // level 2
 void transmit_handler();
+inline void reset_transmitter();
+inline void switch_to_data_transmission_state();
+inline void transmit_data_frame_part();
+inline void p_w_modulate(uint8_t bit);
 
 // level 3
 
 // level 4
-void force_envelop_timer_output_on();
-void force_envelop_timer_output_off();
+inline void force_envelop_timer_output_on();
+inline void force_envelop_timer_output_off();
 
 inline void nop();
 
@@ -403,10 +413,10 @@ void MX_TIM4_Init(void)
     HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4);
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-void MX_DMA_Init(void) 
+void MX_DMA_Init(void)
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -419,9 +429,9 @@ void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -457,9 +467,9 @@ void send_data()
     // fill tx_data_frame with data
 
     // sample data. TODO: use actual one
-    tx_data_frame._0_beamer_id = 0b1111111111111111;
-    tx_data_frame._1_angle_graycode = 0b1111111111111111;
-    tx_data_frame._2_timer32_value = 0b11111111111111111111111111111111;
+    tx_data_frame._1_beamer_id = 0b11111111;
+    tx_data_frame._2_angle_graycode = 0b11111111;
+    tx_data_frame._3_timer_cnt = 0b1111111111111111;
 
     // just repetition of the same data for now.
     // TODO: send updated time
@@ -529,63 +539,56 @@ void transmit_handler()
                    // Low
                 case STAGE_ON2:
                 {
-                    TransmitterState = TX_DATA;
-                    StartStopSequenceTransmitState = STAGE_0;
-                    tx_current_byte_pos = 0;
-                    tx_current_bit_pos = 0;
-                    force_envelop_timer_output_off();
+                    switch_to_data_transmission_state();
                     break;
                 }
             }
             break;
-        } 
+        }
         case TX_DATA:
         {
             phtim_envelop->Instance->ARR = PeriodOfDataBits;
 
-            // process current byte from buffer
-            if(tx_current_byte_pos < sizeof(DataFrame_t)) /// FIXME: check sizeof correctness.
+            switch (DataFrameState)
             {
-                // process current bit of current byte
-                if(tx_current_bit_pos < tx_total_bits)
+                default:
                 {
-                    //set PWM output channel according to current bit number
-                    currentOutputTimChannel = input_channel_per_message_bit[tx_current_bit_pos];
-                    // get k-th bit of n: (n >> k) & 1
-                    //tx_bit = (tx_data >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-                    tx_bit = (((uint8_t* )&tx_data_frame)[tx_current_byte_pos] >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-
-                    if(tx_bit == 1)
-                    {
-                        force_envelop_timer_output_on();
-                    }
-                    else // bit == 0
-                    {
-                        force_envelop_timer_output_off();
-                    }
-                    // go to next bit
-                    tx_current_bit_pos++;
-                }// if(tx_current_bit_pos < tx_total_bits)
-                else
-                {
-                    //go to next byte
-                    tx_current_byte_pos++;
-                    //reset current bit position
-                    tx_current_bit_pos = 0;
+                    reset_transmitter();
+                    return;
                 }
-            }///if(tx_current_byte_pos < tx_buffer_size)
-            else
-            {\
-                // sending data using separate PWM channels is finished,
-                // return to default PWM channel
-                currentOutputTimChannel = primary_output_channel;
+                case DATAFRAME_1_BEAMER_ID:
+                {
+                    transmit_data_frame_part((void*)(&(tx_data_frame._1_beamer_id)),
+                                             sizeof(tx_data_frame._1_beamer_id) * 8);
+                    break;
+                }
 
-                // move on to next stage
-                // TransmitterState = TX_DATA_SENT;
-                TransmitterState = TX_STOP_BIT;
+                case DATAFRAME_2_ANGLE:
+                {
+                    transmit_data_frame_part((void*)(&(tx_data_frame._2_angle_graycode)),
+                                             sizeof(tx_data_frame._2_angle_graycode) * 8);
+                    break;
+                }
 
-                /* Set the Autoreload value for start sequence bits*/
-                phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
+                case DATAFRAME_3_TIME:
+                {
+                    transmit_data_frame_part((void*)(&(tx_data_frame._3_timer_cnt)),
+                                             sizeof(tx_data_frame._3_timer_cnt) * 8);
+                    break;
+                }
+                case DATAFRAME_0_NODATA:
+                {
+                    // sending data using separate PWM channels is finished,
+                    // return to default PWM channel
+                    currentOutputTimChannel = primary_output_channel;
+
+                    /* Set the Autoreload value for start sequence bits*/
+                    phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
+
+                    // move on to next stage
+                    TransmitterState = TX_STOP_BIT;
+                    break;
+                }
             }
 
             // TODO: check if some errors or other options are possible here?
@@ -631,13 +634,140 @@ void transmit_handler()
         }
         case TX_DELAY:
         {
-            phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
-            StartStopSequenceTransmitState = STAGE_0;
-            TransmitterState = TX_WAITING;
-
+            reset_transmitter();
             break;
         }
     } // switch(TransmitterState)
+}
+void reset_transmitter()
+{
+    TransmitterState = TX_WAITING;
+    // TODO: add other steps if needed
+    phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
+    StartStopSequenceTransmitState = STAGE_0;
+    DataFrameState = DATAFRAME_0_NODATA;
+}
+
+void switch_to_data_transmission_state()
+{
+    TransmitterState = TX_DATA;
+    DataFrameState = DATAFRAME_1_BEAMER_ID;
+    StartStopSequenceTransmitState = STAGE_0;
+    tx_current_bit_pos = 0;
+    force_envelop_timer_output_off();
+}
+void transmit_data_frame_part()
+{
+    switch(DataFrameState)
+    {
+        default:
+        {
+            reset_transmitter();
+            return;
+        }
+        case(DATAFRAME_1_BEAMER_ID):
+        {
+            tx_total_bits = sizeof(tx_data_frame._1_beamer_id) * 8;
+            tx_bit = (tx_data_frame._1_beamer_id >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+            p_w_modulate(tx_bit);
+            // go to next bit.
+            if(tx_current_bit_pos < tx_total_bits)
+            {
+                tx_current_bit_pos++;
+            }
+            else
+            {
+                // change state to process next part of data
+                DataFrameState = DATAFRAME_2_ANGLE;
+                tx_current_bit_pos = 0;
+            }
+            break;
+        }
+        case(DATAFRAME_2_ANGLE):
+        {
+            tx_total_bits = sizeof(tx_data_frame._2_angle_graycode) * 8;
+            tx_bit = (tx_data_frame._2_angle_graycode >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+            p_w_modulate(tx_bit);
+            // go to next bit.
+            if(tx_current_bit_pos < tx_total_bits)
+            {
+                tx_current_bit_pos++;
+            }
+            else
+            {
+                // change state to process next part of data
+                DataFrameState = DATAFRAME_3_TIME;
+                tx_current_bit_pos = 0;
+            }
+            break;
+        }
+        case(DATAFRAME_3_TIME):
+        {
+            tx_total_bits = sizeof(tx_data_frame._3_timer_cnt) * 8;
+            tx_bit = (tx_data_frame._3_timer_cnt >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+            p_w_modulate(tx_bit);
+            // go to next bit.
+            if(tx_current_bit_pos < tx_total_bits)
+            {
+                tx_current_bit_pos++;
+            }
+            else
+            {
+                // change state to finish processing data
+                // sending data using separate PWM channels is finished,
+                // return to default PWM channel
+                currentOutputTimChannel = primary_output_channel;
+
+                /* Set the Autoreload value for start sequence bits*/
+                phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
+
+                // move on to next stage
+                TransmitterState = TX_STOP_BIT;
+                DataFrameState = DATAFRAME_0_NODATA;
+                tx_current_bit_pos = 0;
+            }
+            break;
+        }
+    }
+
+    /* Generalized version
+    switch (total_bits)
+    {
+        default:
+        {
+            reset_transmitter();
+            return;
+        }
+        case 8:
+        {
+            tx_bit = (*((uint8_t*)(data)) >> (total_bits - tx_current_bit_pos - 1)) & 1;
+            break;
+        }
+        case 16:
+        {
+            tx_bit = (*((uint16_t*)(data)) >> (total_bits - tx_current_bit_pos - 1)) & 1;
+            break;
+        }
+        case 32:
+        {
+            tx_bit = (*((uint32_t*)(data)) >> (total_bits - tx_current_bit_pos - 1)) & 1;
+            break;
+        }
+    }
+    */
+}
+
+void p_w_modulate(uint8_t bit)
+{
+    if(bit == 1)
+    {
+        force_envelop_timer_output_on();
+    }
+    else // bit == 0
+    {
+        force_envelop_timer_output_off();
+    }
+
 }
 
 void force_envelop_timer_output_on()
@@ -709,6 +839,7 @@ void force_envelop_timer_output_on()
 
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 }
+
 void force_envelop_timer_output_off()
 {
 /*
@@ -744,7 +875,7 @@ void force_envelop_timer_output_off()
         {
             HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4); // carrier
             break;
-        }  
+        }
         case Timer3Channel1:
         {
             HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1); // carrier
@@ -815,10 +946,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

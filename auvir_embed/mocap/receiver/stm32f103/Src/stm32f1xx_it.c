@@ -43,7 +43,7 @@ extern void receive_handler();
 extern int level[100];
 extern int pwm_period[100];
 extern int pwm_length[100];
-extern int index;
+extern int pwm_index;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -143,23 +143,23 @@ void TIM3_IRQHandler(void)
 */
 void TIM4_IRQHandler(void)
 {
-    if(index < 100)
+    if(pwm_index < 100)
     {
-        pwm_period[index] = htim4.Instance->CCR1;
-        pwm_length[index] = htim4.Instance->CCR2;
+        pwm_period[pwm_index] = htim4.Instance->CCR1;
+        pwm_length[pwm_index] = htim4.Instance->CCR2;
         if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
         {
-            level[index] = 1;
+            level[pwm_index] = 1;
         }
         else
         {
-            level[index] = 0;
+            level[pwm_index] = 0;
         }
-        index = index + 1;
+        pwm_index = pwm_index + 1;
     }
     else
     {
-        index = 0;
+        pwm_index = 0;
     }
     receive_handler();
 
