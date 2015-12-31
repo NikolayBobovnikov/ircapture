@@ -58,9 +58,9 @@ const uint16_t pwm_pulse_width = 475;
 const uint16_t envelop_timer_prescaler = 72 - 1;
 //TODO: specify timer constants
 // values below are numbers of timer ticks
-const uint16_t PeriodOfStartStopBits = 1000 - 1;
-const uint16_t PeriodOfDataBits = 2000 - 1;
-const uint16_t PeriodBetweenDataFrames = 5000 - 1;
+const uint16_t StartStopBitLength = 1000 - 1;
+const uint16_t DataBitLength = 2000 - 1;
+const uint16_t DelayBetweenDataFrames = 5000 - 1;
 
 
 ///TODO: refactor constants below
@@ -194,7 +194,6 @@ void send_data();
 void transmit_handler();
 inline void reset_transmitter();
 inline void switch_to_data_transmission_state();
-inline void transmit_data_frame_part();
 inline void p_w_modulate(uint8_t bit);
 
 // level 3
@@ -291,7 +290,7 @@ void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = envelop_timer_prescaler;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = PeriodOfStartStopBits;
+  htim1.Init.Period = StartStopBitLength;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim1);
 
@@ -468,8 +467,8 @@ void send_data()
     // fill tx_data_frame with data
 
     // sample data. TODO: use actual one
-    tx_data_frame._1_beamer_id = 0b10101010;
-    tx_data_frame._2_angle_graycode = 0b01010101;
+    tx_data_frame._1_beamer_id = 0b11101110;
+    tx_data_frame._2_angle_graycode = 0b11100111;
     tx_data_frame._3_timer_cnt = 0b1100110000110011;
 
     // just repetition of the same data for now.
@@ -511,7 +510,7 @@ void transmit_handler()
         }
         case TX_START_BIT:
         {
-            phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
+            phtim_envelop->Instance->ARR = StartStopBitLength;
 
             // Start sequence consists of signal sequence {1,0,1}
             switch(StartStopSequenceTransmitState)
@@ -548,7 +547,7 @@ void transmit_handler()
         }
         case TX_DATA:
         {
-            phtim_envelop->Instance->ARR = PeriodOfDataBits;
+            phtim_envelop->Instance->ARR = DataBitLength;
 
             switch (DataFrameState)
             {
@@ -557,37 +556,67 @@ void transmit_handler()
                     reset_transmitter();
                     return;
                 }
-                case DATAFRAME_1_BEAMER_ID:
+                case(DATAFRAME_1_BEAMER_ID):
                 {
-                    transmit_data_frame_part((void*)(&(tx_data_frame._1_beamer_id)),
-                                             sizeof(tx_data_frame._1_beamer_id) * 8);
+                    tx_total_bits = sizeof(tx_data_frame._1_beamer_id) * 8;
+                    tx_bit = (tx_data_frame._1_beamer_id >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+                    p_w_modulate(tx_bit);
+                    // go to next bit.
+                    if(tx_current_bit_pos < tx_total_bits)
+                    {
+                        tx_current_bit_pos++;
+                    }
+                    else
+                    {
+                        // change state to process next part of data
+                        DataFrameState = DATAFRAME_2_ANGLE;
+                        tx_current_bit_pos = 0;
+                    }
                     break;
                 }
-
-                case DATAFRAME_2_ANGLE:
+                case(DATAFRAME_2_ANGLE):
                 {
-                    transmit_data_frame_part((void*)(&(tx_data_frame._2_angle_graycode)),
-                                             sizeof(tx_data_frame._2_angle_graycode) * 8);
+                    tx_total_bits = sizeof(tx_data_frame._2_angle_graycode) * 8;
+                    tx_bit = (tx_data_frame._2_angle_graycode >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+                    p_w_modulate(tx_bit);
+                    // go to next bit.
+                    if(tx_current_bit_pos < tx_total_bits)
+                    {
+                        tx_current_bit_pos++;
+                    }
+                    else
+                    {
+                        // change state to process next part of data
+                        DataFrameState = DATAFRAME_3_TIME;
+                        tx_current_bit_pos = 0;
+                    }
                     break;
                 }
-
-                case DATAFRAME_3_TIME:
+                case(DATAFRAME_3_TIME):
                 {
-                    transmit_data_frame_part((void*)(&(tx_data_frame._3_timer_cnt)),
-                                             sizeof(tx_data_frame._3_timer_cnt) * 8);
-                    break;
-                }
-                case DATAFRAME_0_NODATA:
-                {
-                    // sending data using separate PWM channels is finished,
-                    // return to default PWM channel
-                    currentOutputTimChannel = primary_output_channel;
+                    tx_total_bits = sizeof(tx_data_frame._3_timer_cnt) * 8;
+                    tx_bit = (tx_data_frame._3_timer_cnt >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+                    p_w_modulate(tx_bit);
+                    // go to next bit.
+                    if(tx_current_bit_pos < tx_total_bits)
+                    {
+                        tx_current_bit_pos++;
+                    }
+                    else
+                    {
+                        // change state to finish processing data
+                        // sending data using separate PWM channels is finished,
+                        // return to default PWM channel
+                        currentOutputTimChannel = primary_output_channel;
 
-                    /* Set the Autoreload value for start sequence bits*/
-                    phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
+                        /* Set the Autoreload value for start sequence bits*/
+                        phtim_envelop->Instance->ARR = StartStopBitLength;
 
-                    // move on to next stage
-                    TransmitterState = TX_STOP_BIT;
+                        // move on to next stage
+                        TransmitterState = TX_STOP_BIT;
+                        DataFrameState = DATAFRAME_0_NODATA;
+                        tx_current_bit_pos = 0;
+                    }
                     break;
                 }
             }
@@ -625,7 +654,7 @@ void transmit_handler()
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_ON2:
                 {
-                    phtim_envelop->Instance->ARR = PeriodBetweenDataFrames;
+                    phtim_envelop->Instance->ARR = DelayBetweenDataFrames;
                     StartStopSequenceTransmitState = STAGE_0;
                     TransmitterState = TX_DELAY;
                     break;
@@ -644,7 +673,7 @@ void reset_transmitter()
 {
     TransmitterState = TX_WAITING;
     // TODO: add other steps if needed
-    phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
+    phtim_envelop->Instance->ARR = StartStopBitLength;
     StartStopSequenceTransmitState = STAGE_0;
     DataFrameState = DATAFRAME_0_NODATA;
 }
@@ -656,106 +685,6 @@ void switch_to_data_transmission_state()
     StartStopSequenceTransmitState = STAGE_0;
     tx_current_bit_pos = 0;
     force_envelop_timer_output_off();
-}
-void transmit_data_frame_part()
-{
-    switch(DataFrameState)
-    {
-        default:
-        {
-            reset_transmitter();
-            return;
-        }
-        case(DATAFRAME_1_BEAMER_ID):
-        {
-            tx_total_bits = sizeof(tx_data_frame._1_beamer_id) * 8;
-            tx_bit = (tx_data_frame._1_beamer_id >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-            p_w_modulate(tx_bit);
-            // go to next bit.
-            if(tx_current_bit_pos < tx_total_bits)
-            {
-                tx_current_bit_pos++;
-            }
-            else
-            {
-                // change state to process next part of data
-                DataFrameState = DATAFRAME_2_ANGLE;
-                tx_current_bit_pos = 0;
-            }
-            break;
-        }
-        case(DATAFRAME_2_ANGLE):
-        {
-            tx_total_bits = sizeof(tx_data_frame._2_angle_graycode) * 8;
-            tx_bit = (tx_data_frame._2_angle_graycode >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-            p_w_modulate(tx_bit);
-            // go to next bit.
-            if(tx_current_bit_pos < tx_total_bits)
-            {
-                tx_current_bit_pos++;
-            }
-            else
-            {
-                // change state to process next part of data
-                DataFrameState = DATAFRAME_3_TIME;
-                tx_current_bit_pos = 0;
-            }
-            break;
-        }
-        case(DATAFRAME_3_TIME):
-        {
-            tx_total_bits = sizeof(tx_data_frame._3_timer_cnt) * 8;
-            tx_bit = (tx_data_frame._3_timer_cnt >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-            p_w_modulate(tx_bit);
-            // go to next bit.
-            if(tx_current_bit_pos < tx_total_bits)
-            {
-                tx_current_bit_pos++;
-            }
-            else
-            {
-                // change state to finish processing data
-                // sending data using separate PWM channels is finished,
-                // return to default PWM channel
-                currentOutputTimChannel = primary_output_channel;
-
-                /* Set the Autoreload value for start sequence bits*/
-                phtim_envelop->Instance->ARR = PeriodOfStartStopBits;
-
-                // move on to next stage
-                TransmitterState = TX_STOP_BIT;
-                DataFrameState = DATAFRAME_0_NODATA;
-                tx_current_bit_pos = 0;
-            }
-            break;
-        }
-    }
-
-    /* Generalized version
-    switch (total_bits)
-    {
-        default:
-        {
-            reset_transmitter();
-            return;
-        }
-        case 8:
-        {
-            tx_bit = (*((uint8_t*)(data)) >> (total_bits - tx_current_bit_pos - 1)) & 1;
-            break;
-        }
-        case 16:
-        {
-            tx_bit = (*((uint16_t*)(data)) >> (total_bits - tx_current_bit_pos - 1)) & 1;
-            break;
-        }
-        case 32:
-        {
-            tx_bit = (*((uint32_t*)(data)) >> (total_bits - tx_current_bit_pos - 1)) & 1;
-            break;
-        }
-    }
-    */
 }
 
 void p_w_modulate(uint8_t bit)
