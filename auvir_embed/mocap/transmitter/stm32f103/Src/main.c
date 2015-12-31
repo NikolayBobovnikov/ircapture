@@ -133,8 +133,11 @@ enum StartStopSequenceStates
 {
     STAGE_0,
     STAGE_ON1,
-    STAGE_OFF,
-    STAGE_ON2
+    STAGE_OFF1,
+    STAGE_ON2,
+    STAGE_OFF2,
+    STAGE_ON3,
+    STAGE_OFF3
 };
 volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
 volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
@@ -525,19 +528,33 @@ void transmit_handler()
                     // Low
                 case STAGE_ON1:
                 {
-                    StartStopSequenceTransmitState = STAGE_OFF;
+                    StartStopSequenceTransmitState = STAGE_OFF1;
                     force_envelop_timer_output_off(); //TODO done anyway in timer interrupt handler?
                     break;
                 }
                     // High
-                case STAGE_OFF:
+                case STAGE_OFF1:
                 {
                     StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
                     break;
                 }
-                   // Low
+                //Low
                 case STAGE_ON2:
+                {
+                    StartStopSequenceTransmitState = STAGE_OFF2;
+                    force_envelop_timer_output_off();
+                    break;
+                }
+                   //High
+                case STAGE_OFF2:
+                {
+                    StartStopSequenceTransmitState = STAGE_ON3;
+                    force_envelop_timer_output_on();
+                    break;
+                }
+                   // Low
+                case STAGE_ON3:
                 {
                     switch_to_data_transmission_state();
                     break;
@@ -639,11 +656,11 @@ void transmit_handler()
                 }
                 case STAGE_ON1:
                 {
-                    StartStopSequenceTransmitState = STAGE_OFF;
+                    StartStopSequenceTransmitState = STAGE_OFF1;
                     force_envelop_timer_output_off();
                     break;
                 }
-                case STAGE_OFF:
+                case STAGE_OFF1:
                 {
                     StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
