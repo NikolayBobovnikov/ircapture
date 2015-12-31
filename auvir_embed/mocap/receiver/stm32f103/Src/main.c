@@ -81,6 +81,8 @@ const uint16_t HalfStartStopBitLength = 500 - 1;
 const uint16_t DelayBetweenDataFrames = 5000 - 1;
 const uint16_t StartStopBitPeriod = 2000 - 1;
 
+const uint16_t DelayCheckingPeriod = 100 - 1;
+
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 
 /* USER CODE END PV */
@@ -273,7 +275,7 @@ void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = envelop_timer_prescaler;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = StartStopBitPeriod;
+  htim3.Init.Period = DelayCheckingPeriod;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim3);
 

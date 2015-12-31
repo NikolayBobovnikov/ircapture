@@ -34,7 +34,7 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_it.h"
-// b stm32f1xx_it.c:
+// b stm32f1xx_it.c:332
 
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
@@ -70,6 +70,7 @@ extern const uint16_t StartStopBitPeriod;
 extern const uint16_t StartStopBitLength;
 extern const uint16_t HalfStartStopBitLength;
 extern const uint16_t HalfDataBitLength;
+extern const uint16_t DelayCheckingPeriod;
 
 enum ReceiverStates
 {
@@ -98,13 +99,6 @@ enum StartStopSequenceStates
 };
 volatile uint8_t StartStopSequenceReceiveState = STAGE_ON1;
 
-enum LineLevels
-{
-    LINE_UNDEFINED,
-    LINE_LOW_ON_UPDATE_EVENT,
-    LINE_HIGH_ON_UPDATE_EVENT
-};
-
 enum DataFrameStates
 {
     DATAFRAME_1_BEAMER_ID,
@@ -113,33 +107,43 @@ enum DataFrameStates
 };
 volatile uint8_t DataFrameState = DATAFRAME_1_BEAMER_ID;
 
+enum LineLevels
+{
+    LINE_UNDEFINED,
+    LINE_LOW_ON_UPDATE_EVENT,
+    LINE_HIGH_ON_UPDATE_EVENT
+};
+volatile uint8_t _line_level;
+
+volatile bool _is_rising_edge;
+volatile bool _is_falling_edge;
+volatile bool _is_timer_update_event;
+volatile uint16_t ccr1;
+volatile uint16_t ccr2;
+uint8_t _delay_counter;
 
  int level[100];
  int pwm_period[100];
  int pwm_length[100];
  int period_delta[100];
  int pulse_delta[100];
+ int delay_delta[100];
  int level_index=0;
  int pulse_index=0;
  int period_index=0;
  int perioddelta_index=0;
  int pulsedelta_index=0;
+ int delaydelta_index=0;
 
 const uint8_t max_delta_pwm = 20;
 const uint8_t max_delta_pwm_width = 20;
+const uint8_t max_delta_delay = 200;
 
-// level 1
 inline void receive_handler();
 inline void reset_receiver_state();
 inline bool is_period_within_range();
 inline bool is_pulse_within_range();
-volatile bool _is_rising_edge;
-volatile bool _is_falling_edge;
-volatile bool _is_timer_update_event;
-volatile uint8_t _line_level;
-volatile uint16_t ccr1;
-volatile uint16_t ccr2;
-
+inline bool is_ic_after_interframe_delay();
 inline void receive_data_frame_part();
 inline void p_w_demodulate(uint8_t bit);
 inline void copy_data_frame_to_buffer(DataFrame_t* df);
@@ -216,10 +220,14 @@ void TIM3_IRQHandler(void)
     if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
     {
         _line_level = LINE_HIGH_ON_UPDATE_EVENT;
+        _delay_counter = 0;
     }
     else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)
     {
         _line_level = LINE_LOW_ON_UPDATE_EVENT;
+
+        _delay_counter++;
+
     }
     else
     {
@@ -274,8 +282,6 @@ void TIM4_IRQHandler(void)
             ccr2 = htim4.Instance->CCR2;
             _is_falling_edge = true;
             _is_rising_edge = false;
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
         }
     }
     _is_timer_update_event = false;
@@ -328,6 +334,10 @@ void receive_handler()
     {
         pulsedelta_index  = 0;
     }
+    if(delaydelta_index == 100)
+    {
+        delaydelta_index  = 0;
+    }
     if(arr_index == RX_BUF_SIZE)
     {
         //data_frames
@@ -358,16 +368,24 @@ void receive_handler()
     {
         case RX_WAITING_FOR_START_BIT:
         {
+            // wait for delay DelayBetweenDataFrames ticks
+            // before rising edge
+
             // This should be on IC event
-            if(_is_rising_edge)
+            if(_is_rising_edge )
             {
-                // wait for first point
-                HAL_TIM_Base_Start_IT(&htim3);
-                htim3.Instance->ARR = HalfStartStopBitLength;
-                ReceiverState = RX_START_BIT_PROCESSING;
-                StartStopSequenceReceiveState = STAGE_ON1;
-                // wait for half a period of startstop bit sequence
-                break;
+                delay_delta[delaydelta_index++] = _delay_counter;
+                //if(_delay_counter > 40)
+                {
+
+                    // wait for first point
+                    HAL_TIM_Base_Start_IT(&htim3);
+                    htim3.Instance->ARR = HalfStartStopBitLength;
+                    ReceiverState = RX_START_BIT_PROCESSING;
+                    StartStopSequenceReceiveState = STAGE_ON1;
+                    // wait for half a period of startstop bit sequence
+                    break;
+                }
             }
             // no necessity in reset_receiver_state here, because nothing to change
             break;
@@ -540,10 +558,17 @@ void receive_handler()
                             if(LINE_HIGH_ON_UPDATE_EVENT == _line_level)
                             {
                                 // set bit at the inversed position
-                                rx_data_frame._1_beamer_id |= 1 << (rx_total_bits - rx_current_bit_pos - 1);
+                                rx_data_frame._1_beamer_id |= 1
+                                        //<< (rx_total_bits - rx_current_bit_pos - 1);
+                                        << (rx_current_bit_pos);
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
+
+#ifdef DEBUG
+                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
+                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+#endif
                         }
                         // move to next state and wait a delay between data fields
                         else
@@ -568,10 +593,17 @@ void receive_handler()
                             if(LINE_HIGH_ON_UPDATE_EVENT == _line_level)
                             {
                                 // set bit at the inversed position
-                                rx_data_frame._2_angle_graycode |= 1 << (rx_total_bits - rx_current_bit_pos - 1);
+                                rx_data_frame._2_angle_graycode |= 1
+                                        //<< (rx_total_bits - rx_current_bit_pos - 1);
+                                        << (rx_current_bit_pos);
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
+
+#ifdef DEBUG2
+                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
+                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+#endif
                         }
                         else
                         {
@@ -595,10 +627,16 @@ void receive_handler()
                             if(LINE_HIGH_ON_UPDATE_EVENT == _line_level)
                             {
                                 // set bit at the inversed position
-                                rx_data_frame._3_timer_cnt |= 1 << (rx_total_bits - rx_current_bit_pos - 1);
+                                rx_data_frame._3_timer_cnt |= 1
+                                        //<< (rx_total_bits - rx_current_bit_pos - 1);
+                                        << (rx_current_bit_pos);
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
+#ifdef DEBUG2
+                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
+                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+#endif
                         }
                         /// finished receiving last field. No necessity to wait
                         /// TODO: need to be on the same page with motionsensor_transmitter.
@@ -795,7 +833,10 @@ void reset_receiver_state()
     ReceiverState = RX_WAITING_FOR_START_BIT;
     StartStopSequenceReceiveState = STAGE_0;
     DataFrameState = DATAFRAME_1_BEAMER_ID;
-    HAL_TIM_Base_Stop_IT(&htim3);
+    //HAL_TIM_Base_Stop_IT(&htim3);
+    htim3.Instance->ARR = DelayCheckingPeriod;
+    _delay_counter = 0;
+
     htim4.Instance->CNT = 0;
 }
 bool is_period_within_range()
@@ -841,6 +882,45 @@ bool is_pulse_within_range()
         }
     }
     return false;
+}
+bool is_ic_after_interframe_delay()
+{
+    /*
+    if(ccr1 > 2500)
+    {
+        return true;
+    }
+    return false;
+    */
+
+    delay_delta[delaydelta_index++] = _delay_counter;
+    if(_delay_counter > 40) // && _delay_counter < 60
+    {
+        return true;
+    }
+    return false;
+
+/*
+    if(ccr1 - DelayBetweenDataFrames < 0)
+    {
+        int delta = DelayBetweenDataFrames - ccr1;
+        delay_delta[delaydelta_index++] = delta;
+        if(DelayBetweenDataFrames - ccr1 < max_delta_delay)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        int delta = ccr1 - DelayBetweenDataFrames;
+        delay_delta[delaydelta_index++] = delta;
+        if(ccr1 - DelayBetweenDataFrames < max_delta_delay)
+        {
+            return true;
+        }
+    }
+    return false;
+*/
 }
 void p_w_demodulate(uint8_t bit)
 {
