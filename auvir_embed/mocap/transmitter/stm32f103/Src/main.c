@@ -49,7 +49,7 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
-/* Private variablesw ---------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
 //PWM timer configuration
 TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
