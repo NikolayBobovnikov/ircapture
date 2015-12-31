@@ -95,7 +95,11 @@ enum StartStopSequenceStates
     STAGE_OFF1_ON2,
     STAGE_ON2,
     STAGE_ON2_OFF2,
-    STAGE_OFF2
+    STAGE_OFF2,
+    STAGE_OFF2_ON3,
+    STAGE_ON3,
+    STAGE_ON3_OFF4,
+    STAGE_OFF4
 };
 volatile uint8_t StartStopSequenceReceiveState = STAGE_ON1;
 
@@ -375,7 +379,7 @@ void receive_handler()
             if(_is_rising_edge )
             {
                 delay_delta[delaydelta_index++] = _delay_counter;
-                //if(_delay_counter > 40)
+                //if(_delay_counter > 40) TODO: check delay before data frame
                 {
 
                     // wait for first point
@@ -475,10 +479,6 @@ void receive_handler()
                         if(is_pulse_within_range())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF2;
-                            // restart a counter to reduce integrating of error,
-                            // wait for half a period of startstop bit sequence
-                            htim3.Instance->CNT = 0;
-                            htim3.Instance->ARR = HalfStartStopBitLength;
                             break;
                         }
                     }
@@ -493,6 +493,68 @@ void receive_handler()
                         // turn off input capture temporarily,
                         //wait for the beginning of data transmission
                         //HAL_TIM_IC_PWM_Stop_IT(&htim4); //TODO
+                        StartStopSequenceReceiveState = STAGE_OFF2_ON3;
+                        break;
+                    }
+                    reset_receiver_state();
+                    break;
+                }
+                // High
+                case STAGE_OFF2_ON3:
+                {
+                    // This should be on IC event (2nd bit - rising edge)
+                    if(_is_rising_edge)
+                    {
+                        if(is_period_within_range())
+                        {
+                            StartStopSequenceReceiveState = STAGE_ON3;
+                            // wait for half a period of startstop bit sequence
+                            break;
+                        }
+                    }
+                    reset_receiver_state();
+                    break;
+                }
+                //High: STAGE_ON3 confirmation
+                case STAGE_ON3:
+                {
+                    // This should be on update
+                    if(LINE_HIGH_ON_UPDATE_EVENT == _line_level)
+                    {
+                        StartStopSequenceReceiveState = STAGE_ON3_OFF4;
+                        // wait for half a period of startstop bit sequence
+                        break;
+                    }
+                    reset_receiver_state();
+                    break;
+                }
+                //Low: STAGE_ON2 -> STAGE_OFF2 input capture
+                case STAGE_ON3_OFF4:
+                {
+                    // This should be on IC event (2nd bit - rising edge)
+                    if(_is_falling_edge)
+                    {
+                        if(is_pulse_within_range())
+                        {
+                            StartStopSequenceReceiveState = STAGE_OFF4;
+                            // restart a counter to reduce integrating of error,
+                            // wait for half a period of startstop bit sequence
+                            htim3.Instance->CNT = 0;
+                            htim3.Instance->ARR = HalfStartStopBitLength;
+                            break;
+                        }
+                    }
+                    reset_receiver_state();
+                    break;
+                }
+                //Low: STAGE_OFF2 confirmation
+                case STAGE_OFF4:
+                {
+                    if(LINE_LOW_ON_UPDATE_EVENT == _line_level)
+                    {
+                        // turn off input capture temporarily,
+                        //wait for the beginning of data transmission
+                        //HAL_TIM_IC_PWM_Stop_IT(&htim4); //TODO
                         StartStopSequenceReceiveState = STAGE_0;
                         ReceiverState = RX_START_BIT_DONE;
                         break;
@@ -500,6 +562,7 @@ void receive_handler()
                     reset_receiver_state();
                     break;
                 }
+
                 default:
                 {
                     reset_receiver_state();
