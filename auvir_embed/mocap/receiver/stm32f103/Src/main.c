@@ -35,6 +35,8 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+// TODO: cleanup when done debugging
+#define DEBUG
 /* USER CODE END Includes */
 
 /*
@@ -141,16 +143,6 @@ enum ReceiverStates
 };
 volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
 
-enum TransmitterStates
-{
-    TX_WAITING_FOR_TRANSMISSION,
-    TX_SENDING_START_BIT,
-    TX_SENDING_DATA,
-    TX_SENDING_STOP_BIT,
-    TX_DELAY
-};
-volatile uint8_t TransmitterState = TX_WAITING_FOR_TRANSMISSION;
-
 enum StartStopSequenceStates
 {
     STAGE_0,
@@ -164,19 +156,18 @@ enum StartStopSequenceStates
     STAGE_ON2_OFF2,
     STAGE_OFF2
 };
-volatile uint8_t StartStopSequenceTransmitState = STAGE_ON1;
 volatile uint8_t StartStopSequenceReceiveState = STAGE_ON1;
 
-const uint8_t max_delta_pwm = 5;
-const uint8_t max_delta_pwm_width = 5;
+const uint8_t max_delta_pwm = 10;
+const uint8_t max_delta_pwm_width = 10;
 
 // level 1
 void receive_handler();
 inline void reset_receiver_state();
-inline bool is_rising_edge_in_correct_time();
-inline bool is_falling_edge_in_correct_time();
-inline bool is_high_level_in_correct_time();
-inline bool is_low_level_in_correct_time();
+inline bool is_rising_edge_confirmed();
+inline bool is_falling_edge_confirmed();
+inline bool is_high_level_confirmed();
+inline bool is_low_level_confirmed();
 inline bool is_timer_update();
 inline bool is_rising_edge();
 
@@ -215,7 +206,7 @@ int main(void)
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  //HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
+  //HAL_TIM_Base_Start_IT(&htim3);
   //HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
   HAL_TIM_IC_PWM_Start_IT(&htim4);
   /* USER CODE END 2 */
@@ -385,7 +376,7 @@ void MX_TIM4_Init(void)
   TIM_IC_InitTypeDef sConfigIC;
 
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 0;
+  htim4.Init.Prescaler = envelop_timer_prescaler;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -497,6 +488,13 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
   __GPIOB_CLK_ENABLE();
 
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -557,11 +555,11 @@ void receive_handler()
                 case STAGE_ON1:
                 {
                     // This should be on update event
-                    if(is_high_level_in_correct_time()) //high level is confirmed, continue reading start sequence
+                    if(is_high_level_confirmed()) //high level is confirmed, continue reading start sequence
                     {
                         // first point. change timer period to the period between reading start/stop bit values
                         htim3.Instance->ARR = PeriodOfStartStopBits;
-                        StartStopSequenceTransmitState = STAGE_ON1_OFF1;
+                        StartStopSequenceReceiveState = STAGE_ON1_OFF1;
                         break;
                     }
                     reset_receiver_state();
@@ -571,9 +569,9 @@ void receive_handler()
                 case STAGE_ON1_OFF1:
                 {
                     // falling edge should be detected
-                    if(is_falling_edge_in_correct_time())
+                    if(is_falling_edge_confirmed())
                     {
-                        StartStopSequenceTransmitState = STAGE_OFF1;
+                        StartStopSequenceReceiveState = STAGE_OFF1;
                         break;
                     }
                     reset_receiver_state();
@@ -583,7 +581,7 @@ void receive_handler()
                 case STAGE_OFF1:
                 {
                     // This should be on update
-                    if(is_low_level_in_correct_time())
+                    if(is_low_level_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_OFF1_ON2;
                         // wait for half a period of startstop bit sequence
@@ -596,7 +594,7 @@ void receive_handler()
                 case STAGE_OFF1_ON2:
                 {
                     // This should be on IC event (2nd bit - rising edge)
-                    if(is_rising_edge_in_correct_time())
+                    if(is_rising_edge_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_ON2;
                         // wait for half a period of startstop bit sequence
@@ -609,7 +607,7 @@ void receive_handler()
                 case STAGE_ON2:
                 {
                     // This should be on update
-                    if(is_high_level_in_correct_time())
+                    if(is_high_level_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_ON2_OFF2;
                         // wait for half a period of startstop bit sequence
@@ -622,7 +620,7 @@ void receive_handler()
                 case STAGE_ON2_OFF2:
                 {
                     // This should be on IC event (2nd bit - rising edge)
-                    if(is_falling_edge_in_correct_time())
+                    if(is_falling_edge_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_OFF2;
                         // wait for half a period of startstop bit sequence
@@ -634,12 +632,12 @@ void receive_handler()
                 //Low: STAGE_OFF2 confirmation
                 case STAGE_OFF2:
                 {
-                    if(is_low_level_in_correct_time())
+                    if(is_low_level_confirmed())
                     {
                         // turn off input capture temporarily,
                         //wait for the beginning of data transmission
                         // HAL_TIM_IC_PWM_Stop_IT(&htim4); TODO
-                        StartStopSequenceTransmitState = STAGE_0;
+                        StartStopSequenceReceiveState = STAGE_0;
                         ReceiverState = RX_START_BIT_DONE;
                         break;
                     }
@@ -699,7 +697,7 @@ void receive_handler()
                 // after the delay
                 //HAL_TIM_IC_PWM_Start_IT(&htim4); TODO
                 htim3.Instance->ARR = HalfPeriodOfStartStopBits;
-                TransmitterState = RX_STOP_BIT_PROCESSING;
+                ReceiverState = RX_STOP_BIT_PROCESSING;
                 StartStopSequenceReceiveState = STAGE_OFF0;
                 break;
             }
@@ -714,7 +712,7 @@ void receive_handler()
                 //low: off confirmation
                 case STAGE_OFF0:
                 {
-                    if(is_low_level_in_correct_time())
+                    if(is_low_level_confirmed())
                     {
                         // continue reading stop bit sequence with PeriodOfStartStopBits interval
                         htim3.Instance->ARR = PeriodOfStartStopBits;
@@ -728,9 +726,9 @@ void receive_handler()
                 case STAGE_OFF0_ON1:
                 {
                     // rising edge input capture
-                    if(is_rising_edge_in_correct_time())
+                    if(is_rising_edge_confirmed())
                     {
-                        StartStopSequenceTransmitState = STAGE_ON1;
+                        StartStopSequenceReceiveState = STAGE_ON1;
                         break;
                     }
                     reset_receiver_state();
@@ -739,7 +737,7 @@ void receive_handler()
                 //high confirmation
                 case STAGE_ON1:
                 {
-                    if(is_high_level_in_correct_time())
+                    if(is_high_level_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_ON1_OFF1;
                         break;
@@ -750,7 +748,7 @@ void receive_handler()
                 //low falling edge: STAGE_ON1 -> STAGE_OFF1
                 case STAGE_ON1_OFF1:
                 {
-                    if(is_falling_edge_in_correct_time())
+                    if(is_falling_edge_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_OFF1;
                         break;
@@ -761,7 +759,7 @@ void receive_handler()
                 // low: confirmation
                 case STAGE_OFF1:
                 {
-                    if(is_low_level_in_correct_time())
+                    if(is_low_level_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_OFF1_ON2;
                         break;
@@ -773,7 +771,7 @@ void receive_handler()
                 case STAGE_OFF1_ON2:
                 {
                     // rising edge input capture
-                    if(is_rising_edge_in_correct_time())
+                    if(is_rising_edge_confirmed())
                     {
                          StartStopSequenceReceiveState = STAGE_ON2;
                          break;
@@ -785,7 +783,7 @@ void receive_handler()
                 case STAGE_ON2:
                 {
                     // second pulse confrmation
-                    if(is_high_level_in_correct_time())
+                    if(is_high_level_confirmed())
                     {
                         StartStopSequenceReceiveState = STAGE_ON2_OFF2;
                         break;
@@ -796,7 +794,7 @@ void receive_handler()
                 // low falling edge: STAGE_ON2 -> STAGE_OFFF2
                 case STAGE_ON2_OFF2:
                 {
-                    if(is_falling_edge_in_correct_time())
+                    if(is_falling_edge_confirmed())
                     {
                         ReceiverState = RX_STOP_BIT_DONE;
                         StartStopSequenceReceiveState = STAGE_0;
@@ -817,7 +815,7 @@ void receive_handler()
         {
             // immediately after stop sequence, line should be low
             // low confirmation
-            if(is_low_level_in_correct_time())
+            if(is_low_level_confirmed())
             {
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
                 // TODO
@@ -840,7 +838,7 @@ void reset_receiver_state()
     HAL_TIM_Base_Stop_IT(&htim3);
 }
 
-bool is_rising_edge_in_correct_time()
+bool is_rising_edge_confirmed()
 {
     if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
     {
@@ -855,7 +853,7 @@ bool is_rising_edge_in_correct_time()
     }
     return false;
 }
-bool is_falling_edge_in_correct_time()
+bool is_falling_edge_confirmed()
 {
     if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC2) != RESET)
     {
@@ -869,7 +867,7 @@ bool is_falling_edge_in_correct_time()
     }
     return false;
 }
-bool is_high_level_in_correct_time()
+bool is_high_level_confirmed()
 {
     if(__HAL_TIM_GET_FLAG(&htim3, TIM_FLAG_UPDATE) != RESET)
     {
@@ -883,7 +881,7 @@ bool is_high_level_in_correct_time()
     }
     return false;
 }
-bool is_low_level_in_correct_time()
+bool is_low_level_confirmed()
 {
     if(__HAL_TIM_GET_FLAG(&htim3, TIM_FLAG_UPDATE) != RESET)
     {
@@ -1030,7 +1028,7 @@ void receive_data_frame_part()
                 // wait for the end of data frame
                 // e.g.remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
                 htim3.Instance->ARR = HalfPeriodOfDataBits;
-                HAL_TIM_Base_Start_IT(&htim3);
+                //HAL_TIM_Base_Start_IT(&htim3);
                 // reset state
                 DataFrameState = DATAFRAME_0_NODATA;
                 // reset current bit position

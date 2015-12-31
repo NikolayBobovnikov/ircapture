@@ -37,6 +37,8 @@
 
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
+// TODO: cleanup when done debugging
+#define DEBUG
 
 extern void receive_handler();
 
@@ -129,6 +131,10 @@ void TIM2_IRQHandler(void)
 */
 void TIM3_IRQHandler(void)
 {
+
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+
     /* USER CODE BEGIN TIM3_IRQn 0 */
     receive_handler();
     /* USER CODE END TIM3_IRQn 0 */
@@ -143,6 +149,15 @@ void TIM3_IRQHandler(void)
 */
 void TIM4_IRQHandler(void)
 {
+    if(__HAL_TIM_GET_FLAG(&htim4, TIM_FLAG_CC1) != RESET)
+    {
+        if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
+        {
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
+
+        }
+    }
     if(pwm_index < 100)
     {
         pwm_period[pwm_index] = htim4.Instance->CCR1;

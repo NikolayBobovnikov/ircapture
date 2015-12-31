@@ -35,6 +35,8 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+//TODO: cleanup when done debuugging
+#define DEBUG
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -47,7 +49,7 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
+/* Private variablesw ---------------------------------------------------------*/
 //PWM timer configuration
 TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
@@ -446,19 +448,20 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
   __GPIOB_CLK_ENABLE();
 
-  /// Other outputs
+#ifdef DEBUG
+  /// Debug outputs
   /*Configure GPIO pin : PA4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA5 */
   GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#endif
 }
 
 /* USER CODE BEGIN 4 */
@@ -772,6 +775,9 @@ void p_w_modulate(uint8_t bit)
 
 void force_envelop_timer_output_on()
 {
+#ifdef DEBUG
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_SET);
+#endif
     // Start pwm timer, depending on timer and channel number
     switch(currentOutputTimChannel)
     {
@@ -837,7 +843,7 @@ void force_envelop_timer_output_on()
         }
     }
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+
 }
 
 void force_envelop_timer_output_off()
@@ -852,7 +858,9 @@ void force_envelop_timer_output_off()
         HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3); // carrier
         HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4); // carrier
         */
-
+#ifdef DEBUG
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+#endif
     // Stopt pwm timer, depending on timer and channel number
     switch(currentOutputTimChannel)
     {
@@ -917,9 +925,6 @@ void force_envelop_timer_output_off()
             break;
         }
     }
-
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 }
 void nop(){}
 /* USER CODE END 4 */
