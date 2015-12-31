@@ -384,7 +384,7 @@ void MX_TIM4_Init(void)
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
+  //HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
@@ -411,7 +411,9 @@ void MX_TIM4_Init(void)
 //  ● Configure the slave mode controller in reset mode: write the SMS bits to 100 in the TIMx_SMCR register.
     sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
     sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-    HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
+    //TODO: why configuring reset breaks the thing?
+    // why it does work without reset?
+    //HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
 //  ● Enable the captures: write the CC1E and CC2E bits to ‘1’ in the TIMx_CCER register.
 
 
@@ -859,10 +861,29 @@ bool is_falling_edge_confirmed()
     {
         if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC2) != RESET)
         {
+            /*
             if(abs(htim4.Instance->CCR2 - HalfPeriodOfStartStopBits) <  max_delta_pwm)
             {
                 return true;
             }
+            */
+            if(htim4.Instance->CCR2 - HalfPeriodOfStartStopBits < 0)
+            {
+                int delta = HalfPeriodOfStartStopBits - htim4.Instance->CCR2;
+                if(HalfPeriodOfStartStopBits - htim4.Instance->CCR2 < max_delta_pwm)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                int delta = htim4.Instance->CCR2 - HalfPeriodOfStartStopBits;
+                if(htim4.Instance->CCR2 - HalfPeriodOfStartStopBits < max_delta_pwm)
+                {
+                    return true;
+                }
+            }
+
         }
     }
     return false;
