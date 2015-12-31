@@ -61,8 +61,6 @@ const uint16_t envelop_timer_prescaler = 72 - 1;
 const uint16_t PeriodOfStartStopBits = 1000 - 1;
 const uint16_t PeriodOfDataBits = 2000 - 1;
 const uint16_t PeriodBetweenDataFrames = 5000 - 1;
-const uint16_t HalfPeriodOfStartStopBits = 500 - 1;
-const uint16_t HalfPeriodOfDataBits = 1000 - 1;
 
 
 ///TODO: refactor constants below
@@ -470,9 +468,9 @@ void send_data()
     // fill tx_data_frame with data
 
     // sample data. TODO: use actual one
-    tx_data_frame._1_beamer_id = 0b11111111;
-    tx_data_frame._2_angle_graycode = 0b11111111;
-    tx_data_frame._3_timer_cnt = 0b1111111111111111;
+    tx_data_frame._1_beamer_id = 0b10101010;
+    tx_data_frame._2_angle_graycode = 0b01010101;
+    tx_data_frame._3_timer_cnt = 0b1100110000110011;
 
     // just repetition of the same data for now.
     // TODO: send updated time
