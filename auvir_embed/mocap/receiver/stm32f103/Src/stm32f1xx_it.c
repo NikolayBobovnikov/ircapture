@@ -34,7 +34,7 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_it.h"
-// b stm32f1xx_it.c:332
+// b stm32f1xx_it.c:352
 
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
@@ -132,24 +132,24 @@ uint8_t _delay_counter;
  int period_delta[100];
  int pulse_delta[100];
  int delay_delta[100];
+ int dbg[100];
  int level_index=0;
  int pulse_index=0;
  int period_index=0;
  int perioddelta_index=0;
  int pulsedelta_index=0;
  int delaydelta_index=0;
+ int dbg_index=0;
 
-const uint8_t max_delta_pwm = 20;
-const uint8_t max_delta_pwm_width = 20;
+const uint8_t max_delta_pwm = 50;
+const uint8_t max_delta_pwm_width = 50;
 const uint8_t max_delta_delay = 200;
 
 inline void receive_handler();
 inline void reset_receiver_state();
-inline bool is_period_within_range();
-inline bool is_pulse_within_range();
+inline bool is_rising_edge_timing_ok();
+inline bool is_falling_edge_timing_ok();
 inline bool is_ic_after_interframe_delay();
-inline void receive_data_frame_part();
-inline void p_w_demodulate(uint8_t bit);
 inline void copy_data_frame_to_buffer(DataFrame_t* df);
 /* USER CODE END 0 */
 
@@ -342,6 +342,10 @@ void receive_handler()
     {
         delaydelta_index  = 0;
     }
+    if(dbg_index == 100)
+    {
+        dbg_index  = 0;
+    }
     if(arr_index == RX_BUF_SIZE)
     {
         //data_frames
@@ -419,7 +423,7 @@ void receive_handler()
                     // falling edge should be detected
                     if(_is_falling_edge)
                     {
-                        if(is_pulse_within_range())
+                        if(is_falling_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF1;
                             break;
@@ -447,7 +451,7 @@ void receive_handler()
                     // This should be on IC event (2nd bit - rising edge)
                     if(_is_rising_edge)
                     {
-                        if(is_period_within_range())
+                        if(is_rising_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_ON2;
                             // wait for half a period of startstop bit sequence
@@ -476,7 +480,7 @@ void receive_handler()
                     // This should be on IC event (2nd bit - rising edge)
                     if(_is_falling_edge)
                     {
-                        if(is_pulse_within_range())
+                        if(is_falling_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF2;
                             break;
@@ -505,7 +509,7 @@ void receive_handler()
                     // This should be on IC event (2nd bit - rising edge)
                     if(_is_rising_edge)
                     {
-                        if(is_period_within_range())
+                        if(is_rising_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_ON3;
                             // wait for half a period of startstop bit sequence
@@ -534,7 +538,7 @@ void receive_handler()
                     // This should be on IC event (2nd bit - rising edge)
                     if(_is_falling_edge)
                     {
-                        if(is_pulse_within_range())
+                        if(is_falling_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF4;
                             // restart a counter to reduce integrating of error,
@@ -603,7 +607,6 @@ void receive_handler()
         {
             if(_is_timer_update_event)
             {
-                ///receive_data_frame_part();
                 switch(DataFrameState)
                 {
                     case DATAFRAME_1_BEAMER_ID:
@@ -622,8 +625,8 @@ void receive_handler()
                             {
                                 // set bit at the inversed position
                                 rx_data_frame._1_beamer_id |= 1
-                                        //<< (rx_total_bits - rx_current_bit_pos - 1);
-                                        << (rx_current_bit_pos);
+                                        << (rx_total_bits - rx_current_bit_pos - 1);
+                                        //<< (rx_current_bit_pos);
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
@@ -657,8 +660,8 @@ void receive_handler()
                             {
                                 // set bit at the inversed position
                                 rx_data_frame._2_angle_graycode |= 1
-                                        //<< (rx_total_bits - rx_current_bit_pos - 1);
-                                        << (rx_current_bit_pos);
+                                        << (rx_total_bits - rx_current_bit_pos - 1);
+                                        //<< (rx_current_bit_pos);
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
@@ -691,8 +694,8 @@ void receive_handler()
                             {
                                 // set bit at the inversed position
                                 rx_data_frame._3_timer_cnt |= 1
-                                        //<< (rx_total_bits - rx_current_bit_pos - 1);
-                                        << (rx_current_bit_pos);
+                                        << (rx_total_bits - rx_current_bit_pos - 1);
+                                        //<< (rx_current_bit_pos);
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
@@ -739,9 +742,6 @@ void receive_handler()
                 htim3.Instance->ARR = HalfStartStopBitLength;
                 ReceiverState = RX_STOP_BIT_PROCESSING;
                 StartStopSequenceReceiveState = STAGE_OFF0;
-
-                // TODO: remove
-                copy_data_frame_to_buffer(&rx_data_frame);
                 break;
             }
             /// else - input capture during data receiving, nothing to do.
@@ -771,7 +771,10 @@ void receive_handler()
                     // rising edge input capture
                     if(_is_rising_edge)
                     {
-                        if(is_period_within_range())
+                        // first rising edge don't have previous rising edge for checking timing
+                        // TODO: add relaxed timing check, measure from previous
+                        // low level confirmation on timer update event
+                        //if(is_rising_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_ON1;
                             break;
@@ -796,7 +799,7 @@ void receive_handler()
                 {
                     if(_is_falling_edge)
                     {
-                        if(is_pulse_within_range())
+                        if(is_falling_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF1;
                             break;
@@ -820,15 +823,18 @@ void receive_handler()
                 case STAGE_OFF1_ON2:
                 {
                     // rising edge input capture
+                //FIXME: Fix  below: don't enter on rising edge
                     if(_is_rising_edge)
                     {
-                        if(is_period_within_range())
+                        dbg[dbg_index++]=ccr1;
+
+                        if(is_rising_edge_timing_ok())
                         {
                              StartStopSequenceReceiveState = STAGE_ON2;
                              break;
                         }
                     }
-                    reset_receiver_state();
+                    //reset_receiver_state(); TODO: check if it needed
                     break;
                 }
                 // high confirmation
@@ -848,7 +854,7 @@ void receive_handler()
                 {
                     if(_is_falling_edge)
                     {
-                        if(is_pulse_within_range())
+                        if(is_falling_edge_timing_ok())
                         {
                             ReceiverState = RX_STOP_BIT_DONE;
                             StartStopSequenceReceiveState = STAGE_0;
@@ -887,9 +893,6 @@ void receive_handler()
         }
     } // switch(ReceiverState)
 }
-void receive_data_frame_part()
-{
-}
 void reset_receiver_state()
 {
     //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
@@ -902,8 +905,9 @@ void reset_receiver_state()
 
     htim4.Instance->CNT = 0;
 }
-bool is_period_within_range()
+bool is_rising_edge_timing_ok()
 {
+    // current falling edge happens after Period ticks from previous rising edge
     if(ccr1 - StartStopBitPeriod  < 0)
     {
         int delta = StartStopBitPeriod - ccr1;
@@ -924,8 +928,9 @@ bool is_period_within_range()
     }
     return false;
 }
-bool is_pulse_within_range()
+bool is_falling_edge_timing_ok()
 {
+    // falling edge happens after StartStopBitLength ticks from rising edge
     if(ccr2 - StartStopBitLength < 0)
     {
         int delta = StartStopBitLength - ccr2;
@@ -984,10 +989,6 @@ bool is_ic_after_interframe_delay()
     }
     return false;
 */
-}
-void p_w_demodulate(uint8_t bit)
-{
-
 }
 void copy_data_frame_to_buffer(DataFrame_t* df)
 {
