@@ -78,10 +78,20 @@ const uint16_t HalfDataBitLength = 1000 - 1;
 const uint16_t StartStopBitLength = 1000 - 1;
 const uint16_t HalfStartStopBitLength = 500 - 1;
 
-const uint16_t DelayBetweenDataFrames = 5000 - 1;
+const uint16_t HalfStartStopHalfDataBitLength = 1500 - 1;
+
+const uint16_t DelayBetweenDataFramesTotal = 5000 - 1;
 const uint16_t StartStopBitPeriod = 2000 - 1;
 
-const uint16_t DelayCheckingPeriod = 1 - 1;
+const uint16_t DelayCheckingPeriod = 10 - 1;
+
+const uint8_t max_delta_pwm = 50;
+const uint8_t max_delta_pwm_width = 50;
+const uint8_t max_delta_delay = 200;
+const uint8_t max_delta_cnt_delay = 10;
+// TODO: parametrize values below
+const uint16_t DelayBetweenDataFramesToCheck = 4500; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
+const uint16_t DelayCounterMin = 450 - 10; // (actual DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
 
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 

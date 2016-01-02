@@ -60,7 +60,7 @@ const uint16_t envelop_timer_prescaler = 72 - 1;
 // values below are numbers of timer ticks
 const uint16_t StartStopBitLength = 1000 - 1;
 const uint16_t DataBitLength = 2000 - 1;
-const uint16_t DelayBetweenDataFrames = 5000 - 1;
+const uint16_t DelayBetweenDataFramesTotal = 5000 - 1;
 
 
 ///TODO: refactor constants below
@@ -671,7 +671,7 @@ void transmit_handler()
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_ON2:
                 {
-                    phtim_envelop->Instance->ARR = DelayBetweenDataFrames;
+                    phtim_envelop->Instance->ARR = DelayBetweenDataFramesTotal;
                     StartStopSequenceTransmitState = STAGE_0;
                     TransmitterState = TX_DELAY;
                     break;

@@ -34,7 +34,7 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_it.h"
-// b stm32f1xx_it.c:350
+// b stm32f1xx_it.c:
 
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
@@ -67,11 +67,12 @@ extern const uint16_t pwm_timer_period;
 extern const uint16_t pwm_pulse_width;
 extern const uint16_t envelop_timer_prescaler;
 extern const uint16_t DataBitLength;
-extern const uint16_t DelayBetweenDataFrames;
+extern const uint16_t DelayBetweenDataFramesTotal;
 extern const uint16_t StartStopBitPeriod;
 extern const uint16_t StartStopBitLength;
 extern const uint16_t HalfStartStopBitLength;
 extern const uint16_t HalfDataBitLength;
+extern const uint16_t HalfStartStopHalfDataBitLength;
 extern const uint16_t DelayCheckingPeriod;
 
 enum ReceiverStates
@@ -124,6 +125,7 @@ volatile uint8_t _line_level;
 volatile bool _is_rising_edge;
 volatile bool _is_falling_edge;
 volatile bool _is_timer_update_event;
+volatile bool _is_interframe_delay_long_enough;
 volatile uint16_t ccr1;
 volatile uint16_t ccr2;
 volatile uint16_t _delay_counter = 0;
@@ -143,14 +145,18 @@ volatile uint16_t _delay_counter = 0;
  int delaydelta_index=0;
  int dbg_index=0;
 
-const uint8_t max_delta_pwm = 50;
-const uint8_t max_delta_pwm_width = 50;
-const uint8_t max_delta_delay = 200;
+extern const uint8_t max_delta_pwm;
+extern const uint8_t max_delta_pwm_width;
+extern const uint8_t max_delta_delay;
+extern const uint16_t DelayBetweenDataFramesToCheck;
+extern const uint16_t DelayCounterMin;
+
 static uint16_t delta;
 
 inline void receive_handler();
 inline void reset_receiver_state();
 inline bool is_rising_edge_timing_ok();
+inline bool is_first_rising_edge_timing_ok();
 inline bool is_falling_edge_timing_ok();
 inline bool is_ic_after_interframe_delay();
 inline void reset_delay_cnt();
@@ -164,7 +170,10 @@ inline void dbg_pulse_A5();
 //#define DEBUG_READING_DATA_A5
 #define DEBUG_READING_DATA_A7
 
-#define DEBUG_LOW_CHECK_A5
+#define DEBUG_UPD_EVENT_A5
+//#define DEBUG_UPD_EVENT_A7
+
+//#define DEBUG_LOW_CHECK_A5
 //#define DEBUG_LOW_CHECK_A7
 
 //#define DEBUG_DELAY_CHECK_A5
@@ -257,8 +266,10 @@ void TIM3_IRQHandler(void)
     else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)
     {
         _line_level = LINE_LOW_ON_UPDATE_EVENT;
-
-        _delay_counter++;
+        if(_delay_counter++ > DelayCounterMin)
+        {
+            _is_interframe_delay_long_enough = true;
+        }
 
 
 #ifdef DEBUG_LOW_CHECK_A7
@@ -277,7 +288,7 @@ void TIM3_IRQHandler(void)
     else
     {
         _line_level = LINE_UNDEFINED;
-         reset_delay_cnt();
+        reset_delay_cnt();
         return;
     }
     _is_timer_update_event = true;
@@ -290,6 +301,14 @@ void TIM3_IRQHandler(void)
     /* USER CODE END TIM3_IRQn 0 */
     HAL_TIM_IRQHandler(&htim3);
     /* USER CODE BEGIN TIM3_IRQn 1 */
+
+#ifdef DEBUG_UPD_EVENT_A7
+        dbg_pulse_A7();
+#endif
+#ifdef DEBUG_UPD_EVENT_A5
+        dbg_pulse_A5();
+#endif
+
     /* USER CODE END TIM3_IRQn 1 */
 }
 
@@ -436,6 +455,10 @@ void receive_handler()
             // This should be on IC event
             if(_is_rising_edge )
             {
+                if(dbg_index < 100)
+                {
+                    dbg[dbg_index++] = _delay_counter;
+                }
                 if(is_ic_after_interframe_delay()) //TODO: check delay before data frame
                 {
                     // wait for first point
@@ -596,6 +619,7 @@ void receive_handler()
                         {
                             StartStopSequenceReceiveState = STAGE_OFF4;
                             // restart a counter to reduce integrating of error,
+                            // since we have a precise zero point of falling edge
                             // wait for half a period of startstop bit sequence
                             htim3.Instance->CNT = 0;
                             htim3.Instance->ARR = HalfStartStopBitLength;
@@ -614,7 +638,27 @@ void receive_handler()
                         //wait for the beginning of data transmission
                         //HAL_TIM_IC_PWM_Stop_IT(&htim4); //TODO
                         StartStopSequenceReceiveState = STAGE_0;
-                        ReceiverState = RX_START_BIT_DONE;
+                        ///ReceiverState = RX_START_BIT_DONE;
+
+                        {
+                            ///Prepare to read data frame
+                            htim3.Instance->ARR = HalfStartStopHalfDataBitLength;
+                            // start reading data bits after the middle of the first pulse,
+                            // so wait for another HalfPeriodOfDataBits
+                            ReceiverState = RX_DATA_PROCESSNG;
+                            DataFrameState = DATAFRAME_1_BEAMER_ID;
+                            //ReceiverState = RX_DATA_PROCESSNG;
+                            //DataFrameState= DATAFRAME_1_BEAMER_ID;
+                            // initialize buffer with all zeros
+                            // TODO: fill buffer with zeros
+                            //memset(&data_frame, 0, sizeof(DataFrame_t));
+                            rx_data_frame._1_beamer_id = 0;
+                            rx_data_frame._2_angle_graycode=0;
+                            rx_data_frame._3_timer_cnt = 0;
+                            // reset positions
+                            rx_current_bit_pos = 0;
+                        }
+
                         break;
                     }
                     reset_receiver_state();
@@ -629,7 +673,7 @@ void receive_handler()
             }
             break;
         }
-        // Transitiolal state, adjust timer period so that we start readind data bits in the middle of each signal
+        // FIXME: review the state below for usefullness
         case RX_START_BIT_DONE:
         {
             if(_is_timer_update_event)
@@ -763,23 +807,32 @@ void receive_handler()
                             dbg_pulse_A7();
 #endif
                         }
-                        /// finished receiving last field. No delay before stop bit sequence (no necessity to wait)
-                        /// TODO: need to be on the same page with motionsensor_transmitter.
-                        /// At the moment, there is no delay after sending the verry last bit of the data frame
-                        if(rx_current_bit_pos == rx_total_bits - 1)
+
+                        if(rx_current_bit_pos == rx_total_bits)
                         {
+                            /// finished receiving last field. No delay before stop bit sequence (no necessity to wait)
+                            /// TODO: need to be on the same page with motionsensor_transmitter.
+                            /// At the moment, there is no delay after sending the verry last bit of the data frame
+
                             // data has been received
-                            // TODO: process data buffer
-                            //rx_data_frame
-                            ReceiverState = RX_DATA_DONE;
-                            DataFrameState = DATAFRAME_1_BEAMER_ID;
-                            // wait for the end of last data frame bit
-                            // e.g.remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
-                            htim3.Instance->ARR = HalfDataBitLength;
+                            // TODO: process data buffer when it is to be read from
 
                             //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
                             // reset current bit position
                             rx_current_bit_pos = 0;
+
+                            ///ReceiverState = RX_DATA_DONE;
+                            ///DataFrameState = DATAFRAME_1_BEAMER_ID;
+                            // wait for the end of last data frame bit
+                            // e.g.remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
+                            ///htim3.Instance->ARR = HalfDataBitLength;
+
+
+                            {
+                                htim3.Instance->ARR = HalfStartStopHalfDataBitLength;
+                                ReceiverState = RX_STOP_BIT_PROCESSING;
+                                StartStopSequenceReceiveState = STAGE_OFF0;
+                            }
                         }
                         break;
                     }
@@ -790,6 +843,8 @@ void receive_handler()
             /// TODO: turn off input capture timer when it is not supposed to be used
             break;
         }
+
+        // FIXME: review the state below for usefullness
         case RX_DATA_DONE:
         {
             if(_is_timer_update_event)
@@ -798,6 +853,8 @@ void receive_handler()
                 // e.g. half of the delay before the first immpulse of stop bit sequence
                 // after the delay
                 htim3.Instance->ARR = HalfStartStopBitLength;
+                // this is the zero pont for next rising edge IC timing check at STAGE_OFF0_ON1 step
+                //htim4.Instance->CNT = 0;
                 ReceiverState = RX_STOP_BIT_PROCESSING;
                 StartStopSequenceReceiveState = STAGE_OFF0;
                 break;
@@ -820,7 +877,7 @@ void receive_handler()
                         StartStopSequenceReceiveState = STAGE_OFF0_ON1;
                         break;
                     }
-                    reset_receiver_state();
+                    /// Don't need to reset here
                     break;
                 }
                 //high rising edge: STAGE_OFF1 -> STAGE_ON1
@@ -832,7 +889,7 @@ void receive_handler()
                         // first rising edge don't have previous rising edge for checking timing
                         // TODO: add relaxed timing check, measure from previous
                         // low level confirmation on timer update event
-                        //if(is_rising_edge_timing_ok())
+                        //if(is_first_rising_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_ON1;
                             break;
@@ -883,8 +940,6 @@ void receive_handler()
                     // rising edge input capture
                     if(_is_rising_edge)
                     {
-                        dbg[dbg_index++]=ccr1;
-
                         if(is_rising_edge_timing_ok())
                         {
                              StartStopSequenceReceiveState = STAGE_ON2;
@@ -960,6 +1015,7 @@ void reset_receiver_state()
     htim3.Instance->ARR = DelayCheckingPeriod;
     reset_delay_cnt();
     htim4.Instance->CNT = 0;
+    htim3.Instance->CNT = 0;
 }
 bool is_rising_edge_timing_ok()
 {
@@ -978,6 +1034,29 @@ bool is_rising_edge_timing_ok()
         int delta = ccr1 - StartStopBitPeriod;
         period_delta[perioddelta_index++] = delta;
         if(ccr1 - StartStopBitPeriod < max_delta_pwm)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+bool is_first_rising_edge_timing_ok()
+{
+    // current falling edge happens after Period ticks from previous rising edge
+    if(ccr1 - StartStopBitLength  < 0)
+    {
+        int delta = StartStopBitLength - ccr1;
+        period_delta[perioddelta_index++] = delta;
+        if(StartStopBitLength - ccr1 < max_delta_pwm)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        int delta = ccr1 - StartStopBitLength;
+        period_delta[perioddelta_index++] = delta;
+        if(ccr1 - StartStopBitLength < max_delta_pwm)
         {
             return true;
         }
@@ -1023,24 +1102,19 @@ bool is_ic_after_interframe_delay()
     return false;
     */
 
-    if(DelayCheckingPeriod == htim3.Instance->ARR  ) // &&_delay_counter > DelayBetweenDataFrames - 100 // && _delay_counter < 60
-    {
-        if( _delay_counter > DelayBetweenDataFrames)
+        if( _delay_counter > DelayBetweenDataFramesTotal)
         {
-            delta = _delay_counter - DelayBetweenDataFrames;
+            delta = _delay_counter - DelayBetweenDataFramesTotal;
 
         }
         else
         {
-            delta = DelayBetweenDataFrames - _delay_counter;;
+            delta = DelayBetweenDataFramesTotal - _delay_counter;;
         }
 
         if(delaydelta_index < 100)
         {
-            {
-                delay_delta[delaydelta_index++] = delta;
-
-            }
+            delay_delta[delaydelta_index++] = delta;
         }
 
         if(delta < max_delta_delay)
@@ -1048,9 +1122,7 @@ bool is_ic_after_interframe_delay()
             return true;
         }
 
-    }
-
-    return true;
+    return _is_interframe_delay_long_enough;
     //return false;
 
 /*
@@ -1078,6 +1150,7 @@ bool is_ic_after_interframe_delay()
 void reset_delay_cnt()
 {
     _delay_counter = 0;
+    _is_interframe_delay_long_enough = false;
 
 #ifdef DEBUG_DROP_DELAYCNT_A5
         dbg_pulse_A5();
