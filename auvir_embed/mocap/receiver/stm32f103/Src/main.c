@@ -314,10 +314,6 @@ void MX_TIM4_Init(void)
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_IC_Init(&htim4);
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
-
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
 
@@ -341,12 +337,20 @@ void MX_TIM4_Init(void)
     HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2);//TIM_CHANNEL_2? TODO
 //  ● Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
 //  ● Configure the slave mode controller in reset mode: write the SMS bits to 100 in the TIMx_SMCR register.
+
     sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
     sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
     sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
     //TODO: why configuring reset breaks the thing?
     // why it does work without reset?
     //HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
+    //HAL_TIM_SlaveConfigSynchronization_IT(&htim4, &sSlaveConfig); // TODO
+
+    //sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+    HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
+
+
 //  ● Enable the captures: write the CC1E and CC2E bits to ‘1’ in the TIMx_CCER register.
 
 

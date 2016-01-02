@@ -168,9 +168,12 @@ inline void dbg_pulse_A7();
 inline void dbg_pulse_A5();
 
 //#define DEBUG_READING_DATA_A5
-#define DEBUG_READING_DATA_A7
+//#define DEBUG_READING_DATA_A7
 
-#define DEBUG_UPD_EVENT_A5
+#define DEBUG_DATA_RECEIVED_A5
+//#define DEBUG_DATA_RECEIVED_A7
+
+//#define DEBUG_UPD_EVENT_A5
 //#define DEBUG_UPD_EVENT_A7
 
 //#define DEBUG_LOW_CHECK_A5
@@ -994,6 +997,13 @@ void receive_handler()
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
                 // TODO
                 copy_data_frame_to_buffer(&rx_data_frame);
+
+#ifdef DEBUG_DATA_RECEIVED_A7
+                HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+#endif
+#ifdef DEBUG_DATA_RECEIVED_A5
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+#endif
             }
             reset_receiver_state();
             break;

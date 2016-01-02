@@ -53,8 +53,8 @@ TIM_HandleTypeDef htim4;
 //PWM timer configuration
 TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 949;
-const uint16_t pwm_pulse_width = 475;
+const uint16_t pwm_timer_period = 1880 - 1; //949;
+const uint16_t pwm_pulse_width = 940 - 1; //475;
 const uint16_t envelop_timer_prescaler = 72 - 1;
 //TODO: specify timer constants
 // values below are numbers of timer ticks
