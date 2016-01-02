@@ -81,7 +81,7 @@ const uint16_t HalfStartStopBitLength = 500 - 1;
 const uint16_t DelayBetweenDataFrames = 5000 - 1;
 const uint16_t StartStopBitPeriod = 2000 - 1;
 
-const uint16_t DelayCheckingPeriod = 100 - 1;
+const uint16_t DelayCheckingPeriod = 1 - 1;
 
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 
@@ -128,7 +128,7 @@ int main(void)
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  //HAL_TIM_Base_Start_IT(&htim3);
+  HAL_TIM_Base_Start_IT(&htim3);
   //HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
   HAL_TIM_IC_PWM_Start_IT(&htim4);
   /* USER CODE END 2 */

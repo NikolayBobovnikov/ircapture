@@ -34,12 +34,14 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_it.h"
-// b stm32f1xx_it.c:352
+// b stm32f1xx_it.c:350
 
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
 // TODO: cleanup when done debugging
 #define DEBUG
+
+
 
 ///TODO: refactor constants below
 ///TODO: learn about typedefs and structs
@@ -124,15 +126,15 @@ volatile bool _is_falling_edge;
 volatile bool _is_timer_update_event;
 volatile uint16_t ccr1;
 volatile uint16_t ccr2;
-uint8_t _delay_counter;
+volatile uint16_t _delay_counter = 0;
 
- int level[100];
- int pwm_period[100];
- int pwm_length[100];
- int period_delta[100];
- int pulse_delta[100];
- int delay_delta[100];
- int dbg[100];
+ int level[100] = {0};
+ int pwm_period[100] = {0};
+ int pwm_length[100] = {0};
+ int period_delta[100] = {0};
+ int pulse_delta[100] = {0};
+ int delay_delta[100] = {0};
+ int dbg[100] = {0};
  int level_index=0;
  int pulse_index=0;
  int period_index=0;
@@ -144,13 +146,39 @@ uint8_t _delay_counter;
 const uint8_t max_delta_pwm = 50;
 const uint8_t max_delta_pwm_width = 50;
 const uint8_t max_delta_delay = 200;
+static uint16_t delta;
 
 inline void receive_handler();
 inline void reset_receiver_state();
 inline bool is_rising_edge_timing_ok();
 inline bool is_falling_edge_timing_ok();
 inline bool is_ic_after_interframe_delay();
+inline void reset_delay_cnt();
 inline void copy_data_frame_to_buffer(DataFrame_t* df);
+
+
+/// For debugging. TODO: cleanup when done
+inline void dbg_pulse_A7();
+inline void dbg_pulse_A5();
+
+//#define DEBUG_READING_DATA_A5
+#define DEBUG_READING_DATA_A7
+
+#define DEBUG_LOW_CHECK_A5
+//#define DEBUG_LOW_CHECK_A7
+
+//#define DEBUG_DELAY_CHECK_A5
+//#define DEBUG_DELAY_CHECK_A7
+
+//#define DEBUG_DROP_DELAYCNT_A5
+//#define DEBUG_DROP_DELAYCNT_A7
+
+//#define DEBUG_RISING_EDGE_A5
+//#define DEBUG_RISING_EDGE_A7
+
+//#define DEBUG_FALLING_EDGE_A5
+//#define DEBUG_FALLING_EDGE_A7
+
 /* USER CODE END 0 */
 
 /* al variables --------------------------------------------------------*/
@@ -224,7 +252,7 @@ void TIM3_IRQHandler(void)
     if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
     {
         _line_level = LINE_HIGH_ON_UPDATE_EVENT;
-        _delay_counter = 0;
+        reset_delay_cnt();
     }
     else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)
     {
@@ -232,10 +260,24 @@ void TIM3_IRQHandler(void)
 
         _delay_counter++;
 
+
+#ifdef DEBUG_LOW_CHECK_A7
+        dbg_pulse_A7();
+#endif
+#ifdef DEBUG_LOW_CHECK_A5
+        dbg_pulse_A5();
+#endif
+#ifdef DEBUG_DROP_DELAYCNT_A5
+        dbg_pulse_A5();
+#endif
+#ifdef DEBUG_DROP_DELAYCNT_A7
+        dbg_pulse_A7();
+#endif
     }
     else
     {
         _line_level = LINE_UNDEFINED;
+         reset_delay_cnt();
         return;
     }
     _is_timer_update_event = true;
@@ -266,12 +308,16 @@ void TIM4_IRQHandler(void)
             _is_rising_edge = true;
             _is_falling_edge = false;
 
+#ifdef DEBUG_RISING_EDGE_A7
+            dbg_pulse_A7();
+#endif
+#ifdef DEBUG_RISING_EDGE_A5
+            dbg_pulse_A5();
+#endif
             if(period_index < 100)
             {
                 pwm_period[period_index++] = ccr1;
             }
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
         }
 
     }
@@ -286,6 +332,13 @@ void TIM4_IRQHandler(void)
             ccr2 = htim4.Instance->CCR2;
             _is_falling_edge = true;
             _is_rising_edge = false;
+
+#ifdef DEBUG_FALLING_EDGE_A7
+            dbg_pulse_A7();
+#endif
+#ifdef DEBUG_FALLING_EDGE_A5
+            dbg_pulse_A5();
+#endif
         }
     }
     _is_timer_update_event = false;
@@ -295,6 +348,7 @@ void TIM4_IRQHandler(void)
     // reset helper vars
     _is_rising_edge = false;
     _is_falling_edge = false;
+
 
   /* USER CODE BEGIN TIM4_IRQn 0 */
 
@@ -382,12 +436,12 @@ void receive_handler()
             // This should be on IC event
             if(_is_rising_edge )
             {
-                delay_delta[delaydelta_index++] = _delay_counter;
-                //if(_delay_counter > 40) TODO: check delay before data frame
+                if(is_ic_after_interframe_delay()) //TODO: check delay before data frame
                 {
-
                     // wait for first point
-                    HAL_TIM_Base_Start_IT(&htim3);
+                    //HAL_TIM_Base_Start_IT(&htim3);
+                    htim3.Instance->CNT = 0;
+
                     htim3.Instance->ARR = HalfStartStopBitLength;
                     ReceiverState = RX_START_BIT_PROCESSING;
                     StartStopSequenceReceiveState = STAGE_ON1;
@@ -631,9 +685,11 @@ void receive_handler()
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
 
-#ifdef DEBUG
-                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
-                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+#ifdef DEBUG_READING_DATA_A5
+                            dbg_pulse_A5();
+#endif
+#ifdef DEBUG_READING_DATA_A7
+                            dbg_pulse_A7();
 #endif
                         }
                         // move to next state and wait a delay between data fields
@@ -665,10 +721,11 @@ void receive_handler()
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
-
-#ifdef DEBUG2
-                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
-                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+#ifdef DEBUG_READING_DATA_A5
+                            dbg_pulse_A5();
+#endif
+#ifdef DEBUG_READING_DATA_A7
+                            dbg_pulse_A7();
 #endif
                         }
                         else
@@ -699,15 +756,17 @@ void receive_handler()
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
-#ifdef DEBUG2
-                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
-                            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+#ifdef DEBUG_READING_DATA_A5
+                            dbg_pulse_A5();
+#endif
+#ifdef DEBUG_READING_DATA_A7
+                            dbg_pulse_A7();
 #endif
                         }
-                        /// finished receiving last field. No necessity to wait
+                        /// finished receiving last field. No delay before stop bit sequence (no necessity to wait)
                         /// TODO: need to be on the same page with motionsensor_transmitter.
                         /// At the moment, there is no delay after sending the verry last bit of the data frame
-                        else
+                        if(rx_current_bit_pos == rx_total_bits - 1)
                         {
                             // data has been received
                             // TODO: process data buffer
@@ -738,7 +797,6 @@ void receive_handler()
                 // wait for the middle of low level part of stop sequence
                 // e.g. half of the delay before the first immpulse of stop bit sequence
                 // after the delay
-                //rx_data_frame._1_beamer_id
                 htim3.Instance->ARR = HalfStartStopBitLength;
                 ReceiverState = RX_STOP_BIT_PROCESSING;
                 StartStopSequenceReceiveState = STAGE_OFF0;
@@ -823,7 +881,6 @@ void receive_handler()
                 case STAGE_OFF1_ON2:
                 {
                     // rising edge input capture
-                //FIXME: Fix  below: don't enter on rising edge
                     if(_is_rising_edge)
                     {
                         dbg[dbg_index++]=ccr1;
@@ -834,7 +891,7 @@ void receive_handler()
                              break;
                         }
                     }
-                    //reset_receiver_state(); TODO: check if it needed
+                    reset_receiver_state(); //TODO: check if it needed
                     break;
                 }
                 // high confirmation
@@ -901,8 +958,7 @@ void reset_receiver_state()
     DataFrameState = DATAFRAME_1_BEAMER_ID;
     //HAL_TIM_Base_Stop_IT(&htim3);
     htim3.Instance->ARR = DelayCheckingPeriod;
-    _delay_counter = 0;
-
+    reset_delay_cnt();
     htim4.Instance->CNT = 0;
 }
 bool is_rising_edge_timing_ok()
@@ -953,6 +1009,12 @@ bool is_falling_edge_timing_ok()
 }
 bool is_ic_after_interframe_delay()
 {
+#ifdef DEBUG_DELAY_CHECK_A5
+        dbg_pulse_A5();
+#endif
+#ifdef DEBUG_DELAY_CHECK_A7
+        dbg_pulse_A7();
+#endif
     /*
     if(ccr1 > 2500)
     {
@@ -961,12 +1023,35 @@ bool is_ic_after_interframe_delay()
     return false;
     */
 
-    delay_delta[delaydelta_index++] = _delay_counter;
-    if(_delay_counter > 40) // && _delay_counter < 60
+    if(DelayCheckingPeriod == htim3.Instance->ARR  ) // &&_delay_counter > DelayBetweenDataFrames - 100 // && _delay_counter < 60
     {
-        return true;
+        if( _delay_counter > DelayBetweenDataFrames)
+        {
+            delta = _delay_counter - DelayBetweenDataFrames;
+
+        }
+        else
+        {
+            delta = DelayBetweenDataFrames - _delay_counter;;
+        }
+
+        if(delaydelta_index < 100)
+        {
+            {
+                delay_delta[delaydelta_index++] = delta;
+
+            }
+        }
+
+        if(delta < max_delta_delay)
+        {
+            return true;
+        }
+
     }
-    return false;
+
+    return true;
+    //return false;
 
 /*
     if(ccr1 - DelayBetweenDataFrames < 0)
@@ -990,6 +1075,17 @@ bool is_ic_after_interframe_delay()
     return false;
 */
 }
+void reset_delay_cnt()
+{
+    _delay_counter = 0;
+
+#ifdef DEBUG_DROP_DELAYCNT_A5
+        dbg_pulse_A5();
+#endif
+#ifdef DEBUG_DROP_DELAYCNT_A7
+        dbg_pulse_A();
+#endif
+}
 void copy_data_frame_to_buffer(DataFrame_t* df)
 {
     data_frames[arr_index]._2_angle_graycode = df->_2_angle_graycode;
@@ -998,5 +1094,21 @@ void copy_data_frame_to_buffer(DataFrame_t* df)
     arr_index++;
     //memcpy(df, rx_data_frame_array, sizeof(rx_data_frame));
 }
+void dbg_pulse_A7()
+{
+#ifdef DEBUG
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
+#endif//DEBUG
+}
+void dbg_pulse_A5()
+{
+#ifdef DEBUG
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+#endif
+}
+
+
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
