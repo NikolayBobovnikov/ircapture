@@ -53,14 +53,14 @@ TIM_HandleTypeDef htim4;
 //PWM timer configuration
 TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 1880 - 1; //949;
-const uint16_t pwm_pulse_width = 940 - 1; //475;
-const uint16_t envelop_timer_prescaler = 72 - 1;
+const uint16_t pwm_timer_period = 1880 - 1;
+const uint16_t pwm_pulse_width = 940 - 1;
+const uint16_t envelop_timer_prescaler = 0;
 //TODO: specify timer constants
 // values below are numbers of timer ticks
-const uint16_t StartStopBitLength = 1000 - 1;
-const uint16_t DataBitLength = 2000 - 1;
-const uint16_t DelayBetweenDataFramesTotal = 5000 - 1;
+const uint16_t StartStopBitLength = 25000 - 1;
+const uint16_t DataBitLength = 50000 - 1;
+const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;
 
 
 ///TODO: refactor constants below
@@ -450,13 +450,13 @@ void MX_GPIO_Init(void)
 
 #ifdef DEBUG
   /// Debug outputs
-  /*Configure GPIO pin : PA4 */
+  /*Configure GPIO pin : PB4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA5 */
+  /*Configure GPIO pin : PB5 */
   GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;

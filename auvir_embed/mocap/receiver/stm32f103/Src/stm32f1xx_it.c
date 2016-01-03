@@ -44,7 +44,9 @@
 
 
 ///TODO: refactor constants below
-///TODO: learn about typedefs and structs
+extern bool _is_direct_logic; // direct: high means 1, low means 0
+
+///TODO: learn more about typedefs and structs
 typedef struct
 {
     uint8_t _1_beamer_id;
@@ -149,17 +151,26 @@ extern const uint8_t max_delta_pwm;
 extern const uint8_t max_delta_pwm_width;
 extern const uint8_t max_delta_delay;
 extern const uint16_t DelayBetweenDataFramesToCheck;
-extern const uint16_t DelayCounterMin;
+extern const uint16_t DelayCounterMin; // minimum counter value for delay between frames
 
 static uint16_t delta;
 
 inline void receive_handler();
+
+inline bool is_1_to_0_edge();
+inline bool is_0_to_1_edge();
+inline bool is_1_on_update_event();
+inline bool is_0_on_update_event();
 inline void reset_receiver_state();
-inline bool is_rising_edge_timing_ok();
-inline bool is_first_rising_edge_timing_ok();
-inline bool is_falling_edge_timing_ok();
+
+
+inline bool is_0_to_1_edge_timing_ok();
+inline bool is_first_0_to_1_edge_timing_ok();
+inline bool is_1_to_0_edge_timing_ok();
 inline bool is_ic_after_interframe_delay();
 inline void reset_delay_cnt();
+inline void update_delay_cnt();
+
 inline void copy_data_frame_to_buffer(DataFrame_t* df);
 
 
@@ -170,7 +181,7 @@ inline void dbg_pulse_A5();
 //#define DEBUG_READING_DATA_A5
 //#define DEBUG_READING_DATA_A7
 
-#define DEBUG_DATA_RECEIVED_A5
+//#define DEBUG_DATA_RECEIVED_A5
 //#define DEBUG_DATA_RECEIVED_A7
 
 //#define DEBUG_UPD_EVENT_A5
@@ -185,11 +196,11 @@ inline void dbg_pulse_A5();
 //#define DEBUG_DROP_DELAYCNT_A5
 //#define DEBUG_DROP_DELAYCNT_A7
 
-//#define DEBUG_RISING_EDGE_A5
-//#define DEBUG_RISING_EDGE_A7
+#define DEBUG_0_to_1_EDGE_A5
+//#define DEBUG_0_to_1_EDGE_A7
 
-//#define DEBUG_FALLING_EDGE_A5
-//#define DEBUG_FALLING_EDGE_A7
+//#define DEBUG_1_to_0_EDGE_A5
+#define DEBUG_1_to_0_EDGE_A7
 
 /* USER CODE END 0 */
 
@@ -264,16 +275,10 @@ void TIM3_IRQHandler(void)
     if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_SET)
     {
         _line_level = LINE_HIGH_ON_UPDATE_EVENT;
-        reset_delay_cnt();
     }
     else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6) == GPIO_PIN_RESET)
     {
         _line_level = LINE_LOW_ON_UPDATE_EVENT;
-        if(_delay_counter++ > DelayCounterMin)
-        {
-            _is_interframe_delay_long_enough = true;
-        }
-
 
 #ifdef DEBUG_LOW_CHECK_A7
         dbg_pulse_A7();
@@ -294,9 +299,12 @@ void TIM3_IRQHandler(void)
         reset_delay_cnt();
         return;
     }
+
     _is_timer_update_event = true;
     _is_rising_edge = false;
     _is_falling_edge = false;
+
+    update_delay_cnt();
 
     /* USER CODE BEGIN TIM3_IRQn 0 */
     receive_handler();
@@ -324,16 +332,16 @@ void TIM4_IRQHandler(void)
     {
         if(__HAL_TIM_GET_IT_SOURCE(&htim4, TIM_IT_CC1) != RESET)
         {
-            // workaround for reset in slave mode not working?
+            // workaround for reset in slave mode not working? TODO
             htim4.Instance->CNT=0;
             ccr1 = htim4.Instance->CCR1;
             _is_rising_edge = true;
             _is_falling_edge = false;
 
-#ifdef DEBUG_RISING_EDGE_A7
+#ifdef DEBUG_0_to_1_EDGE_A7
             dbg_pulse_A7();
 #endif
-#ifdef DEBUG_RISING_EDGE_A5
+#ifdef DEBUG_0_to_1_EDGE_A5
             dbg_pulse_A5();
 #endif
             if(period_index < 100)
@@ -355,10 +363,10 @@ void TIM4_IRQHandler(void)
             _is_falling_edge = true;
             _is_rising_edge = false;
 
-#ifdef DEBUG_FALLING_EDGE_A7
+#ifdef DEBUG_1_to_0_EDGE_A7
             dbg_pulse_A7();
 #endif
-#ifdef DEBUG_FALLING_EDGE_A5
+#ifdef DEBUG_1_to_0_EDGE_A5
             dbg_pulse_A5();
 #endif
         }
@@ -456,13 +464,13 @@ void receive_handler()
             // before rising edge
 
             // This should be on IC event
-            if(_is_rising_edge )
+            if(is_0_to_1_edge() )
             {
                 if(dbg_index < 100)
                 {
                     dbg[dbg_index++] = _delay_counter;
                 }
-                if(is_ic_after_interframe_delay()) //TODO: check delay before data frame
+                //if(is_ic_after_interframe_delay()) //TODO: check delay before data frame
                 {
                     // wait for first point
                     //HAL_TIM_Base_Start_IT(&htim3);
@@ -501,9 +509,9 @@ void receive_handler()
                 case STAGE_ON1_OFF1:
                 {
                     // falling edge should be detected
-                    if(_is_falling_edge)
+                    if(is_1_to_0_edge())
                     {
-                        if(is_falling_edge_timing_ok())
+                        if(is_1_to_0_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF1;
                             break;
@@ -529,9 +537,9 @@ void receive_handler()
                 case STAGE_OFF1_ON2:
                 {
                     // This should be on IC event (2nd bit - rising edge)
-                    if(_is_rising_edge)
+                    if(is_0_to_1_edge())
                     {
-                        if(is_rising_edge_timing_ok())
+                        if(is_0_to_1_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_ON2;
                             // wait for half a period of startstop bit sequence
@@ -558,9 +566,9 @@ void receive_handler()
                 case STAGE_ON2_OFF2:
                 {
                     // This should be on IC event (2nd bit - rising edge)
-                    if(_is_falling_edge)
+                    if(is_1_to_0_edge())
                     {
-                        if(is_falling_edge_timing_ok())
+                        if(is_1_to_0_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF2;
                             break;
@@ -587,9 +595,9 @@ void receive_handler()
                 case STAGE_OFF2_ON3:
                 {
                     // This should be on IC event (2nd bit - rising edge)
-                    if(_is_rising_edge)
+                    if(is_0_to_1_edge())
                     {
-                        if(is_rising_edge_timing_ok())
+                        if(is_0_to_1_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_ON3;
                             // wait for half a period of startstop bit sequence
@@ -616,9 +624,9 @@ void receive_handler()
                 case STAGE_ON3_OFF4:
                 {
                     // This should be on IC event (2nd bit - rising edge)
-                    if(_is_falling_edge)
+                    if(is_1_to_0_edge())
                     {
-                        if(is_falling_edge_timing_ok())
+                        if(is_1_to_0_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF4;
                             // restart a counter to reduce integrating of error,
@@ -887,7 +895,7 @@ void receive_handler()
                 case STAGE_OFF0_ON1:
                 {
                     // rising edge input capture
-                    if(_is_rising_edge)
+                    if(is_0_to_1_edge())
                     {
                         // first rising edge don't have previous rising edge for checking timing
                         // TODO: add relaxed timing check, measure from previous
@@ -915,9 +923,9 @@ void receive_handler()
                 //low falling edge: STAGE_ON1 -> STAGE_OFF1
                 case STAGE_ON1_OFF1:
                 {
-                    if(_is_falling_edge)
+                    if(is_1_to_0_edge())
                     {
-                        if(is_falling_edge_timing_ok())
+                        if(is_1_to_0_edge_timing_ok())
                         {
                             StartStopSequenceReceiveState = STAGE_OFF1;
                             break;
@@ -941,9 +949,9 @@ void receive_handler()
                 case STAGE_OFF1_ON2:
                 {
                     // rising edge input capture
-                    if(_is_rising_edge)
+                    if(is_0_to_1_edge())
                     {
-                        if(is_rising_edge_timing_ok())
+                        if(is_0_to_1_edge_timing_ok())
                         {
                              StartStopSequenceReceiveState = STAGE_ON2;
                              break;
@@ -967,9 +975,9 @@ void receive_handler()
                 // low falling edge: STAGE_ON2 -> STAGE_OFFF2
                 case STAGE_ON2_OFF2:
                 {
-                    if(_is_falling_edge)
+                    if(is_1_to_0_edge())
                     {
-                        if(is_falling_edge_timing_ok())
+                        if(is_1_to_0_edge_timing_ok())
                         {
                             ReceiverState = RX_STOP_BIT_DONE;
                             StartStopSequenceReceiveState = STAGE_0;
@@ -1015,6 +1023,39 @@ void receive_handler()
         }
     } // switch(ReceiverState)
 }
+
+bool is_1_to_0_edge()
+{
+    if(_is_direct_logic)
+    {
+        return _is_falling_edge;
+    }
+    return _is_rising_edge;
+}
+bool is_0_to_1_edge()
+{
+    if(_is_direct_logic)
+    {
+        return _is_rising_edge;
+    }
+    return _is_falling_edge;
+}
+bool is_1_on_update_event()
+{
+    if(_is_direct_logic)
+    {
+        return (LINE_HIGH_ON_UPDATE_EVENT == _line_level);
+    }
+    return (LINE_LOW_ON_UPDATE_EVENT == _line_level);
+}
+bool is_0_on_update_event()
+{
+    if(_is_direct_logic)
+    {
+        return (LINE_LOW_ON_UPDATE_EVENT == _line_level);
+    }
+    return (LINE_HIGH_ON_UPDATE_EVENT == _line_level);
+}
 void reset_receiver_state()
 {
     //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
@@ -1027,7 +1068,8 @@ void reset_receiver_state()
     htim4.Instance->CNT = 0;
     htim3.Instance->CNT = 0;
 }
-bool is_rising_edge_timing_ok()
+
+bool is_0_to_1_edge_timing_ok()
 {
     // current falling edge happens after Period ticks from previous rising edge
     if(ccr1 - StartStopBitPeriod  < 0)
@@ -1050,7 +1092,7 @@ bool is_rising_edge_timing_ok()
     }
     return false;
 }
-bool is_first_rising_edge_timing_ok()
+bool is_first_0_to_1_edge_timing_ok()
 {
     // current falling edge happens after Period ticks from previous rising edge
     if(ccr1 - StartStopBitLength  < 0)
@@ -1073,7 +1115,7 @@ bool is_first_rising_edge_timing_ok()
     }
     return false;
 }
-bool is_falling_edge_timing_ok()
+bool is_1_to_0_edge_timing_ok()
 {
     // falling edge happens after StartStopBitLength ticks from rising edge
     if(ccr2 - StartStopBitLength < 0)
@@ -1169,6 +1211,21 @@ void reset_delay_cnt()
         dbg_pulse_A();
 #endif
 }
+void update_delay_cnt()
+{
+    if(is_0_on_update_event())
+    {
+        if(_delay_counter++ > DelayCounterMin)
+        {
+            _is_interframe_delay_long_enough = true;
+        }
+    }
+    else if(is_1_on_update_event())
+    {
+        reset_delay_cnt();
+    }
+}
+
 void copy_data_frame_to_buffer(DataFrame_t* df)
 {
     data_frames[arr_index]._2_angle_graycode = df->_2_angle_graycode;

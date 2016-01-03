@@ -41,6 +41,12 @@
 
 /*
  * TODO list:
+ * receiver: handle inverse signal
+ * finish with sending/receiving using IR channel
+ * test distibruted channel transmitter (2 timers with separate channels)
+ * make beamer  synchronization - start sending on external trigger
+
+ *
  * beamer hub: detect when new beamer is being connected, assign new ID and send it to the beamer
  * beamer hub: synchronize beamers with each other. send signals to each beamer when it is its turn to beam
  *
@@ -48,6 +54,7 @@
  * beamer: start sending data on external signal
  *
  * receiver: signal when buffer with data frames is ready to be read from
+ * receiver: catch signal from several IR sensors
  *
  * receiver hub: read from the buffer using spi&dma
  * receiver hub: send data to comp using usb / wifi / sockets
@@ -67,31 +74,29 @@ TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 950 - 1;
-const uint16_t pwm_pulse_width = 475;
-const uint16_t envelop_timer_prescaler = 72 - 1;
+const bool _is_direct_logic = true; // direct: high means 1, low means 0
 
-const uint16_t DataBitLength = 2000 - 1;
-const uint16_t HalfDataBitLength = 1000 - 1;
+const uint16_t envelop_timer_prescaler = 0;
 
-const uint16_t StartStopBitLength = 1000 - 1;
-const uint16_t HalfStartStopBitLength = 500 - 1;
+const uint16_t DataBitLength = 50000 - 1;
+const uint16_t HalfDataBitLength = 25000 - 1;
 
-const uint16_t HalfStartStopHalfDataBitLength = 1500 - 1;
+const uint16_t StartStopBitLength = 25000 - 1;
+const uint16_t HalfStartStopBitLength = 12500 - 1;
+const uint16_t StartStopBitPeriod = 50000 - 1;
 
-const uint16_t DelayBetweenDataFramesTotal = 5000 - 1;
-const uint16_t StartStopBitPeriod = 2000 - 1;
+const uint16_t HalfStartStopHalfDataBitLength = 37500 - 1;
+const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;
 
-const uint16_t DelayCheckingPeriod = 10 - 1;
+const uint16_t DelayCheckingPeriod = 100 - 1;
 
 const uint8_t max_delta_pwm = 50;
 const uint8_t max_delta_pwm_width = 50;
 const uint8_t max_delta_delay = 200;
-const uint8_t max_delta_cnt_delay = 10;
+const uint8_t max_delta_cnt_delay = 50;
 // TODO: parametrize values below
 const uint16_t DelayBetweenDataFramesToCheck = 4500; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 450 - 10; // (actual DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t DelayCounterMin = 450 - 100; // (actual DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
 
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 
@@ -325,14 +330,28 @@ void MX_TIM4_Init(void)
 //    write the CC1P bit to ‘0’ (active on rising edge).
     //SET_BIT(htim4.Instance->CCMR1, TIM_CCER_CC1P)
     sConfigIC.ICFilter = 0;
-    sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    if(_is_direct_logic)
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    }
+    else
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
+    }
     sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
     HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1);
 
 //  ● Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
 //  ● Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
     sConfigIC.ICFilter = 0;
-    sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;// TIM_ICPOLARITY_RISING? TODO
+    if(_is_direct_logic)
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
+    }
+    else
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    }
     sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
     HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2);//TIM_CHANNEL_2? TODO
 //  ● Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
@@ -340,7 +359,15 @@ void MX_TIM4_Init(void)
 
     sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
     sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-    sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    if(_is_direct_logic)
+    {
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    }
+    else
+    {
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_FALLING;
+    }
+
     //TODO: why configuring reset breaks the thing?
     // why it does work without reset?
     //HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
