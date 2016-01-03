@@ -170,7 +170,7 @@ inline void dbg_pulse_A5();
 //#define DEBUG_READING_DATA_A5
 //#define DEBUG_READING_DATA_A7
 
-#define DEBUG_DATA_RECEIVED_A5
+//#define DEBUG_DATA_RECEIVED_A5
 //#define DEBUG_DATA_RECEIVED_A7
 
 //#define DEBUG_UPD_EVENT_A5
@@ -185,11 +185,11 @@ inline void dbg_pulse_A5();
 //#define DEBUG_DROP_DELAYCNT_A5
 //#define DEBUG_DROP_DELAYCNT_A7
 
-//#define DEBUG_RISING_EDGE_A5
+#define DEBUG_RISING_EDGE_A5
 //#define DEBUG_RISING_EDGE_A7
 
 //#define DEBUG_FALLING_EDGE_A5
-//#define DEBUG_FALLING_EDGE_A7
+#define DEBUG_FALLING_EDGE_A7
 
 /* USER CODE END 0 */
 
