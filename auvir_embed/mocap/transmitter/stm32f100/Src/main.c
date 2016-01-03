@@ -220,7 +220,7 @@ int main(void)
   MX_TIM2_Init();
   //MX_TIM3_Init(); //TODO: breaks tim1 for some reason
   MX_TIM4_Init();
-  //MX_USART3_UART_Init();
+  MX_USART3_UART_Init();
 
   /* USER CODE BEGIN 2 */
   currentOutputTimChannel = primary_output_channel;
