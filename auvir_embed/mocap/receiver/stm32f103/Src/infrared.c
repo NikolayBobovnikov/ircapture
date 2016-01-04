@@ -60,7 +60,7 @@ volatile uint16_t _delay_counter = 0;
  *  Function definitions
 */
 
-void irreceiver_timer_up_handler()
+inline void irreceiver_timer_up_handler()
 {
     if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_SET)
     {
@@ -99,7 +99,7 @@ void irreceiver_timer_up_handler()
 #endif
 
 }
-void irreceiver_timer_ic_handler()
+inline void irreceiver_timer_ic_handler()
 {
     if(__HAL_TIM_GET_FLAG(ic_tim_p, TIM_FLAG_CC1) != RESET)
     {
@@ -144,12 +144,11 @@ void irreceiver_timer_ic_handler()
     _is_rising_edge = false;
     _is_falling_edge = false;
 }
-
-void receive_handler()
+static inline void receive_handler()
 {
     if(arr_index == RX_BUF_SIZE)
     {
-        data_frames;// TODO: cleanup
+        ;
     }
 
     /* Receive data frame
@@ -735,7 +734,7 @@ void receive_handler()
         }
     } // switch(ReceiverState)
 }
-bool is_1_to_0_edge()
+static inline bool is_1_to_0_edge()
 {
     if(_is_direct_logic)
     {
@@ -743,7 +742,7 @@ bool is_1_to_0_edge()
     }
     return _is_rising_edge;
 }
-bool is_0_to_1_edge()
+static inline bool is_0_to_1_edge()
 {
     if(_is_direct_logic)
     {
@@ -751,7 +750,7 @@ bool is_0_to_1_edge()
     }
     return _is_falling_edge;
 }
-bool is_1_on_update_event()
+static inline bool is_1_on_update_event()
 {
     if(_is_direct_logic)
     {
@@ -759,7 +758,7 @@ bool is_1_on_update_event()
     }
     return (LINE_LOW_ON_UPDATE_EVENT == LineLevelState);
 }
-bool is_0_on_update_event()
+static inline bool is_0_on_update_event()
 {
     if(_is_direct_logic)
     {
@@ -767,7 +766,7 @@ bool is_0_on_update_event()
     }
     return (LINE_HIGH_ON_UPDATE_EVENT == LineLevelState);
 }
-void reset_receiver_state()
+static inline void reset_receiver_state()
 {
     //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
     ReceiverState = RX_WAITING_FOR_START_BIT;
@@ -779,8 +778,7 @@ void reset_receiver_state()
     ic_tim_p->Instance->CNT = 0;
     up_tim_p->Instance->CNT = 0;
 }
-
-bool is_0_to_1_edge_timing_ok()
+static inline bool is_0_to_1_edge_timing_ok()
 {
     // current falling edge happens after Period ticks from previous rising edge
     if(_ccr1 - StartStopBitPeriod  < 0)
@@ -799,7 +797,7 @@ bool is_0_to_1_edge_timing_ok()
     }
     return false;
 }
-bool is_first_0_to_1_edge_timing_ok()
+static inline bool is_first_0_to_1_edge_timing_ok()
 {
     // current falling edge happens after Period ticks from previous rising edge
     if(_ccr1 - StartStopBitLength  < 0)
@@ -818,7 +816,7 @@ bool is_first_0_to_1_edge_timing_ok()
     }
     return false;
 }
-bool is_1_to_0_edge_timing_ok()
+static inline bool is_1_to_0_edge_timing_ok()
 {
     // falling edge happens after StartStopBitLength ticks from rising edge
     if(_ccr2 - StartStopBitLength < 0)
@@ -837,7 +835,7 @@ bool is_1_to_0_edge_timing_ok()
     }
     return false;
 }
-bool is_ic_after_interframe_delay()
+static inline bool is_ic_after_interframe_delay()
 {
 #ifdef DEBUG_DELAY_CHECK_A5
         dbg_pulse_A5();
@@ -878,7 +876,7 @@ bool is_ic_after_interframe_delay()
     return false;
 */
 }
-void reset_delay_cnt()
+static inline void reset_delay_cnt()
 {
     _delay_counter = 0;
     _is_interframe_delay_long_enough = false;
@@ -890,7 +888,7 @@ void reset_delay_cnt()
         dbg_pulse_A();
 #endif
 }
-void update_delay_cnt()
+static inline void update_delay_cnt()
 {
     if(is_0_on_update_event())
     {
@@ -904,8 +902,7 @@ void update_delay_cnt()
         reset_delay_cnt();
     }
 }
-
-void copy_data_frame_to_buffer(DataFrame_t* df)
+static inline void copy_data_frame_to_buffer(DataFrame_t* df)
 {
     data_frames[arr_index]._2_angle_graycode = df->_2_angle_graycode;
     data_frames[arr_index]._1_beamer_id = df->_1_beamer_id;
@@ -913,15 +910,14 @@ void copy_data_frame_to_buffer(DataFrame_t* df)
     arr_index++;
     //memcpy(df, rx_data_frame_array, sizeof(rx_data_frame));
 }
-
-void dbg_pulse_1()
+static inline void dbg_pulse_1()
 {
 #ifdef DEBUG
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
 #endif//DEBUG
 }
-void dbg_pulse_2()
+static inline void dbg_pulse_2()
 {
 #ifdef DEBUG
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);

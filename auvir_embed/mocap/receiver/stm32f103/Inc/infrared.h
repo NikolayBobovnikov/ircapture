@@ -65,27 +65,27 @@ void irreceiver_timer_up_handler(); // for update timer
 void irreceiver_timer_ic_handler(); // for input capture timer
 
 // main routine called from timer interrupts to manage receiving process
-void receive_handler();
+static inline void receive_handler();
 
 // helper functions
-bool is_1_to_0_edge();
-bool is_0_to_1_edge();
-bool is_1_on_update_event();
-bool is_0_on_update_event();
-void reset_receiver_state();
-bool is_0_to_1_edge_timing_ok();
-bool is_first_0_to_1_edge_timing_ok();
-bool is_1_to_0_edge_timing_ok();
-bool is_ic_after_interframe_delay();
-void reset_delay_cnt();
-void update_delay_cnt();
+static inline bool is_1_to_0_edge();
+static inline bool is_0_to_1_edge();
+static inline bool is_1_on_update_event();
+static inline bool is_0_on_update_event();
+static inline void reset_receiver_state();
+static inline bool is_0_to_1_edge_timing_ok();
+static inline bool is_first_0_to_1_edge_timing_ok();
+static inline bool is_1_to_0_edge_timing_ok();
+static inline bool is_ic_after_interframe_delay();
+static inline void reset_delay_cnt();
+static inline void update_delay_cnt();
 
 // function to copy data frame to the main buffer, when data is received successfully
-void copy_data_frame_to_buffer(DataFrame_t* df);
+static inline void copy_data_frame_to_buffer(DataFrame_t* df);
 
 // for debugging. TODO: cleanup when done
-void dbg_pulse_1();
-void dbg_pulse_2();
+static inline void dbg_pulse_1();
+static inline void dbg_pulse_2();
 
 //#define DEBUG_READING_DATA_1
 //#define DEBUG_READING_DATA_2
