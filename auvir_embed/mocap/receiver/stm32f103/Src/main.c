@@ -34,9 +34,8 @@
 #include "stm32f1xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-#include <stdbool.h>
+#include "infrared.h"
 // TODO: cleanup when done debugging
-#define DEBUG
 /* USER CODE END Includes */
 
 /*
@@ -74,32 +73,16 @@ TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-const bool _is_direct_logic = true; // direct: high means 1, low means 0
+/// parameters
+const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
+const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
+const TIM_HandleTypeDef* ic_tim_p = &htim4;
+const TIM_HandleTypeDef* up_tim_p = &htim3;
+const bool _is_direct_logic = true;
 
-const uint16_t envelop_timer_prescaler = 0;
-
-const uint16_t DataBitLength = 50000 - 1;
-const uint16_t HalfDataBitLength = 25000 - 1;
-
-const uint16_t StartStopBitLength = 25000 - 1;
-const uint16_t HalfStartStopBitLength = 12500 - 1;
-const uint16_t StartStopBitPeriod = 50000 - 1;
-
-const uint16_t HalfStartStopHalfDataBitLength = 37500 - 1;
-const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;
-
-const uint16_t DelayCheckingPeriod = 100 - 1;
-
-const uint8_t max_delta_pwm = 50;
-const uint8_t max_delta_pwm_width = 50;
-const uint8_t max_delta_delay = 200;
-const uint8_t max_delta_cnt_delay = 50;
-// TODO: parametrize values below
-const uint16_t DelayBetweenDataFramesToCheck = 4500; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 450 - 100; // (actual DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
-
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
-
+// TODO: cleanup?
+extern const uint16_t envelop_timer_prescaler;
+extern const uint16_t DelayCheckingPeriod;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,6 +97,8 @@ static void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -383,6 +368,47 @@ void MX_TIM4_Init(void)
 
 }
 
+/** 
+  * Enable DMA controller clock
+  */
+void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+
+}
+
+/** Configure pins as 
+        * Analog 
+        * Input 
+        * Output
+        * EVENT_OUT
+        * EXTI
+*/
+void MX_GPIO_Init(void)
+{
+  // GPIO Ports Clock Enable
+  __GPIOD_CLK_ENABLE();
+  __GPIOA_CLK_ENABLE();
+  __GPIOB_CLK_ENABLE();
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+#ifdef DEBUG
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+#endif
+}
+
+/* USER CODE BEGIN 4 */
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim)
 {
   /* Check the parameters */
@@ -423,48 +449,6 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim)
     /* Return function status */
     return HAL_OK;
 }
-
-/** 
-  * Enable DMA controller clock
-  */
-void MX_DMA_Init(void) 
-{
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-
-}
-
-/** Configure pins as 
-        * Analog 
-        * Input 
-        * Output
-        * EVENT_OUT
-        * EXTI
-*/
-void MX_GPIO_Init(void)
-{
-  // GPIO Ports Clock Enable
-  __GPIOD_CLK_ENABLE();
-  __GPIOA_CLK_ENABLE();
-  __GPIOB_CLK_ENABLE();
-
-  GPIO_InitTypeDef GPIO_InitStruct;
-
-  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-}
-
-/* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT
