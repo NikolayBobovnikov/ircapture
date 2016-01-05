@@ -34,8 +34,9 @@
 #include "stm32f1xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-#include "infrared.h"
+#include <stdbool.h>
 // TODO: cleanup when done debugging
+#define DEBUG
 /* USER CODE END Includes */
 
 /*
@@ -73,12 +74,13 @@ TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-/// parameters
+/// parameters for receiver ===================
 const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
 const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
 const TIM_HandleTypeDef* ic_tim_p = &htim4;
 const TIM_HandleTypeDef* up_tim_p = &htim3;
 const bool _is_direct_logic = true;
+/// ===========================================
 
 // TODO: cleanup?
 extern const uint16_t envelop_timer_prescaler;
@@ -121,16 +123,15 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_DMA_Init();
-  //MX_I2C1_Init();
-  //MX_SPI1_Init();
+  MX_DMA_Init();
+  MX_I2C1_Init();
+  MX_SPI1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim3);
-  //HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
-  HAL_TIM_IC_PWM_Start_IT(&htim4);
+  HAL_TIM_Base_Start_IT(up_tim_p);
+  HAL_TIM_IC_PWM_Start_IT(ic_tim_p);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -138,9 +139,7 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-      //send_data();
   /* USER CODE BEGIN 3 */
-
   }
   /* USER CODE END 3 */
 
@@ -401,7 +400,7 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
 #ifdef DEBUG
-  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_7;
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);

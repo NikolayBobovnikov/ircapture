@@ -144,13 +144,9 @@ inline void irreceiver_timer_ic_handler()
     _is_rising_edge = false;
     _is_falling_edge = false;
 }
+
 static inline void receive_handler()
 {
-    if(arr_index == RX_BUF_SIZE)
-    {
-        ;
-    }
-
     /* Receive data frame
      * 1. start sequence
      * 2. data
@@ -162,29 +158,18 @@ static inline void receive_handler()
      *
      * Check data integrity. If OK, data is received
      */
-
-    /* 1. Waiting for start bit
-     * 2. Input capture channel: rising edge detected. Start timer, wait 1/2 of period
-     * 3. 1/2 period check: if signal is high, start bit is received, goto 4, otherwise stop timer, goto 1
-     * 4. 1/2 + i period check: read timer signal, increment received bits count
-     * 5. If rbc == total_bits, wait for stop bit
-     * 6. Check stop bit: if signal is high, stop timer, save received data, update event (?), goto 1
-     *
-     */
     switch(ReceiverState)
     {
         case RX_WAITING_FOR_START_BIT:
         {
-            // wait for delay DelayBetweenDataFrames ticks
-            // before rising edge
+            // ensure than last data frame was DelayBetweenDataFrames ticks before
 
-            // This should be on IC event
             if(is_0_to_1_edge() )
             {
-                //if(is_ic_after_interframe_delay()) //TODO: check delay before data frame
+                if(is_ic_after_interframe_delay()) //TODO: check delay before data frame
                 {
                     // wait for first point
-                    //HAL_TIM_Base_Start_IT(&htim3);
+                    //HAL_TIM_Base_Start_IT(up_tim_p);
                     up_tim_p->Instance->CNT = 0;
 
                     up_tim_p->Instance->ARR = HalfStartStopBitLength;
@@ -543,12 +528,12 @@ static inline void receive_handler()
                             // reset current bit position
                             rx_current_bit_pos = 0;
 
+                            /// TODO: check skipping the step below?
                             ///ReceiverState = RX_DATA_DONE;
                             ///DataFrameState = DATAFRAME_1_BEAMER_ID;
                             // wait for the end of last data frame bit
                             // e.g.remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
                             ///up_tim_p->Instance->ARR = HalfDataBitLength;
-
 
                             {
                                 up_tim_p->Instance->ARR = HalfStartStopHalfDataBitLength;
@@ -734,6 +719,52 @@ static inline void receive_handler()
         }
     } // switch(ReceiverState)
 }
+static inline void reset_receiver_state()
+{
+    //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
+    ReceiverState = RX_WAITING_FOR_START_BIT;
+    StartStopSequenceReceiveState = STAGE_0;
+    DataFrameState = DATAFRAME_1_BEAMER_ID;
+    //HAL_TIM_Base_Stop_IT(&htim3);
+    up_tim_p->Instance->ARR = DelayCheckingPeriod;
+    reset_delay_cnt();
+    ic_tim_p->Instance->CNT = 0;
+    up_tim_p->Instance->CNT = 0;
+}
+static inline void reset_delay_cnt()
+{
+    _delay_counter = 0;
+    _is_interframe_delay_long_enough = false;
+
+#ifdef DEBUG_DROP_DELAYCNT_A5
+        dbg_pulse_A5();
+#endif
+#ifdef DEBUG_DROP_DELAYCNT_A7
+        dbg_pulse_A();
+#endif
+}
+static inline void update_delay_cnt()
+{
+    if(is_0_on_update_event())
+    {
+        if(_delay_counter++ > DelayCounterMin)
+        {
+            _is_interframe_delay_long_enough = true;
+        }
+    }
+    else if(is_1_on_update_event())
+    {
+        reset_delay_cnt();
+    }
+}
+static inline void copy_data_frame_to_buffer(DataFrame_t* df)
+{
+    data_frames[arr_index]._2_angle_graycode = df->_2_angle_graycode;
+    data_frames[arr_index]._1_beamer_id = df->_1_beamer_id;
+    data_frames[arr_index]._3_timer_cnt = df->_3_timer_cnt;
+    arr_index++;
+    //memcpy(df, rx_data_frame_array, sizeof(rx_data_frame));
+}
 static inline bool is_1_to_0_edge()
 {
     if(_is_direct_logic)
@@ -765,18 +796,6 @@ static inline bool is_0_on_update_event()
         return (LINE_LOW_ON_UPDATE_EVENT == LineLevelState);
     }
     return (LINE_HIGH_ON_UPDATE_EVENT == LineLevelState);
-}
-static inline void reset_receiver_state()
-{
-    //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
-    ReceiverState = RX_WAITING_FOR_START_BIT;
-    StartStopSequenceReceiveState = STAGE_0;
-    DataFrameState = DATAFRAME_1_BEAMER_ID;
-    //HAL_TIM_Base_Stop_IT(&htim3);
-    up_tim_p->Instance->ARR = DelayCheckingPeriod;
-    reset_delay_cnt();
-    ic_tim_p->Instance->CNT = 0;
-    up_tim_p->Instance->CNT = 0;
 }
 static inline bool is_0_to_1_edge_timing_ok()
 {
@@ -876,40 +895,7 @@ static inline bool is_ic_after_interframe_delay()
     return false;
 */
 }
-static inline void reset_delay_cnt()
-{
-    _delay_counter = 0;
-    _is_interframe_delay_long_enough = false;
 
-#ifdef DEBUG_DROP_DELAYCNT_A5
-        dbg_pulse_A5();
-#endif
-#ifdef DEBUG_DROP_DELAYCNT_A7
-        dbg_pulse_A();
-#endif
-}
-static inline void update_delay_cnt()
-{
-    if(is_0_on_update_event())
-    {
-        if(_delay_counter++ > DelayCounterMin)
-        {
-            _is_interframe_delay_long_enough = true;
-        }
-    }
-    else if(is_1_on_update_event())
-    {
-        reset_delay_cnt();
-    }
-}
-static inline void copy_data_frame_to_buffer(DataFrame_t* df)
-{
-    data_frames[arr_index]._2_angle_graycode = df->_2_angle_graycode;
-    data_frames[arr_index]._1_beamer_id = df->_1_beamer_id;
-    data_frames[arr_index]._3_timer_cnt = df->_3_timer_cnt;
-    arr_index++;
-    //memcpy(df, rx_data_frame_array, sizeof(rx_data_frame));
-}
 static inline void dbg_pulse_1()
 {
 #ifdef DEBUG
