@@ -80,9 +80,9 @@ sudo -S aptitude install -y --with-recommends blender
 sudo -S aptitude install -y --with-recommends freecad freecad-doc
 # EDA (Electronic design automation )
 #	gEDA
-sudo -S aptitude install -y --with-recommends geda geda-xgsch2pcb pcb 
+sudo -S aptitude install -y --with-recommends geda geda-utils geda-xgsch2pcb pcb 
 # 	KiCAD
-sudo -S aptitude install -y --with-recommends kicad
+sudo -S aptitude install -y --with-recommends kicad kicad-doc-en
 # PCB design
 sudo -S aptitude install -y --with-recommends freepcb
 # Electric circuit simulation
