@@ -8,48 +8,57 @@ sudo -S aptitude install -y --with-recommends \
 # package utilities
 sudo -S aptitude install -y --with-recommends checkinstall pkg-config gdebi \
 
+
 # helper utilities 
 sudo -S aptitude install -y --with-recommends zip unzip \
 
 # console stuff
 sudo -S aptitude install -y --with-recommends vim tmux zsh mc \
 
+# version control
+sudo -S aptitude install -y --with-recommends git mercurial subversion
+
 # dev tools
-sudo -S aptitude install -y --with-recommends git mercurial subversion autoconf automake make cmake build-essential doxygen ddd
+sudo -S aptitude install -y --with-recommends autoconf automake make cmake build-essential doxygen ddd
 
 # verification tools
 sudo -S aptitude install -y --with-recommends valgrind cppcheck uncrustify astyle
-
-# BLAST - Berkeley Lazy Abstraction Software Verification Tool
-#cd ~/gitclones && git clone https://forge.ispras.ru/git/blast.git
-# install dependency - ocaml
-#sudo -S aptitude install -y --with-recommends ocaml
 
 # compilers and debuggers
 sudo -S aptitude install -y --with-recommends gcc-arm-none-eabi gdb-arm-none-eabi clang libclang-dev 
 
 # embedded tools
 sudo -S aptitude install -y --with-recommends libusb-dev libusb-1.0-0-dev
-
 # stlink
 cd ~/gitclones && git clone git://github.com/texane/stlink.git && cd stlink && ./autogen.sh && ./configure && make
 sudo checkinstall -y --pkgversion=1 
 sudo cp 49-stlinkv1.rules /etc/udev/rules.d && sudo cp 49-stlinkv2.rules /etc/udev/rules.d && sudo udevadm control --reload-rules
-
 # openocd
 cd ~/gitclones && git clone git://openocd.git.sourceforge.net/gitroot/openocd/openocd  && cd openocd && ./bootstrap && ./configure && make
 
 # general purpose libraries
-sudo -S aptitude install -y --with-recommends libboost-all-dev libeigen3-dev libflann-dev libtbb-dev libpoco-dev 
+sudo -S aptitude install -y --with-recommends libboost-all-dev libpoco-dev 
+
+# other libraries
+sudo -S aptitude install -y --with-recommends libeigen3-dev libflann-dev libtbb-dev
 
 # testing libraries
 sudo -S aptitude install -y --with-recommends libgtest-dev libcunit1-dev libcppunit-dev 
 
+# CI: Jenkins
+wget -q -O - https://jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
+sudo sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
+sudo aptitude update
+sudo -S aptitude install -y --with-recommends jenkins
+
+# Python environment - IDE, anaconda?
+sudo -S aptitude install -y --with-recommends spyder
+
 # environments and window managers
-sudo -S aptitude install -y --with-recommends xfce4 awesome
+sudo -S aptitude install -y --with-recommends awesome 
+# xfce4 ?
 
-# ide
-
+# IDE 
 # qt creator
 sudo -S aptitude install -y --with-recommends qtcreator 
 # eclipse
@@ -58,25 +67,31 @@ eclipse-cdt-autotools eclipse-cdt-jni eclipse-cdt-qt \
 eclipse-cdt-perf eclipse-cdt-valgrind eclipse-cdt-pkg-config eclipse-cdt-profiling-framework \
 eclipse-cdt-profiling-framework-remote eclipse-cdt-launch-remote 
 
+
 # Applied Programs
 
+# Math modeling, numerics
+sudo -S aptitude install -y --with-recommends octave scilab 
+# Statistics: R
+sudo -S aptitude install -y --with-recommends r-base
 # 3D Modelling
 sudo -S aptitude install -y --with-recommends blender 
 # CAD
 sudo -S aptitude install -y --with-recommends freecad freecad-doc
-# Math modeling, numerics
-sudo -S aptitude install -y --with-recommends octave scilab 
-# Statistics
-sudo -S aptitude install -y --with-recommends r-base
 # EDA (Electronic design automation )
-sudo -S aptitude install -y --with-recommends geda kicad
+#	gEDA
+sudo -S aptitude install -y --with-recommends geda geda-xgsch2pcb pcb 
+# 	KiCAD
+sudo -S aptitude install -y --with-recommends kicad
 # PCB design
-sudo -S aptitude install -y --with-recommends geda kicad freepcb
+sudo -S aptitude install -y --with-recommends freepcb
 # Electric circuit simulation
 sudo -S aptitude install -y --with-recommends ngspice gnucap
 
+
 # remote access
 #openssh-server xrdp \
+
 
 #install other: yandex disk, web browser, etc
 sudo gdebi --n ~/distr/deb/yandex-scdisk_latest_amd65.deb 
