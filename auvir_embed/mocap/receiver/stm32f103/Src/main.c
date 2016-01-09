@@ -58,6 +58,12 @@
  *
  * receiver hub: read from the buffer using spi&dma
  * receiver hub: send data to comp using usb / wifi / sockets
+ * receiver hub: allocate an array of items for each sensor;
+ *              Each item should contain sensor's ID and the time it was inactive
+ *              When time_inactive exceeds certain max value, sensor is considered
+ *              disconnected? Or send a connection request to it and if no responce - then consider it
+ *              disconnected.
+ *              When sensor is disconnected, free according item in the array
  * 4.
  * /
 
