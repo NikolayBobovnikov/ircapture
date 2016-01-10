@@ -85,7 +85,7 @@ const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
 const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
 const TIM_HandleTypeDef* ic_tim_p = &htim4;
 const TIM_HandleTypeDef* up_tim_p = &htim3;
-const bool _is_direct_logic = true;
+const bool _is_direct_logic = false;
 /// ===========================================
 
 // TODO: cleanup?
@@ -320,6 +320,9 @@ void MX_TIM4_Init(void)
 //    write the CC1P bit to ‘0’ (active on rising edge).
     //SET_BIT(htim4.Instance->CCMR1, TIM_CCER_CC1P)
     sConfigIC.ICFilter = 0;
+    sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    //TODO: cleanip?
+    /*
     if(_is_direct_logic)
     {
         sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
@@ -328,12 +331,16 @@ void MX_TIM4_Init(void)
     {
         sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
     }
+    */
     sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
     HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1);
 
 //  ● Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
 //  ● Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
     sConfigIC.ICFilter = 0;
+    sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
+    //TODO: cleanip?
+    /*
     if(_is_direct_logic)
     {
         sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
@@ -342,6 +349,7 @@ void MX_TIM4_Init(void)
     {
         sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
     }
+    */
     sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
     HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2);//TIM_CHANNEL_2? TODO
 //  ● Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
@@ -349,6 +357,9 @@ void MX_TIM4_Init(void)
 
     sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
     sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+    sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    //TODO: cleanip?
+    /*
     if(_is_direct_logic)
     {
         sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
@@ -357,6 +368,7 @@ void MX_TIM4_Init(void)
     {
         sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_FALLING;
     }
+    */
 
     //TODO: why configuring reset breaks the thing?
     // why it does work without reset?

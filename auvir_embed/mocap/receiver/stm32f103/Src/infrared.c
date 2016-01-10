@@ -1,31 +1,35 @@
 #include "infrared.h"
+// b infrared.c:
 
 /// Parameters
 extern TIM_HandleTypeDef* ic_tim_p;
 extern TIM_HandleTypeDef* up_tim_p;
 extern GPIO_TypeDef * GPIO_PORT_IR_IN;
 extern uint16_t GPIO_PIN_IR_IN;
-extern bool _is_direct_logic;
+extern const bool _is_direct_logic;
 
 /*
  *  Constants
 */
-const uint16_t envelop_timer_prescaler = 0;
-const uint16_t DataBitLength = 50000 - 1;
-const uint16_t HalfDataBitLength = 25000 - 1;
-const uint16_t StartStopBitLength = 25000 - 1;
-const uint16_t HalfStartStopBitLength = 12500 - 1;
-const uint16_t StartStopBitPeriod = 50000 - 1;
-const uint16_t HalfStartStopHalfDataBitLength = 37500 - 1;
-const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;
+// FIXME: TODO: keep values below in sync with transmitter
+const uint16_t envelop_timer_prescaler = 14;    // values below are for prescaler=14
+const uint16_t StartStopBitLength = 1000 - 1;    // 700 works not reliably; 750 works; 800 chosen
+const uint16_t DataBitLength = 3000 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits
+const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;//56000 doesn't work; 56300, 56500, 57000 works; 58000 chosen
+
+
+const uint16_t HalfDataBitLength = 1500 - 1;
+const uint16_t HalfStartStopBitLength = 500 - 1;
+const uint16_t StartStopBitPeriod = 2000 - 1;
+const uint16_t HalfStartStopHalfDataBitLength = 2000 - 1;
 const uint16_t DelayCheckingPeriod = 100 - 1;
-const uint8_t max_delta_pwm = 50;
-const uint8_t max_delta_pwm_width = 50;
-const uint8_t max_delta_delay = 200;
-const uint8_t max_delta_cnt_delay = 50;
+const uint8_t max_delta_pwm = 350;
+const uint8_t max_delta_pwm_width = 350;
+const uint8_t max_delta_delay = 500; // TODO: cleanup?
+const uint8_t max_delta_cnt_delay = 100;
 // TODO: parametrize values below
-const uint16_t DelayBetweenDataFramesToCheck = 4500; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 450 - 100; // (actual DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t DelayBetweenDataFramesToCheck = 64500; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
+const uint16_t DelayCounterMin = 645 - 100; // (DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
 /*
@@ -55,6 +59,11 @@ volatile bool _is_interframe_delay_long_enough = false;
 volatile uint16_t _ccr1 = 0;
 volatile uint16_t _ccr2 = 0;
 volatile uint16_t _delay_counter = 0;
+
+
+// TODO: cleanup after debugging
+int dbg[100]={0};
+int dbg_index=0;
 
 /*
  *  Function definitions
@@ -147,6 +156,10 @@ inline void irreceiver_timer_ic_handler()
 
 static inline void receive_handler()
 {
+    if(dbg_index == 100)
+    {
+        dbg_index = 0;
+    }
     /* Receive data frame
      * 1. start sequence
      * 2. data
@@ -191,7 +204,7 @@ static inline void receive_handler()
                 case STAGE_ON1:
                 {
                     // This should be on update event
-                    if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_1_on_update_event())
                     {
                         // first point. change timer period to the period between reading start/stop bit values
                         up_tim_p->Instance->ARR = StartStopBitLength;
@@ -220,7 +233,7 @@ static inline void receive_handler()
                 case STAGE_OFF1:
                 {
                     // This should be on update
-                    if(LINE_LOW_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_0_on_update_event())
                     {
                         StartStopSequenceReceiveState = STAGE_OFF1_ON2;
                         // wait for half a period of startstop bit sequence
@@ -249,7 +262,7 @@ static inline void receive_handler()
                 case STAGE_ON2:
                 {
                     // This should be on update
-                    if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_1_on_update_event())
                     {
                         StartStopSequenceReceiveState = STAGE_ON2_OFF2;
                         // wait for half a period of startstop bit sequence
@@ -276,7 +289,7 @@ static inline void receive_handler()
                 //Low: STAGE_OFF2 confirmation
                 case STAGE_OFF2:
                 {
-                    if(LINE_LOW_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_0_on_update_event())
                     {
                         // turn off input capture temporarily,
                         //wait for the beginning of data transmission
@@ -307,7 +320,7 @@ static inline void receive_handler()
                 case STAGE_ON3:
                 {
                     // This should be on update
-                    if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_1_on_update_event())
                     {
                         StartStopSequenceReceiveState = STAGE_ON3_OFF4;
                         // wait for half a period of startstop bit sequence
@@ -339,7 +352,7 @@ static inline void receive_handler()
                 //Low: STAGE_OFF2 confirmation
                 case STAGE_OFF4:
                 {
-                    if(LINE_LOW_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_0_on_update_event())
                     {
                         // turn off input capture temporarily,
                         //wait for the beginning of data transmission
@@ -426,7 +439,7 @@ static inline void receive_handler()
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
                             // k-th bit of n: (n >> k) & 1
-                            if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                            if(is_1_on_update_event())
                             {
                                 // set bit at the inversed position
                                 rx_data_frame._1_beamer_id |= 1
@@ -463,7 +476,7 @@ static inline void receive_handler()
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
                             // k-th bit of n: (n >> k) & 1
-                            if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                            if(is_1_on_update_event())
                             {
                                 // set bit at the inversed position
                                 rx_data_frame._2_angle_graycode |= 1
@@ -498,7 +511,7 @@ static inline void receive_handler()
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
                             // k-th bit of n: (n >> k) & 1
-                            if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                            if(is_1_on_update_event())
                             {
                                 // set bit at the inversed position
                                 rx_data_frame._3_timer_cnt |= 1
@@ -577,7 +590,7 @@ static inline void receive_handler()
                 //low: off confirmation
                 case STAGE_OFF0:
                 {
-                    if(LINE_LOW_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_0_on_update_event())
                     {
                         // continue reading stop bit sequence with PeriodOfStartStopBits interval
                         up_tim_p->Instance->ARR = StartStopBitLength;
@@ -608,7 +621,7 @@ static inline void receive_handler()
                 //high confirmation
                 case STAGE_ON1:
                 {
-                    if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_1_on_update_event())
                     {
                         StartStopSequenceReceiveState = STAGE_ON1_OFF1;
                         break;
@@ -633,7 +646,7 @@ static inline void receive_handler()
                 // low: confirmation
                 case STAGE_OFF1:
                 {
-                    if(LINE_LOW_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_0_on_update_event())
                     {
                         StartStopSequenceReceiveState = STAGE_OFF1_ON2;
                         break;
@@ -660,7 +673,7 @@ static inline void receive_handler()
                 case STAGE_ON2:
                 {
                     // second pulse confrmation
-                    if(LINE_HIGH_ON_UPDATE_EVENT == LineLevelState)
+                    if(is_1_on_update_event())
                     {
                         StartStopSequenceReceiveState = STAGE_ON2_OFF2;
                         break;
@@ -696,7 +709,7 @@ static inline void receive_handler()
         {
             // immediately after stop sequence, line should be low
             // low confirmation
-            if(LINE_LOW_ON_UPDATE_EVENT == LineLevelState)
+            if(is_0_on_update_event())
             {
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
                 // TODO
@@ -837,9 +850,15 @@ static inline bool is_first_0_to_1_edge_timing_ok()
 }
 static inline bool is_1_to_0_edge_timing_ok()
 {
+#ifdef DEBUG
+dbg[dbg_index++] = _ccr2;
+#endif
     // falling edge happens after StartStopBitLength ticks from rising edge
     if(_ccr2 - StartStopBitLength < 0)
     {
+//#ifdef DEBUG
+//            dbg[dbg_index++] = StartStopBitLength - _ccr2 ;
+//#endif
         if(StartStopBitLength - _ccr2 < max_delta_pwm)
         {
             return true;
@@ -847,8 +866,12 @@ static inline bool is_1_to_0_edge_timing_ok()
     }
     else
     {
+//#ifdef DEBUG
+//dbg[dbg_index++] = _ccr2 - StartStopBitLength;
+//#endif
         if(_ccr2 - StartStopBitLength < max_delta_pwm)
         {
+
             return true;
         }
     }
@@ -899,15 +922,17 @@ static inline bool is_ic_after_interframe_delay()
 static inline void dbg_pulse_1()
 {
 #ifdef DEBUG
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
+    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 #endif//DEBUG
 }
 static inline void dbg_pulse_2()
 {
 #ifdef DEBUG
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
+    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 #endif
 }
 
