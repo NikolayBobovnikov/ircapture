@@ -99,10 +99,10 @@ static inline void dbg_pulse_2();
 //#define DEBUG_DELAY_CHECK_2
 //#define DEBUG_DROP_DELAYCNT_1
 //#define DEBUG_DROP_DELAYCNT_2
-//#define DEBUG_0_to_1_EDGE_1
+#define DEBUG_0_to_1_EDGE_1
 //#define DEBUG_0_to_1_EDGE_2
 //#define DEBUG_1_to_0_EDGE_1
-//#define DEBUG_1_to_0_EDGE_2
+#define DEBUG_1_to_0_EDGE_2
 
 
 #endif //INFRARED_H
