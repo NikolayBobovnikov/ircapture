@@ -53,14 +53,14 @@ TIM_HandleTypeDef htim4;
 //PWM timer configuration
 TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 1880 - 1; //949;
-const uint16_t pwm_pulse_width = 940 - 1; //475;
-const uint16_t envelop_timer_prescaler = 72 - 1;
+const uint16_t pwm_timer_period = 1880 - 1;
+const uint16_t pwm_pulse_width = 940 - 1;
+const uint16_t envelop_timer_prescaler = 5;
 //TODO: specify timer constants
 // values below are numbers of timer ticks
-const uint16_t StartStopBitLength = 1000 - 1;
-const uint16_t DataBitLength = 2000 - 1;
-const uint16_t DelayBetweenDataFramesTotal = 5000 - 1;
+const uint16_t StartStopBitLength = 5000 - 1;
+const uint16_t DataBitLength = 40000 - 1;
+const uint16_t DelayBetweenDataFramesTotal = 50000 - 1;
 
 
 ///TODO: refactor constants below
@@ -93,6 +93,7 @@ static void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+//
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -332,6 +333,8 @@ void MX_TIM2_Init(void)
     sConfigOC.Pulse = pwm_pulse_width;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+
     HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1);
 
     HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2);
@@ -369,6 +372,8 @@ void MX_TIM3_Init(void)
       sConfigOC.Pulse = pwm_pulse_width;
       sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
       sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+      sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+
       HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
 
       HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
@@ -406,6 +411,8 @@ void MX_TIM4_Init(void)
     sConfigOC.Pulse = pwm_pulse_width;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+
     HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
 
     HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2);
@@ -450,13 +457,13 @@ void MX_GPIO_Init(void)
 
 #ifdef DEBUG
   /// Debug outputs
-  /*Configure GPIO pin : PA4 */
+  /*Configure GPIO pin : PB4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA5 */
+  /*Configure GPIO pin : PB5 */
   GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
