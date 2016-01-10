@@ -55,12 +55,12 @@ TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
 const uint16_t pwm_timer_period = 1880 - 1;
 const uint16_t pwm_pulse_width = 940 - 1;
-const uint16_t envelop_timer_prescaler = 0;
+const uint16_t envelop_timer_prescaler = 5;
 //TODO: specify timer constants
 // values below are numbers of timer ticks
-const uint16_t StartStopBitLength = 25000 - 1;
-const uint16_t DataBitLength = 50000 - 1;
-const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;
+const uint16_t StartStopBitLength = 5000 - 1;
+const uint16_t DataBitLength = 40000 - 1;
+const uint16_t DelayBetweenDataFramesTotal = 50000 - 1;
 
 
 ///TODO: refactor constants below
@@ -333,6 +333,8 @@ void MX_TIM2_Init(void)
     sConfigOC.Pulse = pwm_pulse_width;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+
     HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1);
 
     HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2);
@@ -370,6 +372,8 @@ void MX_TIM3_Init(void)
       sConfigOC.Pulse = pwm_pulse_width;
       sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
       sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+      sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+
       HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
 
       HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
@@ -407,6 +411,8 @@ void MX_TIM4_Init(void)
     sConfigOC.Pulse = pwm_pulse_width;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+
     HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
 
     HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2);
