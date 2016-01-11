@@ -65,6 +65,21 @@ volatile uint16_t _delay_counter = 0;
 int dbg[100]={0};
 int dbg_index=0;
 
+//#define DEBUG_READING_DATA_1
+//#define DEBUG_READING_DATA_2
+//#define DEBUG_DATA_RECEIVED_1
+//#define DEBUG_DATA_RECEIVED_2
+//#define DEBUG_UPD_EVENT_1
+//#define DEBUG_UPD_EVENT_2
+//#define DEBUG_LOW_CHECK_1
+//#define DEBUG_LOW_CHECK_2
+//#define DEBUG_DELAY_CHECK_1
+//#define DEBUG_DELAY_CHECK_2
+//#define DEBUG_0_to_1_EDGE_1
+//#define DEBUG_0_to_1_EDGE_2
+//#define DEBUG_1_to_0_EDGE_1
+//#define DEBUG_1_to_0_EDGE_2
+
 /*
  *  Function definitions
 */
@@ -79,11 +94,11 @@ inline void irreceiver_timer_up_handler()
     {
         LineLevelState = LINE_LOW_ON_UPDATE_EVENT;
 
-#ifdef DEBUG_LOW_CHECK_A7
-        dbg_pulse_A7();
+#ifdef DEBUG_LOW_CHECK_2
+        dbg_pulse_2();
 #endif
-#ifdef DEBUG_LOW_CHECK_A5
-        dbg_pulse_A5();
+#ifdef DEBUG_LOW_CHECK_1
+        dbg_pulse_1();
 #endif
     }
     else
@@ -100,11 +115,11 @@ inline void irreceiver_timer_up_handler()
 
 
 
-#ifdef DEBUG_UPD_EVENT_A7
-        dbg_pulse_A7();
+#ifdef DEBUG_UPD_EVENT_1
+        dbg_pulse_1();
 #endif
-#ifdef DEBUG_UPD_EVENT_A5
-        dbg_pulse_A5();
+#ifdef DEBUG_UPD_EVENT_2
+        dbg_pulse_2();
 #endif
 
 }
@@ -120,10 +135,10 @@ inline void irreceiver_timer_ic_handler()
             _is_rising_edge = true;
             _is_falling_edge = false;
 
-#ifdef DEBUG_0_to_1_EDGE_2
-            dbg_pulse_A7();
-#endif
 #ifdef DEBUG_0_to_1_EDGE_1
+            dbg_pulse_1();
+#endif
+#ifdef DEBUG_0_to_1_EDGE_2
             dbg_pulse_2();
 #endif
         }
@@ -138,10 +153,10 @@ inline void irreceiver_timer_ic_handler()
             _is_rising_edge = false;
 
 #ifdef DEBUG_1_to_0_EDGE_2
-            dbg_pulse_1();
+            dbg_pulse_2();
 #endif
 #ifdef DEBUG_1_to_0_EDGE_1
-            dbg_pulse_A5();
+            dbg_pulse_1();
 #endif
         }
     }
@@ -393,7 +408,7 @@ static inline void receive_handler()
             }
             break;
         }
-        // FIXME: review the state below for usefullness
+        // FIXME: review the state below for usefullness ->
         case RX_START_BIT_DONE:
         {
             if(_is_timer_update_event)
@@ -421,6 +436,9 @@ static inline void receive_handler()
             /// TODO: turn off input capture timer when it is not supposed to be used
             break;
         }
+            // FIXME: review the state below for usefullness <-
+
+
         case RX_DATA_PROCESSNG:
         {
             if(_is_timer_update_event)
@@ -449,11 +467,11 @@ static inline void receive_handler()
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
 
-#ifdef DEBUG_READING_DATA_A5
-                            dbg_pulse_A5();
+#ifdef DEBUG_READING_DATA_1
+                            dbg_pulse_1();
 #endif
-#ifdef DEBUG_READING_DATA_A7
-                            dbg_pulse_A7();
+#ifdef DEBUG_READING_DATA_2
+                            dbg_pulse_2();
 #endif
                         }
                         // move to next state and wait a delay between data fields
@@ -485,11 +503,11 @@ static inline void receive_handler()
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
-#ifdef DEBUG_READING_DATA_A5
-                            dbg_pulse_A5();
+#ifdef DEBUG_READING_DATA_1
+                            dbg_pulse_1();
 #endif
-#ifdef DEBUG_READING_DATA_A7
-                            dbg_pulse_A7();
+#ifdef DEBUG_READING_DATA_2
+                            dbg_pulse_2();
 #endif
                         }
                         else
@@ -520,11 +538,11 @@ static inline void receive_handler()
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
-#ifdef DEBUG_READING_DATA_A5
-                            dbg_pulse_A5();
+#ifdef DEBUG_READING_DATA_1
+                            dbg_pulse_1();
 #endif
-#ifdef DEBUG_READING_DATA_A7
-                            dbg_pulse_A7();
+#ifdef DEBUG_READING_DATA_2
+                            dbg_pulse_2();
 #endif
                         }
 
@@ -564,7 +582,7 @@ static inline void receive_handler()
             break;
         }
 
-        // FIXME: review the state below for usefullness
+        // FIXME: review the state below for usefullness ->
         case RX_DATA_DONE:
         {
             if(_is_timer_update_event)
@@ -583,6 +601,9 @@ static inline void receive_handler()
             /// TODO: turn off input capture timer when it is not supposed to be used
             break;
         }
+            // FIXME: review the state below for usefullness <-
+
+
         case RX_STOP_BIT_PROCESSING:
         {
             switch (StartStopSequenceReceiveState)
@@ -714,12 +735,11 @@ static inline void receive_handler()
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
                 // TODO
                 copy_data_frame_to_buffer(&rx_data_frame);
-
-#ifdef DEBUG_DATA_RECEIVED_A7
-                HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+#ifdef DEBUG_DATA_RECEIVED_1
+                dbg_pulse_1();
 #endif
-#ifdef DEBUG_DATA_RECEIVED_A5
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+#ifdef DEBUG_DATA_RECEIVED_2
+                dbg_pulse_2();
 #endif
             }
             reset_receiver_state();
@@ -748,13 +768,6 @@ static inline void reset_delay_cnt()
 {
     _delay_counter = 0;
     _is_interframe_delay_long_enough = false;
-
-#ifdef DEBUG_DROP_DELAYCNT_A5
-        dbg_pulse_A5();
-#endif
-#ifdef DEBUG_DROP_DELAYCNT_A7
-        dbg_pulse_A();
-#endif
 }
 static inline void update_delay_cnt()
 {
@@ -780,6 +793,8 @@ static inline void copy_data_frame_to_buffer(DataFrame_t* df)
 }
 static inline bool is_1_to_0_edge()
 {
+    return _is_falling_edge;
+    //TODO:FIXME: review
     if(_is_direct_logic)
     {
         return _is_falling_edge;
@@ -788,6 +803,8 @@ static inline bool is_1_to_0_edge()
 }
 static inline bool is_0_to_1_edge()
 {
+    return _is_rising_edge;
+    //TODO:FIXME: review
     if(_is_direct_logic)
     {
         return _is_rising_edge;
@@ -879,11 +896,11 @@ dbg[dbg_index++] = _ccr2;
 }
 static inline bool is_ic_after_interframe_delay()
 {
-#ifdef DEBUG_DELAY_CHECK_A5
-        dbg_pulse_A5();
+#ifdef DEBUG_DELAY_CHECK_1
+        dbg_pulse_1();
 #endif
-#ifdef DEBUG_DELAY_CHECK_A7
-        dbg_pulse_A7();
+#ifdef DEBUG_DELAY_CHECK_2
+        dbg_pulse_2();
 #endif
     /*
     if(ccr1 > 2500)
@@ -924,7 +941,7 @@ static inline void dbg_pulse_1()
 #ifdef DEBUG
     //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
     //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 #endif//DEBUG
 }
 static inline void dbg_pulse_2()
@@ -932,7 +949,7 @@ static inline void dbg_pulse_2()
 #ifdef DEBUG
     //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
     //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 #endif
 }
 

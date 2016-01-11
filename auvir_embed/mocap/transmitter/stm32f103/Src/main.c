@@ -55,6 +55,9 @@ TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
 const uint16_t pwm_timer_period = 1880 - 1;
 const uint16_t pwm_pulse_width = 940 - 1;
+
+const bool _is_direct_logic = false;
+
 // INFO: values below has been chosen manually
 // need to work with IR receiver TL1838, and to be as low as possible,
 // but not too low - beware of jitter!
@@ -62,9 +65,8 @@ const uint16_t pwm_pulse_width = 940 - 1;
 const uint16_t envelop_timer_prescaler = 14;    // values below are for prescaler=14
 const uint16_t StartStopBitLength = 1000 - 1;    // 700 works not reliably; 750 works; 800 chosen
 const uint16_t DataBitLength = 3000 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits
-const uint16_t DelayBetweenDataFramesTotal = 60000 - 1;//56000 doesn't work; 56300, 56500, 57000 works; 58000 chosen
+const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;//56000 doesn't work; 56300, 56500, 57000 works; 58000 chosen
 
-const bool _is_direct_logic = false;
 
 ///TODO: refactor constants below
 typedef struct

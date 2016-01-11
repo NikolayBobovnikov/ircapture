@@ -87,22 +87,5 @@ static inline void copy_data_frame_to_buffer(DataFrame_t* df);
 static inline void dbg_pulse_1();
 static inline void dbg_pulse_2();
 
-//#define DEBUG_READING_DATA_1
-//#define DEBUG_READING_DATA_2
-//#define DEBUG_DATA_RECEIVED_1
-//#define DEBUG_DATA_RECEIVED_2
-//#define DEBUG_UPD_EVENT_1
-//#define DEBUG_UPD_EVENT_2
-//#define DEBUG_LOW_CHECK_1
-//#define DEBUG_LOW_CHECK_2
-//#define DEBUG_DELAY_CHECK_1
-//#define DEBUG_DELAY_CHECK_2
-//#define DEBUG_DROP_DELAYCNT_1
-//#define DEBUG_DROP_DELAYCNT_2
-#define DEBUG_0_to_1_EDGE_1
-//#define DEBUG_0_to_1_EDGE_2
-//#define DEBUG_1_to_0_EDGE_1
-#define DEBUG_1_to_0_EDGE_2
-
 
 #endif //INFRARED_H
