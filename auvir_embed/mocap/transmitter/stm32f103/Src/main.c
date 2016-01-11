@@ -55,7 +55,6 @@ TIM_HandleTypeDef * phtim_envelop = &htim1;
 const uint16_t pwm_timer_prescaler = 0;
 const uint16_t pwm_timer_period = 1880 - 1;
 const uint16_t pwm_pulse_width = 940 - 1;
-
 // INFO: values below has been chosen manually
 // need to work with IR receiver TL1838, and to be as low as possible,
 // but not too low - beware of jitter!
@@ -63,8 +62,9 @@ const uint16_t pwm_pulse_width = 940 - 1;
 const uint16_t envelop_timer_prescaler = 14;    // values below are for prescaler=14
 const uint16_t StartStopBitLength = 1000 - 1;    // 700 works not reliably; 750 works; 800 chosen
 const uint16_t DataBitLength = 3000 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits
-const uint16_t DelayBetweenDataFramesTotal = 65000 - 1;//56000 doesn't work; 56300, 56500, 57000 works; 58000 chosen
+const uint16_t DelayBetweenDataFramesTotal = 60000 - 1;//56000 doesn't work; 56300, 56500, 57000 works; 58000 chosen
 
+const bool _is_direct_logic = false;
 
 ///TODO: refactor constants below
 typedef struct
@@ -75,7 +75,6 @@ typedef struct
 } DataFrame_t;
 
 DataFrame_t tx_data_frame;
-#define  TX_BUF_SIZE 1
 volatile size_t tx_total_bits = 0;
 volatile uint8_t tx_current_bit_pos = 0;
 volatile uint8_t tx_bit = 0;
@@ -730,69 +729,160 @@ void p_w_modulate(uint8_t bit)
 void force_envelop_timer_output_on()
 {
 #ifdef DEBUG
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_SET);
+    if(_is_direct_logic)
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+    }
 #endif
     // Start pwm timer, depending on timer and channel number
     switch(currentOutputTimChannel)
     {
         case Timer2Channel1:
         {
-            HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
+            }
             break;
         }
         case Timer2Channel2:
         {
-            HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
+            }
             break;
         }
         case Timer2Channel3:
         {
-            HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
+            }
             break;
         }
         case Timer2Channel4:
         {
-            HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4);
+            }
             break;
         }
         case Timer3Channel1:
         {
-            HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+            }
             break;
         }
         case Timer3Channel2:
         {
-            HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_2);
+            }
             break;
         }
         case Timer3Channel3:
         {
-            HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
+            }
             break;
         }
         case Timer3Channel4:
         {
-            HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
+            }
             break;
         }
         case Timer4Channel1:
         {
-            HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+            }
             break;
         }
         case Timer4Channel2:
         {
-            HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
+            }
             break;
         }
         case Timer4Channel3:
         {
-            HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
+            }
             break;
         }
         case Timer4Channel4:
         {
-            HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+            }
+            else
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
+            }
             break;
         }
     }
@@ -813,73 +903,166 @@ void force_envelop_timer_output_off()
         HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4); // carrier
         */
 #ifdef DEBUG
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+    if(_is_direct_logic)
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_SET);
+    }
 #endif
+
     // Stopt pwm timer, depending on timer and channel number
     switch(currentOutputTimChannel)
     {
         case Timer2Channel1:
         {
-            HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+            }
             break;
         }
         case Timer2Channel2:
         {
-            HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+            }
             break;
         }
         case Timer2Channel3:
         {
-            HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+            }
             break;
         }
         case Timer2Channel4:
         {
-            HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+            }
             break;
         }
         case Timer3Channel1:
         {
-            HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+            }
             break;
         }
         case Timer3Channel2:
         {
-            HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_2); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_2);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+            }
             break;
         }
         case Timer3Channel3:
         {
-            HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+            }
             break;
         }
         case Timer3Channel4:
         {
-            HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+            }
             break;
         }
         case Timer4Channel1:
         {
-            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+            }
             break;
         }
         case Timer4Channel2:
         {
-            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+            }
             break;
         }
         case Timer4Channel3:
         {
-            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+            }
             break;
         }
         case Timer4Channel4:
         {
-            HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4); // carrier
+            if(_is_direct_logic)
+            {
+                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
+            }
+            else
+            {
+                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+            }
             break;
         }
     }
 }
+
 void nop(){}
 /* USER CODE END 4 */
 
