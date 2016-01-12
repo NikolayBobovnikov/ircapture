@@ -502,8 +502,10 @@ void transmit_handler()
 {
 
     /// ensure carrier is not generating
-    force_envelop_timer_output_off();  // stop carrier // TODO: check neseccity
-
+    if(TX_DATA != TransmitterState)
+    {
+        force_envelop_timer_output_off();  // stop carrier // TODO: check neseccity
+    }
     /* Send data frame
      * 1. start sequence
      * 2. data
@@ -734,11 +736,13 @@ void force_envelop_timer_output_on()
 #ifdef DEBUG
     if(_is_direct_logic)
     {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
     }
     else
     {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
     }
 #endif
     // Start pwm timer, depending on timer and channel number
@@ -908,11 +912,13 @@ void force_envelop_timer_output_off()
 #ifdef DEBUG
     if(_is_direct_logic)
     {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
     }
     else
     {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
     }
 #endif
 

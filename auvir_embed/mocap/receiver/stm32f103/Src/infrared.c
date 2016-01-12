@@ -68,8 +68,8 @@ int dbg[100]={0};
 int dbg_index=0;
 
 //#define DEBUG_READING_DATA_1
-//#define DEBUG_READING_DATA_2
-//#define DEBUG_DATA_RECEIVED_1
+#define DEBUG_READING_DATA_2
+#define DEBUG_DATA_RECEIVED_1
 //#define DEBUG_DATA_RECEIVED_2
 //#define DEBUG_UPD_EVENT_1
 //#define DEBUG_UPD_EVENT_2
