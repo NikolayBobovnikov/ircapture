@@ -25,13 +25,13 @@ const uint16_t HalfStartStopBitLength = 250 - 1;
 const uint16_t HalfStartStopHalfDataBitLength = 750 - 1;
 const uint16_t StartStopBitPeriod = 1000 - 1;
 const uint16_t DelayCheckingPeriod = 10 - 1;
-const uint16_t max_delta_pwm = 200;
-const uint16_t max_delta_pwm_width = 200;
-const uint16_t max_delta_delay = 500; // TODO: cleanup?
+const uint16_t max_delta_pwm = 100;
+const uint16_t max_delta_pwm_width = 100;
+const uint16_t max_delta_delay = 300; // TODO: cleanup?
 //const uint8_t max_delta_cnt_delay = 10; TODO: cleanup or use
 // TODO: parametrize values below
 const uint16_t DelayBetweenDataFramesToCheck = 19750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 1975 - 500; // (DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t DelayCounterMin = 1975 - 300; // (DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
 /*
@@ -54,8 +54,8 @@ volatile size_t rx_total_bits = 0;
 volatile uint8_t rx_current_bit_pos = 0;
 volatile uint8_t rx_bit = 0;
 
-volatile bool _is_rising_edge = false;
-volatile bool _is_falling_edge = false;
+volatile bool _is_0_to_1_edge = false;
+volatile bool _is_1_to_0_edge = false;
 volatile bool _is_timer_update_event = false;
 volatile bool _is_interframe_delay_long_enough = false;
 volatile uint16_t _ccr1 = 0;
@@ -110,8 +110,8 @@ inline void irreceiver_timer_up_handler()
         return;
     }
     _is_timer_update_event = true;
-    _is_rising_edge = false;
-    _is_falling_edge = false;
+    _is_0_to_1_edge = false;
+    _is_1_to_0_edge = false;
     update_delay_cnt();
     receive_handler();
 
@@ -134,8 +134,17 @@ inline void irreceiver_timer_ic_handler()
             // workaround for reset in slave mode not working? TODO
             ic_tim_p->Instance->CNT=0;
             _ccr1 = ic_tim_p->Instance->CCR1;
-            _is_rising_edge = true;
-            _is_falling_edge = false;
+
+            if(_is_direct_logic)
+            {
+                _is_0_to_1_edge = true;
+                _is_1_to_0_edge = false;
+            }
+            else
+            {
+                _is_0_to_1_edge = false;
+                _is_1_to_0_edge = true;
+            }
 
 #ifdef DEBUG_0_to_1_EDGE_1
             dbg_pulse_1();
@@ -151,8 +160,17 @@ inline void irreceiver_timer_ic_handler()
         if(__HAL_TIM_GET_IT_SOURCE(ic_tim_p, TIM_IT_CC2) != RESET)
         {
             _ccr2 = ic_tim_p->Instance->CCR2;
-            _is_falling_edge = true;
-            _is_rising_edge = false;
+
+            if(_is_direct_logic)
+            {
+                _is_1_to_0_edge = true;
+                _is_0_to_1_edge = false;
+            }
+            else
+            {
+                _is_0_to_1_edge = true;
+                _is_1_to_0_edge = false;
+            }
 
 #ifdef DEBUG_1_to_0_EDGE_2
             dbg_pulse_2();
@@ -167,8 +185,8 @@ inline void irreceiver_timer_ic_handler()
 
     receive_handler();
     // reset helper vars
-    _is_rising_edge = false;
-    _is_falling_edge = false;
+    _is_0_to_1_edge = false;
+    _is_1_to_0_edge = false;
 }
 
 static inline void receive_handler()
@@ -795,23 +813,23 @@ static inline void copy_data_frame_to_buffer(DataFrame_t* df)
 }
 static inline bool is_1_to_0_edge()
 {
-    return _is_falling_edge;
+    //return _is_falling_edge;
     //TODO:FIXME: review
     if(_is_direct_logic)
     {
-        return _is_falling_edge;
+        return _is_1_to_0_edge;
     }
-    return _is_rising_edge;
+    return _is_0_to_1_edge;
 }
 static inline bool is_0_to_1_edge()
 {
-    return _is_rising_edge;
+    //return _is_rising_edge;
     //TODO:FIXME: review
     if(_is_direct_logic)
     {
-        return _is_rising_edge;
+        return _is_0_to_1_edge;
     }
-    return _is_falling_edge;
+    return _is_1_to_0_edge;
 }
 static inline bool is_1_on_update_event()
 {
