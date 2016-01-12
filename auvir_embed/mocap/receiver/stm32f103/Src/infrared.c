@@ -54,8 +54,8 @@ volatile size_t rx_total_bits = 0;
 volatile uint8_t rx_current_bit_pos = 0;
 volatile uint8_t rx_bit = 0;
 
-volatile bool _is_0_to_1_edge = false;
-volatile bool _is_1_to_0_edge = false;
+volatile bool _is_rising_edge = false;
+volatile bool _is_falling_edge = false;
 volatile bool _is_timer_update_event = false;
 volatile bool _is_interframe_delay_long_enough = false;
 volatile uint16_t _ccr1 = 0;
@@ -68,8 +68,8 @@ int dbg[100]={0};
 int dbg_index=0;
 
 //#define DEBUG_READING_DATA_1
-#define DEBUG_READING_DATA_2
-#define DEBUG_DATA_RECEIVED_1
+//#define DEBUG_READING_DATA_2
+//#define DEBUG_DATA_RECEIVED_1
 //#define DEBUG_DATA_RECEIVED_2
 //#define DEBUG_UPD_EVENT_1
 //#define DEBUG_UPD_EVENT_2
@@ -81,6 +81,19 @@ int dbg_index=0;
 //#define DEBUG_0_to_1_EDGE_2
 //#define DEBUG_1_to_0_EDGE_1
 //#define DEBUG_1_to_0_EDGE_2
+
+//#define DEBUG_EDGES
+//#define DEBUG_DATA
+
+#ifdef DEBUG_EDGES
+    #define DEBUG_0_to_1_EDGE_2
+    #define DEBUG_1_to_0_EDGE_1
+#endif
+
+#ifdef DEBUG_DATA
+#define DEBUG_READING_DATA_2
+#define DEBUG_DATA_RECEIVED_1
+#endif
 
 /*
  *  Function definitions
@@ -110,8 +123,8 @@ inline void irreceiver_timer_up_handler()
         return;
     }
     _is_timer_update_event = true;
-    _is_0_to_1_edge = false;
-    _is_1_to_0_edge = false;
+    _is_rising_edge = false;
+    _is_falling_edge = false;
     update_delay_cnt();
     receive_handler();
 
@@ -137,13 +150,13 @@ inline void irreceiver_timer_ic_handler()
 
             if(_is_direct_logic)
             {
-                _is_0_to_1_edge = true;
-                _is_1_to_0_edge = false;
+                _is_rising_edge = true;
+                _is_falling_edge = false;
             }
             else
             {
-                _is_0_to_1_edge = false;
-                _is_1_to_0_edge = true;
+                _is_rising_edge = false;
+                _is_falling_edge = true;
             }
 
 #ifdef DEBUG_0_to_1_EDGE_1
@@ -163,13 +176,13 @@ inline void irreceiver_timer_ic_handler()
 
             if(_is_direct_logic)
             {
-                _is_1_to_0_edge = true;
-                _is_0_to_1_edge = false;
+                _is_falling_edge = true;
+                _is_rising_edge = false;
             }
             else
             {
-                _is_0_to_1_edge = true;
-                _is_1_to_0_edge = false;
+                _is_rising_edge = true;
+                _is_falling_edge = false;
             }
 
 #ifdef DEBUG_1_to_0_EDGE_2
@@ -185,8 +198,8 @@ inline void irreceiver_timer_ic_handler()
 
     receive_handler();
     // reset helper vars
-    _is_0_to_1_edge = false;
-    _is_1_to_0_edge = false;
+    _is_rising_edge = false;
+    _is_falling_edge = false;
 }
 
 static inline void receive_handler()
@@ -196,6 +209,20 @@ static inline void receive_handler()
         dbg_index = 0;
     }
     /* Receive data frame
+     *
+     *                      |<--     start bit          -->|<--              data frame              -->|<--        stop bit  -->|
+     *                       ____      ____      ____       ________          ________          ________       ____      ____
+     *                      |    |    |    |    |    |     |        |        |        |        |        |     |    |    |    |
+     *                      |    |    |    |    |    |     |        |        |        |        |        |     |    |    |    |
+     *                      |    |    |    |    |    |     |        |        |        |        |        |     |    |    |    |
+     *  ____________________|    |____|    |____|    |_____|        |________|        |__....__|        |_____|    |____|    |____
+     *
+     *
+     *  |<----------------->| DelayBetweenDataFramesTotal
+     *
+     *                      |<-->|<-->| StartStopBitLength
+     *                                                     |<------>|<------>| DataBitLength
+     *
      * 1. start sequence
      * 2. data
      *  2.1 Coded angle
@@ -389,30 +416,23 @@ static inline void receive_handler()
                 {
                     if(is_0_on_update_event())
                     {
-                        // turn off input capture temporarily,
-                        //wait for the beginning of data transmission
-                        //HAL_TIM_IC_PWM_Stop_IT(&htim4); //TODO
-                        StartStopSequenceReceiveState = STAGE_0;
-                        ///ReceiverState = RX_START_BIT_DONE;
+                        ///Prepare to read data frame
+                        /// start reading data bits after the middle of the first pulse (HalfDataBitLength),
+                        /// and beginning of the pulse will be after HalfStartStopBitLength,
+                        /// so wait for HalfStartStopHalfDataBitLength
 
-                        {
-                            ///Prepare to read data frame
-                            up_tim_p->Instance->ARR = HalfStartStopHalfDataBitLength;
-                            // start reading data bits after the middle of the first pulse,
-                            // so wait for another HalfPeriodOfDataBits
-                            ReceiverState = RX_DATA_PROCESSNG;
-                            DataFrameState = DATAFRAME_1_BEAMER_ID;
-                            //ReceiverState = RX_DATA_PROCESSNG;
-                            //DataFrameState= DATAFRAME_1_BEAMER_ID;
-                            // initialize buffer with all zeros
-                            // TODO: fill buffer with zeros
-                            //memset(&data_frame, 0, sizeof(DataFrame_t));
-                            rx_data_frame._1_beamer_id = 0;
-                            rx_data_frame._2_angle_graycode=0;
-                            rx_data_frame._3_timer_cnt = 0;
-                            // reset positions
-                            rx_current_bit_pos = 0;
-                        }
+                        up_tim_p->Instance->ARR = HalfStartStopHalfDataBitLength;
+                        StartStopSequenceReceiveState = STAGE_0;
+                        ReceiverState = RX_DATA_PROCESSNG;
+                        DataFrameState = DATAFRAME_1_BEAMER_ID;
+                        // initialize buffer with all zeros
+                        // TODO: fill buffer with zeros
+                        //memset(&data_frame, 0, sizeof(DataFrame_t));
+                        rx_data_frame._1_beamer_id = 0;
+                        rx_data_frame._2_angle_graycode=0;
+                        rx_data_frame._3_timer_cnt = 0;
+                        // reset positions
+                        rx_current_bit_pos = 0;
 
                         break;
                     }
@@ -428,36 +448,6 @@ static inline void receive_handler()
             }
             break;
         }
-        // FIXME: review the state below for usefullness ->
-        case RX_START_BIT_DONE:
-        {
-            if(_is_timer_update_event)
-            {
-                ///Prepare to read data frame
-
-                // start reading data bits after the middle of the first pulse,
-                // so wait for another HalfPeriodOfDataBits
-                up_tim_p->Instance->ARR = HalfDataBitLength;
-                ReceiverState = RX_DATA_PROCESSNG;
-                DataFrameState = DATAFRAME_1_BEAMER_ID;
-                //ReceiverState = RX_DATA_PROCESSNG;
-                //DataFrameState= DATAFRAME_1_BEAMER_ID;
-                // initialize buffer with all zeros
-                // TODO: fill buffer with zeros
-                //memset(&data_frame, 0, sizeof(DataFrame_t));
-                rx_data_frame._1_beamer_id = 0;
-                rx_data_frame._2_angle_graycode=0;
-                rx_data_frame._3_timer_cnt = 0;
-                // reset positions
-                rx_current_bit_pos = 0;
-
-            }
-            /// else - input capture, nothing to do.
-            /// TODO: turn off input capture timer when it is not supposed to be used
-            break;
-        }
-            // FIXME: review the state below for usefullness <-
-
 
         case RX_DATA_PROCESSNG:
         {
@@ -568,29 +558,10 @@ static inline void receive_handler()
 
                         if(rx_current_bit_pos == rx_total_bits)
                         {
-                            /// finished receiving last field. No delay before stop bit sequence (no necessity to wait)
-                            /// TODO: need to be on the same page with motionsensor_transmitter.
-                            /// At the moment, there is no delay after sending the verry last bit of the data frame
-
-                            // data has been received
-                            // TODO: process data buffer when it is to be read from
-
-                            //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
-                            // reset current bit position
                             rx_current_bit_pos = 0;
-
-                            /// TODO: check skipping the step below?
-                            ///ReceiverState = RX_DATA_DONE;
-                            ///DataFrameState = DATAFRAME_1_BEAMER_ID;
-                            // wait for the end of last data frame bit
-                            // e.g.remaining HalfPeriodOfDataBits before [the delay before] stop bit sequence
-                            ///up_tim_p->Instance->ARR = HalfDataBitLength;
-
-                            {
-                                up_tim_p->Instance->ARR = HalfStartStopHalfDataBitLength;
-                                ReceiverState = RX_STOP_BIT_PROCESSING;
-                                StartStopSequenceReceiveState = STAGE_OFF0;
-                            }
+                            up_tim_p->Instance->ARR = HalfStartStopHalfDataBitLength;
+                            ReceiverState = RX_STOP_BIT_PROCESSING;
+                            StartStopSequenceReceiveState = STAGE_OFF0;
                         }
                         break;
                     }
@@ -601,29 +572,6 @@ static inline void receive_handler()
             /// TODO: turn off input capture timer when it is not supposed to be used
             break;
         }
-
-        // FIXME: review the state below for usefullness ->
-        case RX_DATA_DONE:
-        {
-            if(_is_timer_update_event)
-            {
-                // wait for the middle of low level part of stop sequence
-                // e.g. half of the delay before the first immpulse of stop bit sequence
-                // after the delay
-                up_tim_p->Instance->ARR = HalfStartStopBitLength;
-                // this is the zero pont for next rising edge IC timing check at STAGE_OFF0_ON1 step
-                //ic_tim_p->Instance->CNT = 0;
-                ReceiverState = RX_STOP_BIT_PROCESSING;
-                StartStopSequenceReceiveState = STAGE_OFF0;
-                break;
-            }
-            /// else - input capture during data receiving, nothing to do.
-            /// TODO: turn off input capture timer when it is not supposed to be used
-            break;
-        }
-            // FIXME: review the state below for usefullness <-
-
-
         case RX_STOP_BIT_PROCESSING:
         {
             switch (StartStopSequenceReceiveState)
@@ -817,9 +765,9 @@ static inline bool is_1_to_0_edge()
     //TODO:FIXME: review
     if(_is_direct_logic)
     {
-        return _is_1_to_0_edge;
+        return _is_falling_edge;
     }
-    return _is_0_to_1_edge;
+    return _is_rising_edge;
 }
 static inline bool is_0_to_1_edge()
 {
@@ -827,9 +775,9 @@ static inline bool is_0_to_1_edge()
     //TODO:FIXME: review
     if(_is_direct_logic)
     {
-        return _is_0_to_1_edge;
+        return _is_rising_edge;
     }
-    return _is_1_to_0_edge;
+    return _is_falling_edge;
 }
 static inline bool is_1_on_update_event()
 {
