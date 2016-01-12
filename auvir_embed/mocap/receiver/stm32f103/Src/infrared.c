@@ -24,14 +24,14 @@ const uint16_t HalfDataBitLength = 500 - 1;
 const uint16_t HalfStartStopBitLength = 250 - 1;
 const uint16_t HalfStartStopHalfDataBitLength = 750 - 1;
 const uint16_t StartStopBitPeriod = 1000 - 1;
-const uint16_t DelayCheckingPeriod = 10 - 1;
+const uint16_t DelayCheckingPeriod = 100 - 1;
 const uint16_t max_delta_pwm = 100;
 const uint16_t max_delta_pwm_width = 100;
-const uint16_t max_delta_delay = 300; // TODO: cleanup?
-//const uint8_t max_delta_cnt_delay = 10; TODO: cleanup or use
+const uint16_t max_delta_delay = 30; // TODO: cleanup?
+const uint8_t max_delta_cnt_delay = 30;//TODO: cleanup or use
 // TODO: parametrize values below
 const uint16_t DelayBetweenDataFramesToCheck = 19750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 1975 - 300; // (DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t DelayCounterMin = 197 - 30; // (DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
 /*
@@ -68,8 +68,8 @@ int dbg[100]={0};
 int dbg_index=0;
 
 //#define DEBUG_READING_DATA_1
-//#define DEBUG_READING_DATA_2
-//#define DEBUG_DATA_RECEIVED_1
+#define DEBUG_READING_DATA_2
+#define DEBUG_DATA_RECEIVED_1
 //#define DEBUG_DATA_RECEIVED_2
 //#define DEBUG_UPD_EVENT_1
 //#define DEBUG_UPD_EVENT_2
@@ -81,6 +81,8 @@ int dbg_index=0;
 //#define DEBUG_0_to_1_EDGE_2
 //#define DEBUG_1_to_0_EDGE_1
 //#define DEBUG_1_to_0_EDGE_2
+//#define DEBUG_CHECK_IC_TIMING_1
+//#define DEBUG_CHECK_IC_TIMING_2
 
 //#define DEBUG_EDGES
 //#define DEBUG_DATA
@@ -448,7 +450,6 @@ static inline void receive_handler()
             }
             break;
         }
-
         case RX_DATA_PROCESSNG:
         {
             if(_is_timer_update_event)
@@ -741,10 +742,11 @@ static inline void update_delay_cnt()
 {
     if(is_0_on_update_event())
     {
-        if(_delay_counter++ > DelayCounterMin)
+        if(_delay_counter> DelayCounterMin)
         {
             _is_interframe_delay_long_enough = true;
         }
+        _delay_counter++;
     }
     else if(is_1_on_update_event())
     {
@@ -797,6 +799,12 @@ static inline bool is_0_on_update_event()
 }
 static inline bool is_0_to_1_edge_timing_ok()
 {
+#ifdef DEBUG_CHECK_IC_TIMING_1
+        dbg_pulse_1();
+#endif
+#ifdef DEBUG_CHECK_IC_TIMING_2
+        dbg_pulse_2();
+#endif
     // current falling edge happens after Period ticks from previous rising edge
     if(_ccr1 - StartStopBitPeriod  < 0)
     {
@@ -816,6 +824,12 @@ static inline bool is_0_to_1_edge_timing_ok()
 }
 static inline bool is_first_0_to_1_edge_timing_ok()
 {
+#ifdef DEBUG_CHECK_IC_TIMING_1
+        dbg_pulse_1();
+#endif
+#ifdef DEBUG_CHECK_IC_TIMING_2
+        dbg_pulse_2();
+#endif
     // current falling edge happens after Period ticks from previous rising edge
     if(_ccr1 - StartStopBitLength  < 0)
     {
@@ -837,6 +851,12 @@ static inline bool is_1_to_0_edge_timing_ok()
 {
 #ifdef DEBUG
 dbg[dbg_index++] = _ccr2;
+#endif
+#ifdef DEBUG_CHECK_IC_TIMING_1
+        dbg_pulse_1();
+#endif
+#ifdef DEBUG_CHECK_IC_TIMING_2
+        dbg_pulse_2();
 #endif
     // falling edge happens after StartStopBitLength ticks from rising edge
     if(_ccr2 - StartStopBitLength < 0)
@@ -870,15 +890,14 @@ static inline bool is_ic_after_interframe_delay()
 #ifdef DEBUG_DELAY_CHECK_2
         dbg_pulse_2();
 #endif
-    /*
+
+    /* TODO: check alternative below
     if(ccr1 > 2500)
     {
         return true;
     }
     return false;
     */
-
-
     return _is_interframe_delay_long_enough;
 
 /*
