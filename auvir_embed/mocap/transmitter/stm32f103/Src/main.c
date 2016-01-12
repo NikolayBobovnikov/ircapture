@@ -61,11 +61,12 @@ const bool _is_direct_logic = true;
 // INFO: values below has been chosen manually
 // need to work with IR receiver TL1838, and to be as low as possible,
 // but not too low - beware of jitter!
-// TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
+// FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
 const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for prescaler=14
-const uint16_t StartStopBitLength = 500 - 1;    // 700 works not reliably; 750 works; 800 chosen
-const uint16_t DataBitLength = 1000 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits
-const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//56000 doesn't work; 56300, 56500, 57000 works; 58000 chosen
+const uint16_t StartStopBitLength = 400 - 1;    // 270 works not reliably; 280 works; 400 chosen
+const uint16_t DataBitLength = 800 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits.
+                                               // Start/Stop bit should on and off in less than data bit length
+const uint16_t DelayBetweenDataFramesTotal = 14000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
 
 
 
