@@ -14,8 +14,8 @@
 typedef struct
 {
     uint8_t _1_beamer_id;
-    uint8_t _2_angle_graycode;
-    uint16_t _3_timer_cnt;
+    uint8_t _2_angle_code;
+    uint8_t _3_angle_code_rev;
 } DataFrame_t;
 enum ReceiverStates
 {

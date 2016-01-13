@@ -74,8 +74,8 @@ const uint16_t DelayBetweenDataFramesTotal = 14000 - 1;//12900 doesn't work; 130
 typedef struct
 {
     uint8_t _1_beamer_id;
-    uint8_t _2_angle_graycode;
-    uint16_t _3_timer_cnt;
+    uint8_t _2_angle_code;
+    uint8_t _3_angle_code_rev;
 } DataFrame_t;
 
 DataFrame_t tx_data_frame;
@@ -184,7 +184,7 @@ enum OutputChannelsStates
 //start/stop sequence, beamer ID, time
 const uint8_t primary_output_channel = Timer4Channel4;
 uint8_t currentOutputTimChannel = Timer4Channel4;
-uint8_t input_channel_per_message_bit[sizeof(tx_data_frame._2_angle_graycode) * 8] =
+uint8_t input_channel_per_message_bit[sizeof(tx_data_frame._2_angle_code) * 8] =
     {
         Timer2Channel1, // 1
         Timer2Channel2, // 2
@@ -352,7 +352,7 @@ void MX_TIM2_Init(void)
 }
 
 /* TIM3 init function */
-void MX_TIM3_Init(void)
+void MX_TIM3_Init(void)1
 {
       TIM_ClockConfigTypeDef sClockSourceConfig;
       TIM_MasterConfigTypeDef sMasterConfig;
@@ -483,9 +483,9 @@ void send_data()
     // fill tx_data_frame with data
 
     // sample data. TODO: use actual one
-    tx_data_frame._1_beamer_id = 0b11101110;
-    tx_data_frame._2_angle_graycode = 0b11100111;
-    tx_data_frame._3_timer_cnt = 0b1100110000110011;
+    tx_data_frame._1_beamer_id = 0b11111111;
+    tx_data_frame._2_angle_code = 0b10111110;
+    tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
 
     // just repetition of the same data for now.
     // TODO: send updated time
@@ -608,8 +608,8 @@ void transmit_handler()
                 }
                 case(DATAFRAME_2_ANGLE):
                 {
-                    tx_total_bits = sizeof(tx_data_frame._2_angle_graycode) * 8;
-                    tx_bit = (tx_data_frame._2_angle_graycode >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+                    tx_total_bits = sizeof(tx_data_frame._2_angle_code) * 8;
+                    tx_bit = (tx_data_frame._2_angle_code >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
                     p_w_modulate(tx_bit);
                     // go to next bit.
                     if(tx_current_bit_pos < tx_total_bits)
@@ -626,8 +626,8 @@ void transmit_handler()
                 }
                 case(DATAFRAME_3_TIME):
                 {
-                    tx_total_bits = sizeof(tx_data_frame._3_timer_cnt) * 8;
-                    tx_bit = (tx_data_frame._3_timer_cnt >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
+                    tx_total_bits = sizeof(tx_data_frame._3_angle_code_rev) * 8;
+                    tx_bit = (tx_data_frame._3_angle_code_rev >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
                     p_w_modulate(tx_bit);
                     // go to next bit.
                     if(tx_current_bit_pos < tx_total_bits)

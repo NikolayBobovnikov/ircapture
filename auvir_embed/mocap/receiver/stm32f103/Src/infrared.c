@@ -66,7 +66,7 @@ volatile uint16_t _delay_counter = 0;
 
 
 // TODO: cleanup after debugging
-int dbg[100]={0};
+int dbg[1000]={0};
 int dbg_index=0;
 
 //#define DEBUG_READING_DATA_1
@@ -208,18 +208,18 @@ inline void irreceiver_timer_ic_handler()
 
 static inline void receive_handler()
 {
-    if(dbg_index == 100)
+    if(dbg_index >= 998)
     {
         dbg_index = 0;
     }
     /* Receive data frame
      *
      *                      |<--     start bit          -->|<--              data frame              -->|<--        stop bit  -->|
-     *                       ____      ____      ____       ________          ________          ________       ____      ____
-     *                      |    |    |    |    |    |     |        |        |        |        |        |     |    |    |    |
-     *                      |    |    |    |    |    |     |        |        |        |        |        |     |    |    |    |
-     *                      |    |    |    |    |    |     |        |        |        |        |        |     |    |    |    |
-     *  ____________________|    |____|    |____|    |_____|        |________|        |__....__|        |_____|    |____|    |____
+     *                       ____      ____      ____      ________          ________          ________      ____      ____
+     *                      |    |    |    |    |    |    |        |        |        |        |        |    |    |    |    |
+     *                      |    |    |    |    |    |    |        |        |        |        |        |    |    |    |    |
+     *                      |    |    |    |    |    |    |        |        |        |        |        |    |    |    |    |
+     *  ____________________|    |____|    |____|    |____|        |________|        |__....__|        |____|    |____|    |____
      *
      *
      *  |<----------------->| DelayBetweenDataFramesTotal
@@ -433,8 +433,8 @@ static inline void receive_handler()
                         // TODO: fill buffer with zeros
                         //memset(&data_frame, 0, sizeof(DataFrame_t));
                         rx_data_frame._1_beamer_id = 0;
-                        rx_data_frame._2_angle_graycode=0;
-                        rx_data_frame._3_timer_cnt = 0;
+                        rx_data_frame._2_angle_code=0;
+                        rx_data_frame._3_angle_code_rev = 0;
                         // reset positions
                         rx_current_bit_pos = 0;
 
@@ -501,7 +501,7 @@ static inline void receive_handler()
                     {
                         if(0 == rx_current_bit_pos) // execute only once, when first bit is being processed
                         {
-                            rx_total_bits = sizeof(rx_data_frame._2_angle_graycode) * 8;
+                            rx_total_bits = sizeof(rx_data_frame._2_angle_code) * 8;
                         }
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
@@ -510,7 +510,7 @@ static inline void receive_handler()
                             if(is_1_on_update_event())
                             {
                                 // set bit at the inversed position
-                                rx_data_frame._2_angle_graycode |= 1
+                                rx_data_frame._2_angle_code |= 1
                                         << (rx_total_bits - rx_current_bit_pos - 1);
                                         //<< (rx_current_bit_pos);
                             }
@@ -536,7 +536,7 @@ static inline void receive_handler()
                     {
                         if(0 == rx_current_bit_pos) // execute only once, when first bit is being processed
                         {
-                            rx_total_bits = sizeof(rx_data_frame._3_timer_cnt) * 8;
+                            rx_total_bits = sizeof(rx_data_frame._3_angle_code_rev) * 8;
                         }
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
@@ -545,7 +545,7 @@ static inline void receive_handler()
                             if(is_1_on_update_event())
                             {
                                 // set bit at the inversed position
-                                rx_data_frame._3_timer_cnt |= 1
+                                rx_data_frame._3_angle_code_rev |= 1
                                         << (rx_total_bits - rx_current_bit_pos - 1);
                                         //<< (rx_current_bit_pos);
                             }
@@ -704,8 +704,24 @@ static inline void receive_handler()
             if(is_0_on_update_event())
             {
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
-                // TODO
-                copy_data_frame_to_buffer(&rx_data_frame);
+
+                /// verify correctness
+                if( rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev == 0)
+                {
+                    copy_data_frame_to_buffer(&rx_data_frame);
+                    send_dataready_signal();
+                    dbg[dbg_index] = rx_data_frame._2_angle_code;
+                    dbg[dbg_index+1] = rx_data_frame._3_angle_code_rev;
+                    dbg_index = dbg_index + 2;
+                }
+                else
+                {
+
+
+                }
+
+
+
 #ifdef DEBUG_DATA_RECEIVED_1
                 dbg_pulse_1();
 #endif
@@ -757,9 +773,9 @@ static inline void update_delay_cnt()
 }
 static inline void copy_data_frame_to_buffer(DataFrame_t* df)
 {
-    data_frames[arr_index]._2_angle_graycode = df->_2_angle_graycode;
+    data_frames[arr_index]._2_angle_code = df->_2_angle_code;
     data_frames[arr_index]._1_beamer_id = df->_1_beamer_id;
-    data_frames[arr_index]._3_timer_cnt = df->_3_timer_cnt;
+    data_frames[arr_index]._3_angle_code_rev = df->_3_angle_code_rev;
     arr_index++;
     //memcpy(df, rx_data_frame_array, sizeof(rx_data_frame));
 }
@@ -851,9 +867,6 @@ static inline bool is_first_0_to_1_edge_timing_ok()
 }
 static inline bool is_1_to_0_edge_timing_ok()
 {
-#ifdef DEBUG
-dbg[dbg_index++] = _ccr2;
-#endif
 #ifdef DEBUG_CHECK_IC_TIMING_1
         dbg_pulse_1();
 #endif
