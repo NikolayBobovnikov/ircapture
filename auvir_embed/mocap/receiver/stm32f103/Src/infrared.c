@@ -924,7 +924,27 @@ static inline bool is_ic_after_interframe_delay()
     return false;
 */
 }
+static inline void send_dataready_signal()
+{
+    /// TODO: Implement me
+    /// Prerequisets:
+    /// 1. Each sensor has ID
+    /// 2. All sensors are aware of total number of sensors in the array
+    /// 3. Hub
+    /// Pseudocode for syncronization among sensors and hub
 
+    // There is an array of sensors whith ID = [1..N]
+    // All sensors initially are in listening mode
+
+    // Each sensor checks its ID. If it is first in the array (ID == 1), it first sends message with its ID and data.
+    // Hub and all remaining sensors receives the message
+    // Each sensor checks if it is his turn to send data (its Id is the next ID after that which has been received).
+    // If his ID is the next, it sends the latest data
+    // if (ID_from_msg == ID_self - 1):
+    //      send data()
+    // When all sensors have sent data (last ID == N), process should be repeated.
+    // So the first sensor (with ID == 1) checks if ID_msg == N, if so - it is next to send data
+}
 static inline void dbg_pulse_1()
 {
 #ifdef DEBUG

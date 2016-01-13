@@ -79,6 +79,7 @@ static inline bool is_1_to_0_edge_timing_ok();
 static inline bool is_ic_after_interframe_delay();
 static inline void reset_delay_cnt();
 static inline void update_delay_cnt();
+static inline void send_dataready_signal();
 
 // function to copy data frame to the main buffer, when data is received successfully
 static inline void copy_data_frame_to_buffer(DataFrame_t* df);
