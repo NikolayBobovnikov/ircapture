@@ -5,7 +5,9 @@ auvir_embed/toolchain/
 *build/*
 *bin/*
 *obj/*
+*Debug/*
 *debug/*
+*Release/*
 *release/*
 *.autosave
 *~
