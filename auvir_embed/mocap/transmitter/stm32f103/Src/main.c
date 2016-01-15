@@ -1,10 +1,10 @@
-﻿/**
+/**
   ******************************************************************************
   * File Name          : main.c
   * Description        : Main program body
   ******************************************************************************
   *
-  * COPYRIGHT(c) 2015 STMicroelectronics
+  * COPYRIGHT(c) 2016 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -35,23 +35,27 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
-//TODO: cleanup when done debuugging
+//TODO: cleanup when done debugging
 #define DEBUG
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+CRC_HandleTypeDef hcrc;
+
+SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
-TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
+
+UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 //PWM timer configuration
-TIM_HandleTypeDef * phtim_envelop = &htim1;
+TIM_HandleTypeDef * phtim_envelop = &htim3;
 const uint16_t pwm_timer_prescaler = 0;
 const uint16_t pwm_timer_period = 1880 - 1;
 const uint16_t pwm_pulse_width = 940 - 1;
@@ -92,10 +96,12 @@ uint8_t arr_index = 0;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_TIM1_Init(void);
-static void MX_TIM2_Init(void);
+static void MX_CRC_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_SPI2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -149,54 +155,6 @@ enum StartStopSequenceStates
 volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
 volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
 
-/*
-  TIM2_CH1 PA0
-  TIM2_CH2 PA1
-  TIM2_CH3 PA2
-  TIM2_CH4 PA3
-  TIM3_CH1 PA6
-  TIM3_CH2 PA7
-  TIM3_CH3 PB0
-  TIM3_CH4 PB1
-  TIM4_CH1 PB6
-  TIM4_CH2 PB7
-  TIM4_CH3 PB8
-  TIM4_CH4 PB9
-*/
-
-
-enum OutputChannelsStates
-{
-    Timer2Channel1, // 1  PA0 v
-    Timer2Channel2, // 2  PA1
-    Timer2Channel3, // 3  PA2 v
-    Timer2Channel4, // 4  PA3
-    Timer3Channel1, // 5  PA6 v
-    Timer3Channel2, // 6  PA7 v
-    Timer3Channel3, // 7  PB0
-    Timer3Channel4, // 8  PB1 v
-    Timer4Channel1, // 9  PB6
-    Timer4Channel2, // 10 PB7
-    Timer4Channel3, // 11 PB8 - reserved
-    Timer4Channel4  // 12 PB9 - without mask
-};
-//LED on primary output channel works without mask, so used for sending
-//start/stop sequence, beamer ID, time
-const uint8_t primary_output_channel = Timer4Channel4;
-uint8_t currentOutputTimChannel = Timer4Channel4;
-uint8_t input_channel_per_message_bit[sizeof(tx_data_frame._2_angle_code) * 8] =
-    {
-        Timer2Channel1, // 1
-        Timer2Channel2, // 2
-        Timer2Channel3, // 3
-        Timer2Channel4, // 4
-        Timer3Channel1, // 5
-        Timer3Channel2, // 6
-        Timer3Channel3, // 7
-        Timer3Channel4  // 8
-    };
-
-
 // level 1
 void send_data();
 
@@ -234,12 +192,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  //MX_I2C2_Init();
-  //MX_SPI1_Init();
-  MX_TIM1_Init();
-  MX_TIM2_Init();
+  MX_CRC_Init();
+  MX_SPI1_Init();
+  MX_SPI2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
+  MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(phtim_envelop); // envelop
@@ -252,8 +210,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  send_data();
   /* USER CODE END WHILE */
-  send_data();
+
   /* USER CODE BEGIN 3 */
 
   }
@@ -266,172 +225,156 @@ int main(void)
 void SystemClock_Config(void)
 {
 
-    RCC_OscInitTypeDef RCC_OscInitStruct;
-      RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-      RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-      RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-      RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-      RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-      RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-      RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
-      HAL_RCC_OscConfig(&RCC_OscInitStruct);
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-      RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
-      RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-      RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-      RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-      RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-      HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 
-      HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-      HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
-      /* SysTick_IRQn interrupt configuration */
-      HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-/* TIM1 init function */
-void MX_TIM1_Init(void)
+/* CRC init function */
+void MX_CRC_Init(void)
 {
-  TIM_ClockConfigTypeDef sClockSourceConfig;
-  TIM_MasterConfigTypeDef sMasterConfig;
-  htim1.Instance = TIM1;
-  htim1.Init.Prescaler = envelop_timer_prescaler;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = StartStopBitLength;
-  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  HAL_TIM_Base_Init(&htim1);
 
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig);
+  hcrc.Instance = CRC;
+  HAL_CRC_Init(&hcrc);
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig);
 }
 
-/* TIM2 init function */
-void MX_TIM2_Init(void)
+/* SPI1 init function */
+void MX_SPI1_Init(void)
 {
-    TIM_ClockConfigTypeDef sClockSourceConfig;
-    TIM_MasterConfigTypeDef sMasterConfig;
-    TIM_OC_InitTypeDef sConfigOC;
 
-    htim2.Instance = TIM2;
-    htim2.Init.Prescaler = pwm_timer_prescaler;
-    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = pwm_timer_period;
-    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_Base_Init(&htim2);
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi1.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi1);
 
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
+}
 
-    HAL_TIM_PWM_Init(&htim2);
+/* SPI2 init function */
+void MX_SPI2_Init(void)
+{
 
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
-
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = pwm_pulse_width;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-
-    HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1);
-
-    HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2);
-
-    HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3);
-
-    HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4);
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_SLAVE;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi2.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi2);
 
 }
 
 /* TIM3 init function */
 void MX_TIM3_Init(void)
 {
-      TIM_ClockConfigTypeDef sClockSourceConfig;
-      TIM_MasterConfigTypeDef sMasterConfig;
-      TIM_OC_InitTypeDef sConfigOC;
 
-      htim3.Instance = TIM3;
-      htim3.Init.Prescaler = pwm_timer_prescaler;
-      htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-      htim3.Init.Period = pwm_timer_period;
-      htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-      HAL_TIM_Base_Init(&htim3);
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
 
-      sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-      HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = envelop_timer_prescaler;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = DataBitLength;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim3);
 
-      HAL_TIM_PWM_Init(&htim3);
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
 
-      sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-      sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-      HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
-
-      sConfigOC.OCMode = TIM_OCMODE_PWM1;
-      sConfigOC.Pulse = pwm_pulse_width;
-      sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-      sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-      sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-
-      HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
-
-      HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
-
-      HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3);
-
-      HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4);
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
 
 }
 
 /* TIM4 init function */
 void MX_TIM4_Init(void)
 {
-    TIM_ClockConfigTypeDef sClockSourceConfig;
-    TIM_MasterConfigTypeDef sMasterConfig;
-    TIM_OC_InitTypeDef sConfigOC;
 
-    htim4.Instance = TIM4;
-    htim4.Init.Prescaler = pwm_timer_prescaler;
-    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = pwm_timer_period;
-    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_Base_Init(&htim4);
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_OC_InitTypeDef sConfigOC;
 
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = pwm_timer_prescaler;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = pwm_timer_period;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim4);
 
-    HAL_TIM_PWM_Init(&htim4);
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
 
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
+  HAL_TIM_PWM_Init(&htim4);
 
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = pwm_pulse_width;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
-    HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = pwm_pulse_width;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4);
 
-    HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2);
-
-    HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3);
-
-    HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4);
 }
 
-/**
+/* USART1 init function */
+void MX_USART1_UART_Init(void)
+{
+
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  HAL_UART_Init(&huart1);
+
+}
+
+/** 
   * Enable DMA controller clock
   */
-void MX_DMA_Init(void)
+void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -444,9 +387,9 @@ void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as
-        * Analog
-        * Input
+/** Configure pins as 
+        * Analog 
+        * Input 
         * Output
         * EVENT_OUT
         * EXTI
@@ -461,20 +404,24 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
   __GPIOB_CLK_ENABLE();
 
-#ifdef DEBUG
-  /// Debug outputs
-  /*Configure GPIO pin : PB4 */
+  /*Configure GPIO pin : PA2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-#endif
 }
 
 /* USER CODE BEGIN 4 */
@@ -636,11 +583,6 @@ void transmit_handler()
                     }
                     else
                     {
-                        // change state to finish processing data
-                        // sending data using separate PWM channels is finished,
-                        // return to default PWM channel
-                        currentOutputTimChannel = primary_output_channel;
-
                         /* Set the Autoreload value for start sequence bits*/
                         phtim_envelop->Instance->ARR = StartStopBitLength;
 
@@ -746,154 +688,15 @@ void force_envelop_timer_output_on()
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
     }
 #endif
-    // Start pwm timer, depending on timer and channel number
-    switch(currentOutputTimChannel)
+    if(_is_direct_logic)
     {
-        case Timer2Channel1:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
-            }
-            break;
-        }
-        case Timer2Channel2:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
-            }
-            break;
-        }
-        case Timer2Channel3:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
-            }
-            break;
-        }
-        case Timer2Channel4:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4);
-            }
-            break;
-        }
-        case Timer3Channel1:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
-            }
-            break;
-        }
-        case Timer3Channel2:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_2);
-            }
-            break;
-        }
-        case Timer3Channel3:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
-            }
-            break;
-        }
-        case Timer3Channel4:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
-            }
-            break;
-        }
-        case Timer4Channel1:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
-            }
-            break;
-        }
-        case Timer4Channel2:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
-            }
-            break;
-        }
-        case Timer4Channel3:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
-            }
-            break;
-        }
-        case Timer4Channel4:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
-            }
-            else
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
-            }
-            break;
-        }
+        HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
     }
+    else
+    {
+        HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
+    }
+
 
 
 }
@@ -923,154 +726,15 @@ void force_envelop_timer_output_off()
     }
 #endif
 
-    // Stopt pwm timer, depending on timer and channel number
-    switch(currentOutputTimChannel)
+    if(_is_direct_logic)
     {
-        case Timer2Channel1:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-            }
-            break;
-        }
-        case Timer2Channel2:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-            }
-            break;
-        }
-        case Timer2Channel3:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-            }
-            break;
-        }
-        case Timer2Channel4:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-            }
-            break;
-        }
-        case Timer3Channel1:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-            }
-            break;
-        }
-        case Timer3Channel2:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_2);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-            }
-            break;
-        }
-        case Timer3Channel3:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
-            }
-            break;
-        }
-        case Timer3Channel4:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-            }
-            break;
-        }
-        case Timer4Channel1:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
-            }
-            break;
-        }
-        case Timer4Channel2:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
-            }
-            break;
-        }
-        case Timer4Channel3:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
-            }
-            break;
-        }
-        case Timer4Channel4:
-        {
-            if(_is_direct_logic)
-            {
-                HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
-            }
-            else
-            {
-                HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
-            }
-            break;
-        }
+        HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
     }
+    else
+    {
+        HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+    }
+
 }
 
 void nop(){}
@@ -1098,10 +762,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
