@@ -11,7 +11,6 @@ enum TransmitterStates
     TX_STOP_BIT,
     TX_DELAY
 };
-volatile uint8_t TransmitterState = TX_WAITING;
 
 enum DataFrameStates
 {
@@ -20,7 +19,6 @@ enum DataFrameStates
     DATAFRAME_2_ANGLE,
     DATAFRAME_3_TIME
 };
-volatile uint8_t DataFrameState = DATAFRAME_0_NODATA;
 
 enum StartStopSequenceStates
 {
@@ -32,8 +30,14 @@ enum StartStopSequenceStates
     STAGE_ON3,
     STAGE_OFF3
 };
-volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
-volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
+
+typedef struct
+{
+    uint8_t _1_beamer_id;
+    uint8_t _2_angle_code;
+    uint8_t _3_angle_code_rev;
+} DataFrame_t;
+
 
 void send_data();
 void transmit_handler();

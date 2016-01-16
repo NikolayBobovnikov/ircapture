@@ -24,14 +24,12 @@ const uint16_t StartStopBitLength = 500 - 1;    // 270 works not reliably; 280 w
 const uint16_t DataBitLength = 1500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
 const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//12900 doesn't work; 13000 works; chosen more
 
-///TODO: refactor constants below
-typedef struct
-{
-    uint8_t _1_beamer_id;
-    uint8_t _2_angle_code;
-    uint8_t _3_angle_code_rev;
-} DataFrame_t;
+volatile uint8_t TransmitterState = TX_WAITING;
+volatile uint8_t DataFrameState = DATAFRAME_0_NODATA;
+volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
+volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
 
+///TODO: refactor constants below
 DataFrame_t tx_data_frame;
 volatile size_t tx_total_bits = 0;
 volatile uint8_t tx_current_bit_pos = 0;

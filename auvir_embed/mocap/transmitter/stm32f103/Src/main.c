@@ -35,6 +35,7 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+#include "infrared.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -65,7 +66,17 @@ extern const uint16_t pwm_pulse_width;
 extern const uint16_t envelop_timer_prescaler;
 extern const uint16_t DataBitLength;
 
-///
+/// USART stuff
+HAL_StatusTypeDef status;
+extern DataFrame_t tx_data_frame;
+
+enum UART_Commands {
+    UART_COMMAND_NOT_RECEIVED = 0,
+    UART_DEBUG_DATA_TRANSMIT,
+    UART_NULL_RESPONSE
+};
+uint8_t command = UART_COMMAND_NOT_RECEIVED;
+uint8_t response = UART_NULL_RESPONSE;
 
 /* USER CODE END PV */
 
@@ -121,7 +132,32 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  send_data();
+      command = UART_COMMAND_NOT_RECEIVED;
+      response = UART_NULL_RESPONSE;
+      status = HAL_UART_Receive(&huart1, &command, 1, 1000);
+
+      if(status != HAL_OK)
+      {
+          // TODO: process error
+          break;
+      }
+
+      // if received command, dispatch it
+      switch(command)
+      {
+          case UART_DEBUG_DATA_TRANSMIT:
+          {
+              // receive data to transmit
+              HAL_StatusTypeDef status = HAL_UART_Receive(&huart1, (uint8_t*)&tx_data_frame, sizeof(tx_data_frame), 1000);
+              if(status != HAL_OK)
+              {
+                  // TODO: process error
+                  break;
+              }
+              send_data();
+          }
+      }
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
