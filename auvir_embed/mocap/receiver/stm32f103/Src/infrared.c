@@ -13,18 +13,18 @@ extern const bool _is_direct_logic;
 */
 // FIXME: TODO: keep values below in sync with transmitter
 const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for prescaler=14
-const uint16_t StartStopBitLength = 400 - 1;    // 270 works not reliably; 280 works; 400 chosen
-const uint16_t DataBitLength = 800 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits.
+const uint16_t StartStopBitLength = 500 - 1;    // 270 works not reliably; 280 works; 400 chosen
+const uint16_t DataBitLength = 1500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits.
                                                // Start/Stop bit should on and off in less than data bit length
-const uint16_t DelayBetweenDataFramesTotal = 14000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
+const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
 
 
 
 
-const uint16_t HalfDataBitLength = 400 - 1;
-const uint16_t HalfStartStopBitLength = 200 - 1;
-const uint16_t HalfStartStopHalfDataBitLength = 600 - 1;
-const uint16_t StartStopBitPeriod = 800 - 1; // 2 * StartStopBitLength
+const uint16_t HalfDataBitLength = 750 - 1;
+const uint16_t HalfStartStopBitLength = 250 - 1;
+const uint16_t HalfStartStopHalfDataBitLength = 1000 - 1;
+const uint16_t StartStopBitPeriod = 1000 - 1; // 2 * StartStopBitLength
 const uint16_t DelayCheckingPeriod = 100 - 1;
 
 const uint16_t max_delta_pwm_pulse = 40; // 30 work unreliably, which means that error/drift variance is more than 30 ticks. 35 works
@@ -32,8 +32,8 @@ const uint16_t max_delta_pwm_width = 40; // 30 work unreliably, which means that
 const uint16_t  max_delta_cnt_delay = 10;
 
 // TODO: parametrize values below
-const uint16_t DelayBetweenDataFramesToCheck = 13800; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 138 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t DelayBetweenDataFramesToCheck = 14750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
+const uint16_t DelayCounterMin = 150 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
 /*
