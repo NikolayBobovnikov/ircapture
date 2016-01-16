@@ -73,10 +73,10 @@ extern DataFrame_t tx_data_frame;
 enum UART_Commands {
     UART_COMMAND_NOT_RECEIVED = 0,
     UART_DEBUG_DATA_TRANSMIT,
-    UART_NULL_RESPONSE
+    UART_DEBUG_DATA_TRANSMIT_OK
 };
 uint8_t command = UART_COMMAND_NOT_RECEIVED;
-uint8_t response = UART_NULL_RESPONSE;
+uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
 
 /* USER CODE END PV */
 
@@ -93,6 +93,8 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+void notify_transmission_finished();
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -133,7 +135,6 @@ int main(void)
   while (1)
   {
       command = UART_COMMAND_NOT_RECEIVED;
-      response = UART_NULL_RESPONSE;
       status = HAL_UART_Receive(&huart1, &command, 1, 1000);
 
       if(status != HAL_OK)
@@ -154,7 +155,11 @@ int main(void)
                   // TODO: process error
                   break;
               }
+              // transmit data
               send_data();
+
+              // notify that data has been sent (future callback - )
+              notify_transmission_finished();
           }
       }
 
@@ -362,6 +367,15 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void notify_transmission_finished()
+{
+    responce = UART_DEBUG_DATA_TRANSMIT_OK;
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&responce, sizeof(responce), 1000);
+    if(status != HAL_OK)
+    {
+        // TODO: process error
+    }
+}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT

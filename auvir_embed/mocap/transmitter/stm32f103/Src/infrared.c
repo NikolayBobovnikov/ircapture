@@ -257,6 +257,7 @@ void transmit_handler()
         }
         case TX_DELAY:
         {
+            notify_transmission_finished();
             reset_transmitter();
             break;
         }
