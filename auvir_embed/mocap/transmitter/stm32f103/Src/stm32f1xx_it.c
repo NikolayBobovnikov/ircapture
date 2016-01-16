@@ -37,8 +37,7 @@
 
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
-
-extern void transmit_handler();
+void transmit_handler();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -108,8 +107,8 @@ void DMA1_Channel3_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
-    /// process transmit
-    transmit_handler();
+  /// process transmit
+  transmit_handler();
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
@@ -145,6 +144,5 @@ void SPI1_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

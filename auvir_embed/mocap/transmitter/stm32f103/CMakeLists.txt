@@ -9,7 +9,7 @@ SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 #=======================================================================================================
 
 PROJECT(motionsensor_transmitter)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.82.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 ENABLE_LANGUAGE(ASM)
 
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -105,24 +105,32 @@ function(IS_INCLUDED_MODULE_FUNC _file _module_list _is_included)
 endfunction(IS_INCLUDED_MODULE_FUNC)
 
 ####### Recursive addition of library source and header files from all used libraries #######
-SET(ALL_LIB_SOURCES "")
-SET(ALL_LIB_HEADERS "")
+SET(ALL_PROJECT_SOURCES "")
+SET(ALL_PROJECT_HEADERS "")
+SET(ALL_PROJECT_SOURCE_NAMES "")
 
 # include source/include files recursively
 foreach (_dir ${LIB_DIRS})
     file(GLOB_RECURSE LIB_SOURCES "${_dir}/*.c" "${_dir}/*.s")
     file(GLOB_RECURSE LIB_HEADERS "${_dir}/*.h")
-    list(APPEND ALL_LIB_SOURCES ${LIB_SOURCES})
-    list(APPEND ALL_LIB_HEADERS ${LIB_HEADERS})
+    list(APPEND ALL_PROJECT_SOURCES ${LIB_SOURCES})
+    list(APPEND ALL_PROJECT_HEADERS ${LIB_HEADERS})
 endforeach()
 
-list(REMOVE_DUPLICATES ALL_LIB_HEADERS)
-list(REMOVE_DUPLICATES ALL_LIB_SOURCES)
+list(REMOVE_DUPLICATES ALL_PROJECT_HEADERS)
+list(REMOVE_DUPLICATES ALL_PROJECT_SOURCES)
+
+
+message(STATUS "source files:")
+foreach (_src_path ${ALL_PROJECT_SOURCES})
+    get_filename_component(curr_file_name ${_src_path} NAME)
+    message(STATUS "source file: ${curr_file_name}")
+endforeach()
 
 
 # include directory for every header file
 SET (INCLUDE_LIB_DIRS "")
-foreach (_headerFile ${ALL_LIB_HEADERS})
+foreach (_headerFile ${ALL_PROJECT_HEADERS})
     get_filename_component(_dir ${_headerFile} PATH)
     list (APPEND INCLUDE_LIB_DIRS ${_dir})
 endforeach()
@@ -137,8 +145,8 @@ ${INCLUDE_LIB_DIRS}
 # Build everything into elf
 ADD_EXECUTABLE(
     ${CMAKE_PROJECT_NAME}
-    ${ALL_LIB_SOURCES}
-    ${ALL_LIB_HEADERS}
+    ${ALL_PROJECT_SOURCES}
+    ${ALL_PROJECT_HEADERS}
     )
 
 STM32_SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME})
