@@ -35,8 +35,6 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
-//TODO: cleanup when done debugging
-#define DEBUG
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -111,7 +109,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(phtim_envelop); // envelop
-  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1); // pwm
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4); // pwm
   /* USER CODE END 2 */
 
   /* Infinite loop */

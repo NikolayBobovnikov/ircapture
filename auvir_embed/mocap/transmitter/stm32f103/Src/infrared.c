@@ -1,6 +1,9 @@
 #include "infrared.h"
 #include <stdbool.h>
 
+//TODO: cleanup when done debugging
+#define DEBUG
+
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;
