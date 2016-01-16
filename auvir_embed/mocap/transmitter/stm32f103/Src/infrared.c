@@ -1,8 +1,10 @@
 #include "infrared.h"
 #include <stdbool.h>
 
+
 //TODO: cleanup when done debugging
-#define DEBUG
+extern const bool _debug;
+
 
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
@@ -290,18 +292,19 @@ static inline void p_w_modulate(uint8_t bit)
 }
 static inline void force_envelop_timer_output_on()
 {
-#ifdef DEBUG
-    if(_is_direct_logic)
+    if(_debug)
     {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+        if(_is_direct_logic)
+        {
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+        }
+        else
+        {
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+        }
     }
-    else
-    {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
-    }
-#endif
     if(_is_direct_logic)
     {
         HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);
@@ -316,28 +319,19 @@ static inline void force_envelop_timer_output_on()
 }
 static inline void force_envelop_timer_output_off()
 {
-/*
-        HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1); // carrier
-        HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_2); // carrier
-        HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3); // carrier
-        HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_4); // carrier
-        HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1); // carrier
-        HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_2); // carrier
-        HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_3); // carrier
-        HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4); // carrier
-        */
-#ifdef DEBUG
-    if(_is_direct_logic)
+    if(_debug)
     {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+        if(_is_direct_logic)
+        {
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+        }
+        else
+        {
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+        }
     }
-    else
-    {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-    }
-#endif
 
     if(_is_direct_logic)
     {
