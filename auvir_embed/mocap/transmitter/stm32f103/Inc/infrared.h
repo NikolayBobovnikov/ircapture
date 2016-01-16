@@ -43,7 +43,6 @@ static inline void switch_to_data_transmission_state();
 static inline void p_w_modulate(uint8_t bit);
 static inline void force_envelop_timer_output_on();
 static inline void force_envelop_timer_output_off();
-static inline void nop();
 
 
 #endif //INFRARED_H

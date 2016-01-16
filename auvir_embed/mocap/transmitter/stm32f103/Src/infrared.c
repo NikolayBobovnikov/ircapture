@@ -1,10 +1,10 @@
 #include "infrared.h"
 #include <stdbool.h>
 
+/// ============================== Variables and constatns ==============================
 
 //TODO: cleanup when done debugging
 extern const bool _debug;
-
 
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
@@ -42,7 +42,9 @@ uint16_t pwm_period[100] = {0};
 uint8_t arr_index = 0;
 
 
+/// ============================== Functions ==============================
 
+/// exposed to external modules
 void send_data()
 {
     // fill tx_data_frame with data
@@ -88,7 +90,8 @@ void transmit_handler()
     {
         case TX_WAITING:
         {
-            nop();
+            // do nothing
+            // TODO: eliminate this step?
             break;
         }
         case TX_START_BIT:
@@ -261,7 +264,7 @@ void transmit_handler()
         }
     } // switch(TransmitterState)
 }
-
+/// private, used only in infrared module
 static inline void reset_transmitter()
 {
     TransmitterState = TX_WAITING;
@@ -343,5 +346,3 @@ static inline void force_envelop_timer_output_off()
     }
 
 }
-static inline void nop(){}
-
