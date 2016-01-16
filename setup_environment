@@ -56,6 +56,7 @@ sudo -S aptitude install -y --with-recommends spyder
 
 # environments and window managers
 sudo -S aptitude install -y --with-recommends awesome 
+sudo -S aptitude install -y --with-recommends wine
 # xfce4 ?
 
 # IDE 
