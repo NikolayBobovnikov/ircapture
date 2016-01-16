@@ -68,6 +68,24 @@ eclipse-cdt-autotools eclipse-cdt-jni eclipse-cdt-qt \
 eclipse-cdt-perf eclipse-cdt-valgrind eclipse-cdt-pkg-config eclipse-cdt-profiling-framework \
 eclipse-cdt-profiling-framework-remote eclipse-cdt-launch-remote 
 
+# UnrealEngine
+# Steps (summarised):
+# 1. Download Unreal Engine 4 source code from their Github page
+# 2. Extract it to desktop
+# 3. Install dependencies via Terminal or USC
+# 4. Open a Terminal and CD to the folder on the desktop
+# 5. Run ./Setup.sh
+# 6. Run ./GenerateProjectFiles.sh
+# 7. Run make SlateViewer
+# 8. Run make ShaderCompileWorker UnrealLightmass UnrealPak UE4Editor
+# 9. Head into UnrealEngine/Engine/Binaries/Linux
+# 10. Double click UE4Editor to run UE4!
+
+#dependencies
+sudo -S aptitude install -y --with-recommends mono-gmcs mono-xbuild mono-dmcs libmono-corlib4.0-cil libmono-system-data-datasetextensions4.0-cil \
+libmono-system-web-extensions4.0-cil libmono-system-management4.0-cil libmono-system-xml-linq4.0-cil cmake dos2unix clang-3.5 xdg-user-dirs libqt4-dev
+# TODO: remaining steps
+
 
 # Applied Programs
 
