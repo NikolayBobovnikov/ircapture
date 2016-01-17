@@ -4,7 +4,7 @@
   * @brief   Interrupt Service Routines.
   ******************************************************************************
   *
-  * COPYRIGHT(c) 2015 STMicroelectronics
+  * COPYRIGHT(c) 2016 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -34,7 +34,6 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_it.h"
-// b stm32f1xx_it.c:
 
 /* USER CODE BEGIN 0 */
 // TODO: read more about .h and .c file including during compiling. Check if this include is needed
@@ -45,14 +44,12 @@ extern void irreceiver_timer_ic_handler();
 
 /* USER CODE END 0 */
 
-/* al variables --------------------------------------------------------*/
- DMA_HandleTypeDef hdma_spi1_rx;
- DMA_HandleTypeDef hdma_spi1_tx;
- SPI_HandleTypeDef hspi1;
- TIM_HandleTypeDef htim1;
- TIM_HandleTypeDef htim2;
- TIM_HandleTypeDef htim3;
- TIM_HandleTypeDef htim4;
+/* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_spi1_rx;
+extern DMA_HandleTypeDef hdma_spi1_tx;
+extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Interruption and Exception Handlers         */ 
@@ -112,13 +109,13 @@ void DMA1_Channel3_IRQHandler(void)
 * @brief This function handles TIM3 global interrupt.
 */
 void TIM3_IRQHandler(void)
-{   
-    /* USER CODE BEGIN TIM3_IRQn 0 */
+{
+  /* USER CODE BEGIN TIM3_IRQn 0 */
     irreceiver_timer_up_handler();
-    /* USER CODE END TIM3_IRQn 0 */
-    HAL_TIM_IRQHandler(&htim3);
-    /* USER CODE BEGIN TIM3_IRQn 1 */
-    /* USER CODE END TIM3_IRQn 1 */
+  /* USER CODE END TIM3_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim3);
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+  /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**
@@ -126,12 +123,12 @@ void TIM3_IRQHandler(void)
 */
 void TIM4_IRQHandler(void)
 {
-    /* USER CODE BEGIN TIM4_IRQn 0 */
+  /* USER CODE BEGIN TIM4_IRQn 0 */
     irreceiver_timer_ic_handler();
-    /* USER CODE END TIM4_IRQn 0 */
-    HAL_TIM_IRQHandler(&htim4);
-    /* USER CODE BEGIN TIM4_IRQn 1 */
-    /* USER CODE END TIM4_IRQn 1 */
+  /* USER CODE END TIM4_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim4);
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+  /* USER CODE END TIM4_IRQn 1 */
 }
 
 /**
