@@ -33,7 +33,7 @@ SET(I2CDevLib_STM32 ${THIRDPARTY_STM32LIB_PATH}/i2cdevlib_hal)
 SET(I2CDevLib_MPU6050 ${I2CDevLib_STM32}/MPU6050)
 SET(I2CDevLib_I2Cdev ${I2CDevLib_STM32}/I2Cdev)
 
-SET(LIB_DIRS
+SET(SRC_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers
     ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc
@@ -107,10 +107,9 @@ endfunction(IS_INCLUDED_MODULE_FUNC)
 ####### Recursive addition of library source and header files from all used libraries #######
 SET(ALL_PROJECT_SOURCES "")
 SET(ALL_PROJECT_HEADERS "")
-SET(ALL_PROJECT_SOURCE_NAMES "")
 
 # include source/include files recursively
-foreach (_dir ${LIB_DIRS})
+foreach (_dir ${SRC_DIRS})
     file(GLOB_RECURSE LIB_SOURCES "${_dir}/*.c" "${_dir}/*.s")
     file(GLOB_RECURSE LIB_HEADERS "${_dir}/*.h")
     list(APPEND ALL_PROJECT_SOURCES ${LIB_SOURCES})
@@ -120,26 +119,26 @@ endforeach()
 list(REMOVE_DUPLICATES ALL_PROJECT_HEADERS)
 list(REMOVE_DUPLICATES ALL_PROJECT_SOURCES)
 
-
-message(STATUS "source files:")
+SET(ALL_PROJECT_SOURCE_NAMES "")
 foreach (_src_path ${ALL_PROJECT_SOURCES})
     get_filename_component(curr_file_name ${_src_path} NAME)
-    message(STATUS "source file: ${curr_file_name}")
+    list(APPEND ALL_PROJECT_SOURCE_NAMES ${curr_file_name})
 endforeach()
+message(STATUS "source files: ${ALL_PROJECT_SOURCE_NAMES}")
 
 
 # include directory for every header file
-SET (INCLUDE_LIB_DIRS "")
+SET (INCLUDE_SRC_DIRS "")
 foreach (_headerFile ${ALL_PROJECT_HEADERS})
     get_filename_component(_dir ${_headerFile} PATH)
-    list (APPEND INCLUDE_LIB_DIRS ${_dir})
+    list (APPEND INCLUDE_SRC_DIRS ${_dir})
 endforeach()
-list(REMOVE_DUPLICATES INCLUDE_LIB_DIRS)
+list(REMOVE_DUPLICATES INCLUDE_SRC_DIRS)
 
 #############################################################################################
 
 include_directories(
-${INCLUDE_LIB_DIRS}
+${INCLUDE_SRC_DIRS}
 )
 
 # Build everything into elf

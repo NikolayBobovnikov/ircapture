@@ -32,7 +32,7 @@ int ir_sensor_main()
 #endif
         int baud_rate = 115200;
         boost::shared_ptr<TimeoutSerial> serial(new TimeoutSerial());
-        serial->setTimeout(boost::posix_time::seconds(10));
+        serial->setTimeout(boost::posix_time::seconds(1000));
 
         TRY_CATCH_EXIT(serial->open(port_name,baud_rate));
         if(!serial->isOpen())
@@ -49,8 +49,9 @@ int ir_sensor_main()
         while(serial->isOpen())
         {
             // send command (should be done ragardless of the command type)
-            command = UART_DEBUG_DATA_TRANSMIT;
+            command = UART_DEBUG_DATA_TRANSMIT;//UART_ECHO;
             serial->write((char*)&command, command_size);
+            //break;// for debugging, TODO: remove
 
             // after sending command, do command specific actions
             switch(command)

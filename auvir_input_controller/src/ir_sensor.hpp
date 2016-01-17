@@ -22,7 +22,9 @@
 
 enum UART_Commands {
     UART_COMMAND_NOT_RECEIVED = 0,
-    UART_DEBUG_DATA_TRANSMIT
+    UART_DEBUG_DATA_TRANSMIT,
+    UART_DEBUG_DATA_TRANSMIT_OK,
+    UART_ECHO
 };
 
 typedef struct
@@ -33,7 +35,7 @@ typedef struct
 } DataFrame_t;
 
 boost::shared_ptr<DataFrame_t> create_data_frame(uint8_t id, uint8_t angle);
-int main_function();
+int ir_sensor_main();
 
 
 

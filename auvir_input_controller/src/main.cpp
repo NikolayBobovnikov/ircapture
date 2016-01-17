@@ -2,10 +2,8 @@
 #include <chrono>
 #include <thread>
 
-#include "imu_sensor.hpp"
-
-int imu_sensor_main();
-int ir_sensor_main();
+//#include "imu_sensor.hpp" TODO: combine with IR
+#include "ir_sensor.hpp"
 
 //TODO: learn this stuff (passing functions as arguments)
 void try_catch_exit_function(std::function<void()> f)
@@ -34,7 +32,10 @@ void clearscreen()
 
 int main(void)
 {
-    ir_sensor_main();
+    while(true)
+    {
+        ir_sensor_main();
+    }
     return 1;
 }
 
