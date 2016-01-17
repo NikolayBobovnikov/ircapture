@@ -135,7 +135,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+      send_data();
+      /*
       command = UART_COMMAND_NOT_RECEIVED;
       status = HAL_UART_Receive(&huart1, &command, sizeof(command), 1000);
 
@@ -167,6 +168,7 @@ int main(void)
           }
 
       }
+      */
 
   /* USER CODE END WHILE */
 

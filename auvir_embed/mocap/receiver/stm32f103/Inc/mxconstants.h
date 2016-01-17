@@ -37,8 +37,8 @@
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
-#define DelayCheckingPeriod (100 - 1)
-#define envelop_timer_prescaler (72 - 1)
+//#define DelayCheckingPeriod (100 - 1)
+//#define envelop_timer_prescaler (72 - 1)
 
 /* USER CODE BEGIN Private defines */
 
