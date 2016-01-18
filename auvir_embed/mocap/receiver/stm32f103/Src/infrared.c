@@ -32,8 +32,8 @@ const uint16_t max_delta_pwm_width = 40; // 30 work unreliably, which means that
 const uint16_t  max_delta_cnt_delay = 10;
 
 // TODO: parametrize values below
-const uint16_t DelayBetweenDataFramesToCheck = 14750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 150 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t DelayBetweenDataFramesToCheck = 19750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
+const uint16_t DelayCounterMin = 197 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
 /*
