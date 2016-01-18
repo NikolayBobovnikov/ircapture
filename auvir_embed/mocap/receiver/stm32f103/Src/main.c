@@ -82,6 +82,7 @@ static void MX_USART1_UART_Init(void);
 /* Private function prototypes -----------------------------------------------*/
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim);
+void send_data_uart(uint8_t pdata, uint16_t size);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -373,6 +374,10 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim)
 
     /* Return function status */
     return HAL_OK;
+}
+void send_data_uart(uint8_t pdata, uint16_t size)
+{
+    HAL_UART_Transmit(&huart1, pdata, size, 1000);
 }
 /* USER CODE END 4 */
 
