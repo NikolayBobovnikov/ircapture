@@ -29,8 +29,8 @@ const uint16_t max_delta_pwm_width = 40; // 30 work unreliably, which means that
 const uint16_t  max_delta_cnt_delay = 10;
 
 // TODO: parametrize values below
-const uint16_t DelayBetweenDataFramesToCheck = 14750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 147 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t DelayBetweenDataFramesToCheck = 19750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
+const uint16_t DelayCounterMin = 197 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
 /*
@@ -66,7 +66,7 @@ volatile uint16_t _delay_counter = 0;
 int dbg[1000]={0};
 int dbg_index=0;
 
-//#define DEBUG_READING_DATA_1
+#define DEBUG_READING_DATA_1
 //#define DEBUG_READING_DATA_2
 //#define DEBUG_DATA_RECEIVED_1
 #define DEBUG_DATA_RECEIVED_2
@@ -74,11 +74,11 @@ int dbg_index=0;
 //#define DEBUG_UPD_EVENT_2
 //#define DEBUG_LOW_CHECK_1
 //#define DEBUG_LOW_CHECK_2
-#define DEBUG_DELAY_CHECK_1
+//#define DEBUG_DELAY_CHECK_1
 //#define DEBUG_DELAY_CHECK_2
 //#define DEBUG_0_to_1_EDGE_1
-#define DEBUG_0_to_1_EDGE_2
-#define DEBUG_1_to_0_EDGE_1
+//#define DEBUG_0_to_1_EDGE_2
+//#define DEBUG_1_to_0_EDGE_1
 //#define DEBUG_1_to_0_EDGE_2
 //#define DEBUG_CHECK_IC_TIMING_1
 //#define DEBUG_CHECK_IC_TIMING_2
