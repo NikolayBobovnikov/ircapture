@@ -20,11 +20,11 @@ const bool _is_direct_logic = true;
 // but not too low - beware of jitter!
 // FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
 const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for particular prescaler
-const uint16_t PreambleLongBitLength = 750 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t PreambleShortBitLength = 350 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t PreambleDelayLength = 350 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t DataBitLength = 500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-const uint16_t DelayBetweenDataFramesTotal = 15000 - 1;//12900 doesn't work; 13000 works; chosen more
+const uint16_t PreambleLongBitLength = 500 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t PreambleShortBitLength = 500 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t PreambleDelayLength = 300 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t DataBitLength = 300 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+const uint16_t DelayBetweenDataFramesTotal = 13000 - 1;//12900 doesn't work; 13000 works; chosen more
 
 ///TODO: refactor constants below
 typedef struct
@@ -146,6 +146,7 @@ void transmit_handler()
                 // Second (short) bit
                 case STAGE_OFF1:
                 {
+                    phtim_envelop->Instance->ARR = PreambleShortBitLength;
                     StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
                     break;
@@ -153,6 +154,7 @@ void transmit_handler()
                 // Second short delay
                 case STAGE_ON2:
                 {
+                    phtim_envelop->Instance->ARR = PreambleDelayLength;
                     switch_to_data_transmission_state();
                     break;
                 }
@@ -242,12 +244,14 @@ void transmit_handler()
             {
                 case STAGE_0:
                 {
+                    phtim_envelop->Instance->ARR = PreambleShortBitLength;
                     StartStopSequenceTransmitState = STAGE_ON1;
                     force_envelop_timer_output_on();
                     break;
                 }
                 case STAGE_ON1:
                 {
+                    phtim_envelop->Instance->ARR = PreambleDelayLength;
                     StartStopSequenceTransmitState = STAGE_OFF1;
                     force_envelop_timer_output_off();
                     break;
