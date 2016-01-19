@@ -19,10 +19,12 @@ const bool _is_direct_logic = true;
 // need to work with IR receiver TL1838, and to be as low as possible,
 // but not too low - beware of jitter!
 // FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
-const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for prescaler=14
-const uint16_t StartStopBitLength = 500 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t DataBitLength = 1500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//12900 doesn't work; 13000 works; chosen more
+const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for particular prescaler
+const uint16_t PreambleLongBitLength = 750 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t PreambleShortBitLength = 350 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t PreambleDelayLength = 350 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t DataBitLength = 500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+const uint16_t DelayBetweenDataFramesTotal = 15000 - 1;//12900 doesn't work; 13000 works; chosen more
 
 ///TODO: refactor constants below
 typedef struct
@@ -49,7 +51,7 @@ void send_data()
 
     // sample data. TODO: use actual one
     tx_data_frame._1_beamer_id = 0b11111111;
-    tx_data_frame._2_angle_code = 0b10111110;
+    tx_data_frame._2_angle_code = 0b11111111;
     tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
 
     // just repetition of the same data for now.
@@ -66,7 +68,36 @@ void send_data()
 }
 void transmit_handler()
 {
-
+    /* Data packet format: [preamble] [data frame] [epilogue]
+     * preamble format: [longbit] [delay1] [bit1] [delay2]
+     * data frame format: [word1] [delay] [word2] [delay] [word3]
+     * data frame format: [delay1] [bit1] [delay2] [longbit]
+     *
+     *                      |<--     Preamble          -->|<--              data frame              -->|<--        epilogue  -->|
+     *                       ______________      ____      ________          ________          ________      ____      _____________
+     *                      |              |    |    |    |        |        |        |        |        |    |    |    |             |
+     *                      |              |    |    |    |dataword|delay   |        |        |        |    |    |    |             |
+     *                      |     750      |350 |350 |350 |  500   |   500  |        |        |  500   |350 |350 |350 |    750      |
+     *  ____________________|              |____|    |____|        |________|        |__....__|        |____|    |____|             |____
+     *
+     *
+     *  |<----------------->| DelayBetweenDataFramesTotal
+     *
+     *                      |<-->|<-->| StartStopBitLength
+     *                                                     |<------>|<------>| DataBitLength
+     *
+     *
+     *
+     * 1. start sequence
+     * 2. data
+     *  2.1 Coded angle
+     *  2.2 Coded angle reversed (to verify correctness)
+     *  2.3 Beamer ID
+     * 3. data redundancy (repeated, or use error correction code)
+     * 4. stop sequence
+     *
+     * Check data integrity. If OK, data is received
+     */
     /// ensure carrier is not generating
     if(TX_DATA != TransmitterState)
     {
@@ -93,48 +124,34 @@ void transmit_handler()
         }
         case TX_START_BIT:
         {
-            phtim_envelop->Instance->ARR = StartStopBitLength;
-
             // Start sequence consists of signal sequence {1,0,1}
             switch(StartStopSequenceTransmitState)
             {
-                    // High
+                // First (long) bit
                 case STAGE_0:
                 {
+                    phtim_envelop->Instance->ARR = PreambleLongBitLength;
                     StartStopSequenceTransmitState = STAGE_ON1;
                     force_envelop_timer_output_on();
                     break;
                 }
-                    // Low
+                // First short delay
                 case STAGE_ON1:
                 {
+                    phtim_envelop->Instance->ARR = PreambleDelayLength;
                     StartStopSequenceTransmitState = STAGE_OFF1;
                     force_envelop_timer_output_off(); //TODO done anyway in timer interrupt handler?
                     break;
                 }
-                    // High
+                // Second (short) bit
                 case STAGE_OFF1:
                 {
                     StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
                     break;
                 }
-                //Low
+                // Second short delay
                 case STAGE_ON2:
-                {
-                    StartStopSequenceTransmitState = STAGE_OFF2;
-                    force_envelop_timer_output_off();
-                    break;
-                }
-                   //High
-                case STAGE_OFF2:
-                {
-                    StartStopSequenceTransmitState = STAGE_ON3;
-                    force_envelop_timer_output_on();
-                    break;
-                }
-                   // Low
-                case STAGE_ON3:
                 {
                     switch_to_data_transmission_state();
                     break;
@@ -202,7 +219,7 @@ void transmit_handler()
                     else
                     {
                         /* Set the Autoreload value for start sequence bits*/
-                        phtim_envelop->Instance->ARR = StartStopBitLength;
+                        phtim_envelop->Instance->ARR = PreambleDelayLength;
 
                         // move on to next stage
                         TransmitterState = TX_STOP_BIT;
@@ -237,6 +254,7 @@ void transmit_handler()
                 }
                 case STAGE_OFF1:
                 {
+                    phtim_envelop->Instance->ARR = PreambleLongBitLength;
                     StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
                     break;
@@ -266,7 +284,7 @@ static inline void reset_transmitter()
 {
     TransmitterState = TX_WAITING;
     // TODO: add other steps if needed
-    phtim_envelop->Instance->ARR = StartStopBitLength;
+    phtim_envelop->Instance->ARR = PreambleLongBitLength;
     StartStopSequenceTransmitState = STAGE_0;
     DataFrameState = DATAFRAME_0_NODATA;
 }

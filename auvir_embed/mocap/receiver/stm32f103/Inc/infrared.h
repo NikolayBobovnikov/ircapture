@@ -41,8 +41,8 @@ enum StartStopSequenceStates
     STAGE_OFF2,
     STAGE_OFF2_ON3,
     STAGE_ON3,
-    STAGE_ON3_OFF4,
-    STAGE_OFF4
+    STAGE_ON3_OFF3,
+    STAGE_OFF3
 };
 enum DataFrameStates
 {
@@ -73,12 +73,10 @@ static inline bool is_0_to_1_edge();
 static inline bool is_1_on_update_event();
 static inline bool is_0_on_update_event();
 static inline void reset_receiver_state();
-static inline bool is_0_to_1_edge_timing_ok();
-static inline bool is_first_0_to_1_edge_timing_ok();
-static inline bool is_1_to_0_edge_timing_ok();
-static inline bool is_ic_after_interframe_delay();
 static inline void reset_delay_cnt();
-static inline void update_delay_cnt();
+static inline void update_cnt();
+static inline void check_0_update_cnt();
+static inline void check_1_update_cnt();
 static inline void send_dataready_signal();
 
 // function to copy data frame to the main buffer, when data is received successfully

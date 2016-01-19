@@ -33,7 +33,6 @@ enum StartStopSequenceStates
     STAGE_OFF3
 };
 volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
-volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
 
 void send_data();
 void transmit_handler();

@@ -13,27 +13,33 @@ extern const bool _is_direct_logic;
 */
 // FIXME: TODO: keep values below in sync with transmitter
 const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for prescaler=14
-const uint16_t StartStopBitLength = 500 - 1;    // 270 works not reliably; 280 works; 400 chosen
-const uint16_t DataBitLength = 1500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits.
+const uint16_t PreambleLongBitLength = 750 - 1;    // 270 works not reliably; 280 works; 400 chosen
+const uint16_t PreambleShortBitLength = 350 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t PreambleDelayLength = 350 - 1;    // 270 works not reliably; 280 works;  chosen more
+const uint16_t DataBitLength = 500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits.
                                                // Start/Stop bit should on and off in less than data bit length
-const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
+const uint16_t DelayBetweenDataFramesTotal = 15000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
+const uint16_t HalfDataBitLength = 250 - 1;
+const uint16_t HalfPreambleShortBitLength = 175 - 1;
+const uint16_t HalfPreambleDelayLength = 175 - 1;
+const uint16_t ProbingPeriod = 10 - 1;
 
+//const uint16_t HalfStartStopBitLength = 250 - 1;
+//const uint16_t HalfPreambleDelayLength = 175 - 1;
+//const uint16_t HalfStartStopHalfDataBitLength = 1000 - 1;
+//const uint16_t StartStopBitPeriod = 1000 - 1; // 2 * StartStopBitLength
 
-
-
-const uint16_t HalfDataBitLength = 750 - 1;
-const uint16_t HalfStartStopBitLength = 250 - 1;
-const uint16_t HalfStartStopHalfDataBitLength = 1000 - 1;
-const uint16_t StartStopBitPeriod = 1000 - 1; // 2 * StartStopBitLength
-const uint16_t DelayCheckingPeriod = 100 - 1;
 
 const uint16_t max_delta_pwm_pulse = 40; // 30 work unreliably, which means that error/drift variance is more than 30 ticks. 35 works
 const uint16_t max_delta_pwm_width = 40; // 30 work unreliably, which means that error/drift variance is more than 30 ticks. 35 works
-const uint16_t  max_delta_cnt_delay = 10;
+const uint16_t  max_delta_cnt_delay = 5;
 
 // TODO: parametrize values below
-const uint16_t DelayBetweenDataFramesToCheck = 14750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 150 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+//const uint16_t DelayBetweenDataFramesToCheck = 14750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
+const uint16_t BigDelayCounterMin = 1475 - 100; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t LongBitCounterMin = 75 - 5; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t ShortBitCounterMin = 35 - 5; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+const uint16_t ShortDelayCounterMin = 35 - 5; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
 /*
@@ -58,8 +64,15 @@ volatile uint8_t rx_bit = 0;
 
 volatile bool _is_rising_edge = false;
 volatile bool _is_falling_edge = false;
-volatile bool _is_timer_update_event = false;
-volatile bool _is_interframe_delay_long_enough = false;
+volatile bool _is_uptimer_update_event = false;
+volatile bool _is_ictimer_update_event = false;
+
+bool is_ic_after_interframe_delay;
+bool is_preamble_long_bit_length_ok;
+bool is_preamble_short_delay_length_ok;
+bool is_preamble_short_bit_length_ok;
+
+
 volatile uint16_t _ccr1 = 0;
 volatile uint16_t _ccr2 = 0;
 volatile uint16_t _delay_counter = 0;
@@ -80,8 +93,8 @@ int dbg_index=0;
 //#define DEBUG_DELAY_CHECK_1
 //#define DEBUG_DELAY_CHECK_2
 //#define DEBUG_0_to_1_EDGE_1
-//#define DEBUG_0_to_1_EDGE_2
-//#define DEBUG_1_to_0_EDGE_1
+#define DEBUG_0_to_1_EDGE_2
+#define DEBUG_1_to_0_EDGE_1
 //#define DEBUG_1_to_0_EDGE_2
 //#define DEBUG_CHECK_IC_TIMING_1
 //#define DEBUG_CHECK_IC_TIMING_2
@@ -126,10 +139,11 @@ inline void irreceiver_timer_up_handler()
         reset_delay_cnt();
         return;
     }
-    _is_timer_update_event = true;
+    _is_uptimer_update_event = true;
+    _is_ictimer_update_event = false;
     _is_rising_edge = false;
     _is_falling_edge = false;
-    update_delay_cnt();
+    update_cnt();
     receive_handler();
 
 
@@ -197,13 +211,22 @@ inline void irreceiver_timer_ic_handler()
 #endif
         }
     }
-    _is_timer_update_event = false;
+    else if(__HAL_TIM_GET_FLAG(ic_tim_p, TIM_FLAG_UPDATE) != RESET)
+    {
+        if(__HAL_TIM_GET_IT_SOURCE(ic_tim_p, TIM_IT_UPDATE) != RESET)
+        {
+            _is_ictimer_update_event = true;
+        }
+    }
+    _is_uptimer_update_event = false;
     LineLevelState = LINE_UNDEFINED;
 
     receive_handler();
     // reset helper vars
     _is_rising_edge = false;
     _is_falling_edge = false;
+    _is_ictimer_update_event = false;
+
 }
 
 static inline void receive_handler()
@@ -212,14 +235,17 @@ static inline void receive_handler()
     {
         dbg_index = 0;
     }
-    /* Receive data frame
+    /* Data packet format: [preamble] [data frame] [epilogue]
+     * preamble format: [longbit] [delay1] [bit1] [delay2]
+     * data frame format: [word1] [delay] [word2] [delay] [word3]
+     * data frame format: [delay1] [bit1] [delay2] [longbit]
      *
-     *                      |<--     start bit          -->|<--              data frame              -->|<--        stop bit  -->|
-     *                       ____      ____      ____      ________          ________          ________      ____      ____
-     *                      |    |    |    |    |    |    |        |        |        |        |        |    |    |    |    |
-     *                      |    |    |    |    |    |    |        |        |        |        |        |    |    |    |    |
-     *                      |    |    |    |    |    |    |        |        |        |        |        |    |    |    |    |
-     *  ____________________|    |____|    |____|    |____|        |________|        |__....__|        |____|    |____|    |____
+     *                      |<--     Preamble          -->|<--              data frame              -->|<--        epilogue  -->|
+     *                       ______________      ____      ________          ________          ________      ____      _____________
+     *                      |              |    |    |    |        |        |        |        |        |    |    |    |             |
+     *                      |              |    |    |    |dataword|delay   |        |        |        |    |    |    |             |
+     *                      |     750      |350 |350 |350 |  500   |   500  |        |        |  500   |350 |350 |350 |    750      |
+     *  ____________________|              |____|    |____|        |________|        |__....__|        |____|    |____|             |____
      *
      *
      *  |<----------------->| DelayBetweenDataFramesTotal
@@ -227,10 +253,12 @@ static inline void receive_handler()
      *                      |<-->|<-->| StartStopBitLength
      *                                                     |<------>|<------>| DataBitLength
      *
+     *
+     *
      * 1. start sequence
      * 2. data
      *  2.1 Coded angle
-     *  2.2 Time of emission
+     *  2.2 Coded angle reversed (to verify correctness)
      *  2.3 Beamer ID
      * 3. data redundancy (repeated, or use error correction code)
      * 4. stop sequence
@@ -242,18 +270,14 @@ static inline void receive_handler()
         case RX_WAITING_FOR_START_BIT:
         {
             // ensure than last data frame was DelayBetweenDataFrames ticks before
-
             if(is_0_to_1_edge() )
             {
-                if(is_ic_after_interframe_delay()) //TODO: check delay before data frame
+                if(is_ic_after_interframe_delay) //TODO: check delay before data frame
                 {
-                    // wait for first point
-                    //HAL_TIM_Base_Start_IT(up_tim_p);
+                    is_ic_after_interframe_delay = false;
                     up_tim_p->Instance->CNT = 0;
-
-                    up_tim_p->Instance->ARR = HalfStartStopBitLength;
                     ReceiverState = RX_START_BIT_PROCESSING;
-                    StartStopSequenceReceiveState = STAGE_ON1;
+                    StartStopSequenceReceiveState = STAGE_PREAMBLE_LONGBIT_FINISHED;
                     // wait for half a period of startstop bit sequence
                     break;
                 }
@@ -266,184 +290,84 @@ static inline void receive_handler()
             // Start sequence consists of signal sequence {1,0,1,0}, each bit of length PeriodOfStartStopBits
             switch(StartStopSequenceReceiveState)
             {
-                //High confirmed: STAGE_0 -> STAGE_ON1 confirmation
-                case STAGE_ON1:
-                {
-                    // This should be on update event
-                    if(is_1_on_update_event())
-                    {
-                        // first point. change timer period to the period between reading start/stop bit values
-                        up_tim_p->Instance->ARR = StartStopBitLength;
-                        StartStopSequenceReceiveState = STAGE_ON1_OFF1;
-                        break;
-                    }
-                    reset_receiver_state();
-                    break;
-                }
                 //Low: STAGE_ON1 -> STAGE_OFF1 input capture
-                case STAGE_ON1_OFF1:
+                case STAGE_PREAMBLE_LONGBIT_FINISHED:
                 {
-                    // falling edge should be detected
                     if(is_1_to_0_edge())
                     {
-                        if(is_1_to_0_edge_timing_ok())
+                        if(is_preamble_long_bit_length_ok)
                         {
-                            StartStopSequenceReceiveState = STAGE_OFF1;
+                            is_preamble_long_bit_length_ok = false;
+                            StartStopSequenceReceiveState = STAGE_PREAMBLE_SHORTDELAY1_FINISHED;
                             break;
                         }
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-                //Low: STAGE_OFF1 confirmation
-                case STAGE_OFF1:
-                {
-                    // This should be on update
-                    if(is_0_on_update_event())
-                    {
-                        StartStopSequenceReceiveState = STAGE_OFF1_ON2;
-                        // wait for half a period of startstop bit sequence
-                        break;
                     }
                     reset_receiver_state();
                     break;
                 }
                 //High: STAGE_OFF1 -> STAGE_ON2 input capture
-                case STAGE_OFF1_ON2:
+                case STAGE_PREAMBLE_SHORTDELAY1_FINISHED:
                 {
-                    // This should be on IC event (2nd bit - rising edge)
                     if(is_0_to_1_edge())
                     {
-                        if(is_0_to_1_edge_timing_ok())
+                        if(is_preamble_short_delay_length_ok)
                         {
-                            StartStopSequenceReceiveState = STAGE_ON2;
+                            is_preamble_short_delay_length_ok = false;
+                            StartStopSequenceReceiveState = STAGE_PREAMBLE_SHORTBIT_FINISHED;
                             // wait for half a period of startstop bit sequence
                             break;
                         }
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-                //High: STAGE_ON2 confirmation
-                case STAGE_ON2:
-                {
-                    // This should be on update
-                    if(is_1_on_update_event())
-                    {
-                        StartStopSequenceReceiveState = STAGE_ON2_OFF2;
-                        // wait for half a period of startstop bit sequence
-                        break;
                     }
                     reset_receiver_state();
                     break;
                 }
                 //Low: STAGE_ON2 -> STAGE_OFF2 input capture
-                case STAGE_ON2_OFF2:
+                case STAGE_PREAMBLE_SHORTBIT_FINISHED:
                 {
-                    // This should be on IC event (2nd bit - rising edge)
                     if(is_1_to_0_edge())
                     {
-                        if(is_1_to_0_edge_timing_ok())
+                        if(is_preamble_short_bit_length_ok)
                         {
-                            StartStopSequenceReceiveState = STAGE_OFF2;
+                            is_preamble_short_bit_length_ok = false;
+                            StartStopSequenceReceiveState = STAGE_PREAMBLE_SHORTDELAY2_FINISHED;
+
+                            // check signal level on each udpate during DelayCheckingPeriod
+                            // check result of this checking before receiving first bit of data
+                            up_tim_p->Instance->ARR = ProbingPeriod;
+
+                            // limits period of checking signal level. Next expected event on [ic_tim_p] is update
+                            ic_tim_p->Instance->ARR = PreambleDelayLength;
+                        }
+                    }
+                    reset_receiver_state();
+                    break;
+                }
+                case STAGE_PREAMBLE_SHORTDELAY2_FINISHED:
+                {
+                    // this time it should be update event for ic timer
+                    if(_is_ictimer_update_event)
+                    {
+                        if(is_preamble_short_delay_length_ok)
+                        {
+                            is_preamble_short_delay_length_ok = false;
+                            up_tim_p->Instance->ARR = HalfDataBitLength;
+                            StartStopSequenceReceiveState = STAGE_0;
+                            ReceiverState = RX_DATA_PROCESSNG;
+                            DataFrameState = DATAFRAME_1_BEAMER_ID;
+                            // initialize buffer with all zeros
+                            // TODO: fill buffer with zeros
+                            //memset(&data_frame, 0, sizeof(DataFrame_t));
+                            rx_data_frame._1_beamer_id = 0;
+                            rx_data_frame._2_angle_code=0;
+                            rx_data_frame._3_angle_code_rev = 0;
+                            // reset positions
+                            rx_current_bit_pos = 0;
                             break;
                         }
                     }
                     reset_receiver_state();
                     break;
                 }
-                //Low: STAGE_OFF2 confirmation
-                case STAGE_OFF2:
-                {
-                    if(is_0_on_update_event())
-                    {
-                        // turn off input capture temporarily,
-                        //wait for the beginning of data transmission
-                        //HAL_TIM_IC_PWM_Stop_IT(&htim4); //TODO
-                        StartStopSequenceReceiveState = STAGE_OFF2_ON3;
-                        break;
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-                // High
-                case STAGE_OFF2_ON3:
-                {
-                    // This should be on IC event (2nd bit - rising edge)
-                    if(is_0_to_1_edge())
-                    {
-                        if(is_0_to_1_edge_timing_ok())
-                        {
-                            StartStopSequenceReceiveState = STAGE_ON3;
-                            // wait for half a period of startstop bit sequence
-                            break;
-                        }
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-                //High: STAGE_ON3 confirmation
-                case STAGE_ON3:
-                {
-                    // This should be on update
-                    if(is_1_on_update_event())
-                    {
-                        StartStopSequenceReceiveState = STAGE_ON3_OFF4;
-                        // wait for half a period of startstop bit sequence
-                        break;
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-                //Low: STAGE_ON2 -> STAGE_OFF2 input capture
-                case STAGE_ON3_OFF4:
-                {
-                    // This should be on IC event (2nd bit - rising edge)
-                    if(is_1_to_0_edge())
-                    {
-                        if(is_1_to_0_edge_timing_ok())
-                        {
-                            StartStopSequenceReceiveState = STAGE_OFF4;
-                            // restart a counter to reduce integrating of error,
-                            // since we have a precise zero point of falling edge
-                            // wait for half a period of startstop bit sequence
-                            up_tim_p->Instance->CNT = 0;
-                            up_tim_p->Instance->ARR = HalfStartStopBitLength;
-                            break;
-                        }
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-                //Low: STAGE_OFF2 confirmation
-                case STAGE_OFF4:
-                {
-                    if(is_0_on_update_event())
-                    {
-                        ///Prepare to read data frame
-                        /// start reading data bits after the middle of the first pulse (HalfDataBitLength),
-                        /// and beginning of the pulse will be after HalfStartStopBitLength,
-                        /// so wait for HalfStartStopHalfDataBitLength
-
-                        up_tim_p->Instance->ARR = HalfStartStopHalfDataBitLength;
-                        StartStopSequenceReceiveState = STAGE_0;
-                        ReceiverState = RX_DATA_PROCESSNG;
-                        DataFrameState = DATAFRAME_1_BEAMER_ID;
-                        // initialize buffer with all zeros
-                        // TODO: fill buffer with zeros
-                        //memset(&data_frame, 0, sizeof(DataFrame_t));
-                        rx_data_frame._1_beamer_id = 0;
-                        rx_data_frame._2_angle_code=0;
-                        rx_data_frame._3_angle_code_rev = 0;
-                        // reset positions
-                        rx_current_bit_pos = 0;
-
-                        break;
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-
                 default:
                 {
                     reset_receiver_state();
@@ -454,7 +378,7 @@ static inline void receive_handler()
         }
         case RX_DATA_PROCESSNG:
         {
-            if(_is_timer_update_event)
+            if(_is_uptimer_update_event)
             {
                 switch(DataFrameState)
                 {
@@ -562,7 +486,8 @@ static inline void receive_handler()
                         if(rx_current_bit_pos == rx_total_bits)
                         {
                             rx_current_bit_pos = 0;
-                            up_tim_p->Instance->ARR = HalfStartStopHalfDataBitLength;
+                            // waiting for beginning of epilogue
+                            up_tim_p->Instance->ARR = HalfDataBitLength;
                             ReceiverState = RX_STOP_BIT_PROCESSING;
                             StartStopSequenceReceiveState = STAGE_OFF0;
                         }
@@ -582,10 +507,10 @@ static inline void receive_handler()
                 //low: off confirmation
                 case STAGE_OFF0:
                 {
-                    if(is_0_on_update_event())
+                    // start verifying first short delay
+                    if(_is_uptimer_update_event)
                     {
-                        // continue reading stop bit sequence with PeriodOfStartStopBits interval
-                        up_tim_p->Instance->ARR = StartStopBitLength;
+                        up_tim_p->Instance->ARR = ProbingPeriod;
                         StartStopSequenceReceiveState = STAGE_OFF0_ON1;
                         break;
                     }
@@ -598,87 +523,50 @@ static inline void receive_handler()
                     // rising edge input capture
                     if(is_0_to_1_edge())
                     {
-                        // first rising edge don't have previous rising edge for checking timing
-                        // TODO: add relaxed timing check, measure from previous
-                        // low level confirmation on timer update event
-                        //if(is_first_rising_edge_timing_ok())
+                        if(is_preamble_short_delay_length_ok)
                         {
-                            StartStopSequenceReceiveState = STAGE_ON1;
+                            StartStopSequenceReceiveState = STAGE_PREAMBLE_LONGBIT_FINISHED;
                             break;
                         }
-                    }
-                    reset_receiver_state();
-                    break;
-                }
-                //high confirmation
-                case STAGE_ON1:
-                {
-                    if(is_1_on_update_event())
-                    {
-                        StartStopSequenceReceiveState = STAGE_ON1_OFF1;
-                        break;
                     }
                     reset_receiver_state();
                     break;
                 }
                 //low falling edge: STAGE_ON1 -> STAGE_OFF1
-                case STAGE_ON1_OFF1:
+                case STAGE_PREAMBLE_LONGBIT_FINISHED:
                 {
                     if(is_1_to_0_edge())
                     {
-                        if(is_1_to_0_edge_timing_ok())
+                        if(is_preamble_short_bit_length_ok)
                         {
-                            StartStopSequenceReceiveState = STAGE_OFF1;
+                            StartStopSequenceReceiveState = STAGE_PREAMBLE_SHORTDELAY1_FINISHED;
                             break;
                         }
                     }
                     reset_receiver_state();
                     break;
                 }
-                // low: confirmation
-                case STAGE_OFF1:
-                {
-                    if(is_0_on_update_event())
-                    {
-                        StartStopSequenceReceiveState = STAGE_OFF1_ON2;
-                        break;
-                    }
-                    reset_receiver_state();
-                    break;
-                }
                 // high rising edge: STAGE_OFF1 -> STAGE_ON2
-                case STAGE_OFF1_ON2:
+                case STAGE_PREAMBLE_SHORTDELAY1_FINISHED:
                 {
                     // rising edge input capture
                     if(is_0_to_1_edge())
                     {
-                        if(is_0_to_1_edge_timing_ok())
+                        if(is_preamble_short_delay_length_ok)
                         {
-                             StartStopSequenceReceiveState = STAGE_ON2;
+                             StartStopSequenceReceiveState = STAGE_PREAMBLE_SHORTBIT_FINISHED;
                              break;
                         }
                     }
                     reset_receiver_state(); //TODO: check if it needed
                     break;
                 }
-                // high confirmation
-                case STAGE_ON2:
-                {
-                    // second pulse confrmation
-                    if(is_1_on_update_event())
-                    {
-                        StartStopSequenceReceiveState = STAGE_ON2_OFF2;
-                        break;
-                    }
-                    reset_receiver_state();
-                    break;
-                }
                 // low falling edge: STAGE_ON2 -> STAGE_OFFF2
-                case STAGE_ON2_OFF2:
+                case STAGE_PREAMBLE_SHORTBIT_FINISHED:
                 {
                     if(is_1_to_0_edge())
                     {
-                        if(is_1_to_0_edge_timing_ok())
+                        if(is_preamble_long_bit_length_ok)
                         {
                             ReceiverState = RX_STOP_BIT_DONE;
                             StartStopSequenceReceiveState = STAGE_0;
@@ -745,8 +633,9 @@ static inline void reset_receiver_state()
     ReceiverState = RX_WAITING_FOR_START_BIT;
     StartStopSequenceReceiveState = STAGE_0;
     DataFrameState = DATAFRAME_1_BEAMER_ID;
-    //HAL_TIM_Base_Stop_IT(&htim3);
-    up_tim_p->Instance->ARR = DelayCheckingPeriod;
+
+    ic_tim_p->Instance->ARR = 65535;
+    up_tim_p->Instance->ARR = 65535;
     reset_delay_cnt();
     ic_tim_p->Instance->CNT = 0;
     up_tim_p->Instance->CNT = 0;
@@ -754,21 +643,117 @@ static inline void reset_receiver_state()
 static inline void reset_delay_cnt()
 {
     _delay_counter = 0;
-    _is_interframe_delay_long_enough = false;
 }
-static inline void update_delay_cnt()
+static inline void check_0_update_cnt()
 {
     if(is_0_on_update_event())
     {
-        if(_delay_counter> DelayCounterMin)
-        {
-            _is_interframe_delay_long_enough = true;
-        }
         _delay_counter++;
     }
     else if(is_1_on_update_event())
     {
         reset_delay_cnt();
+    }
+}
+static inline void check_1_update_cnt()
+{
+    if(is_1_on_update_event())
+    {
+        _delay_counter++;
+    }
+    else if(is_0_on_update_event())
+    {
+        reset_delay_cnt();
+    }
+}
+static inline void update_cnt()
+{
+    /// measure length of each part of the preamble
+    switch(ReceiverState)
+    {
+        // check first bit (should be 1)
+        case RX_WAITING_FOR_START_BIT:
+        {
+            check_0_update_cnt();
+            is_ic_after_interframe_delay = is_ic_after_interframe_delay || (_delay_counter > BigDelayCounterMin);
+            break;
+        }
+        // check preamble
+        case RX_START_BIT_PROCESSING:
+        {
+            switch(StartStopSequenceReceiveState)
+            {
+                case STAGE_ON1:
+                {
+                    check_1_update_cnt();
+                    is_preamble_long_bit_length_ok = is_preamble_long_bit_length_ok || (_delay_counter > LongBitCounterMin);
+                    break;
+                }
+                case STAGE_PREAMBLE_LONGBIT_FINISHED:
+                {
+                    check_0_update_cnt();
+                    is_preamble_short_delay_length_ok = is_preamble_short_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
+                    break;
+                }
+                case STAGE_PREAMBLE_SHORTDELAY1_FINISHED:
+                {
+                    check_1_update_cnt();
+                    is_preamble_short_bit_length_ok = is_preamble_short_bit_length_ok || (_delay_counter > ShortBitCounterMin);
+                    break;
+                }
+                case STAGE_PREAMBLE_SHORTBIT_FINISHED:
+                {
+                    check_0_update_cnt();
+                    is_preamble_short_delay_length_ok = is_preamble_short_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
+                    break;
+                }
+            }
+        }
+        // check epilogue
+        case RX_STOP_BIT_PROCESSING:
+        {
+            switch (StartStopSequenceReceiveState)
+            {
+                //low: off confirmation
+                case STAGE_OFF0:
+                {
+                    check_0_update_cnt();
+                    break;
+                }
+                //high rising edge: STAGE_OFF1 -> STAGE_ON1
+                case STAGE_OFF0_ON1:
+                {
+                    check_0_update_cnt();
+                    is_preamble_short_delay_length_ok = is_preamble_short_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
+                    break;
+                }
+                //low falling edge: STAGE_ON1 -> STAGE_OFF1
+                case STAGE_PREAMBLE_LONGBIT_FINISHED:
+                {
+                    check_1_update_cnt();
+                    is_preamble_short_bit_length_ok = is_preamble_short_bit_length_ok || (_delay_counter > ShortBitCounterMin);
+                    break;
+                }
+                // high rising edge: STAGE_OFF1 -> STAGE_ON2
+                case STAGE_PREAMBLE_SHORTDELAY1_FINISHED:
+                {
+                    check_0_update_cnt();
+                    is_preamble_short_delay_length_ok = is_preamble_short_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
+                    break;
+                }
+                // low falling edge: STAGE_ON2 -> STAGE_OFFF2
+                case STAGE_PREAMBLE_SHORTBIT_FINISHED:
+                {
+                    check_1_update_cnt(); // second half
+                    is_preamble_long_bit_length_ok = is_preamble_long_bit_length_ok || (_delay_counter > LongBitCounterMin);
+                    break;
+                }
+                default:
+                {
+                    break;
+                }
+            }
+        }
     }
 }
 static inline void copy_data_frame_to_buffer(DataFrame_t* df)
@@ -815,128 +800,8 @@ static inline bool is_0_on_update_event()
     }
     return (LINE_HIGH_ON_UPDATE_EVENT == LineLevelState);
 }
-static inline bool is_0_to_1_edge_timing_ok()
-{
-#ifdef DEBUG_CHECK_IC_TIMING_1
-        dbg_pulse_1();
-#endif
-#ifdef DEBUG_CHECK_IC_TIMING_2
-        dbg_pulse_2();
-#endif
-    // current falling edge happens after Period ticks from previous rising edge
-    if(_ccr1 - StartStopBitPeriod  < 0)
-    {
-        if(StartStopBitPeriod - _ccr1 < max_delta_pwm_pulse)
-        {
-            return true;
-        }
-    }
-    else
-    {
-        if(_ccr1 - StartStopBitPeriod < max_delta_pwm_pulse)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-static inline bool is_first_0_to_1_edge_timing_ok()
-{
-#ifdef DEBUG_CHECK_IC_TIMING_1
-        dbg_pulse_1();
-#endif
-#ifdef DEBUG_CHECK_IC_TIMING_2
-        dbg_pulse_2();
-#endif
-    // current falling edge happens after Period ticks from previous rising edge
-    if(_ccr1 - StartStopBitLength  < 0)
-    {
-        if(StartStopBitLength - _ccr1 < max_delta_pwm_pulse)
-        {
-            return true;
-        }
-    }
-    else
-    {
-        if(_ccr1 - StartStopBitLength < max_delta_pwm_pulse)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-static inline bool is_1_to_0_edge_timing_ok()
-{
-#ifdef DEBUG_CHECK_IC_TIMING_1
-        dbg_pulse_1();
-#endif
-#ifdef DEBUG_CHECK_IC_TIMING_2
-        dbg_pulse_2();
-#endif
-    // falling edge happens after StartStopBitLength ticks from rising edge
-    if(_ccr2 - StartStopBitLength < 0)
-    {
-//#ifdef DEBUG
-//            dbg[dbg_index++] = StartStopBitLength - _ccr2 ;
-//#endif
-        if(StartStopBitLength - _ccr2 < max_delta_pwm_pulse)
-        {
-            return true;
-        }
-    }
-    else
-    {
-//#ifdef DEBUG
-//dbg[dbg_index++] = _ccr2 - StartStopBitLength;
-//#endif
-        if(_ccr2 - StartStopBitLength < max_delta_pwm_pulse)
-        {
 
-            return true;
-        }
-    }
-    return false;
-}
-static inline bool is_ic_after_interframe_delay()
-{
-#ifdef DEBUG_DELAY_CHECK_1
-        dbg_pulse_1();
-#endif
-#ifdef DEBUG_DELAY_CHECK_2
-        dbg_pulse_2();
-#endif
 
-    /* TODO: check alternative below
-    if(ccr1 > 2500)
-    {
-        return true;
-    }
-    return false;
-    */
-    return _is_interframe_delay_long_enough;
-
-/*
-    if(ccr1 - DelayBetweenDataFrames < 0)
-    {
-        int delta = DelayBetweenDataFrames - ccr1;
-        delay_delta[delaydelta_index++] = delta;
-        if(DelayBetweenDataFrames - ccr1 < max_delta_delay)
-        {
-            return true;
-        }
-    }
-    else
-    {
-        int delta = ccr1 - DelayBetweenDataFrames;
-        delay_delta[delaydelta_index++] = delta;
-        if(ccr1 - DelayBetweenDataFrames < max_delta_delay)
-        {
-            return true;
-        }
-    }
-    return false;
-*/
-}
 static inline void send_dataready_signal()
 {
     /// TODO: Implement me
