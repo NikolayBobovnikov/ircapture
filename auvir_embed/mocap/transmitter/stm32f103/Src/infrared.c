@@ -40,8 +40,15 @@ uint16_t pwm_period[100] = {0};
 uint8_t arr_index = 0;
 
 
-/// ============================== Functions ==============================
+/// ============================== Function declarations ==============================
+void notify_transmission_finished();
+static inline void reset_transmitter();
+static inline void switch_to_data_transmission_state();
+static inline void p_w_modulate(uint8_t bit);
+static inline void force_envelop_timer_output_on();
+static inline void force_envelop_timer_output_off();
 
+/// ============================== Function definitions ==============================
 /// exposed to external modules
 void send_data()
 {
