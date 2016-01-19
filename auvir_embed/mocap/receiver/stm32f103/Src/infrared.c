@@ -1,16 +1,14 @@
 #include "infrared.h"
-// b infrared.c:
 
-/// Parameters
+/// ============================ Parameters ============================
 extern TIM_HandleTypeDef* ic_tim_p;
 extern TIM_HandleTypeDef* up_tim_p;
 extern GPIO_TypeDef * GPIO_PORT_IR_IN;
 extern uint16_t GPIO_PIN_IR_IN;
 extern const bool _is_direct_logic;
 
-/*
- *  Constants
-*/
+
+/// ============================ Constants ============================
 // FIXME: TODO: keep values below in sync with transmitter
 const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for prescaler=14
 const uint16_t StartStopBitLength = 500 - 1;    // 270 works not reliably; 280 works; 400 chosen
@@ -33,10 +31,7 @@ const uint16_t DelayBetweenDataFramesToCheck = 19750; // DelayBetweenDataFramesT
 const uint16_t DelayCounterMin = 197 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
 
 
-/*
- *  Variables
-*/
-
+/// ============================ Variables ============================
 // main buffer for storing recent data frames
 #define  RX_BUF_SIZE 10
 DataFrame_t data_frames[RX_BUF_SIZE] = {0}; // TODO: verify initialization
@@ -96,11 +91,11 @@ int dbg_index=0;
 #define DEBUG_DATA_RECEIVED_1
 #endif
 
-/*
- *  Function definitions
-*/
+/// ============================ Function declarations ============================
 void send_data_uart(uint8_t * pdata, uint16_t size);
 
+/// ============================ Function definitions ============================
+// public
 inline void irreceiver_timer_up_handler()
 {
     if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_SET)
@@ -203,7 +198,7 @@ inline void irreceiver_timer_ic_handler()
     _is_rising_edge = false;
     _is_falling_edge = false;
 }
-
+// private
 static inline void receive_handler()
 {
     if(dbg_index >= 998)
