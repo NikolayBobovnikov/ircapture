@@ -132,10 +132,12 @@ int main(void)
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_SPI1_Init();
+  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(up_tim_p);
   HAL_TIM_IC_PWM_Start_IT(ic_tim_p);
   /* USER CODE END 2 */
@@ -224,50 +226,16 @@ void MX_TIM2_Init(void)
 {
 
     TIM_ClockConfigTypeDef sClockSourceConfig;
-    //TIM_MasterConfigTypeDef sMasterConfig;
-    TIM_SlaveConfigTypeDef sSlaveConfig;
-    TIM_IC_InitTypeDef sConfigIC;
-
     htim4.Instance = TIM2;
     htim4.Init.Prescaler = 71;
     htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 65535;
+    htim4.Init.Period = 10-1;
     htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim2);
     sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
     HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
 
-
-    HAL_TIM_IC_Init(&htim2);
-
-
-    /// TIM_TI1_SetConfig
-  //  ● Select the active input for TIMx_CCR1: write the CC1S bits to 01 in the TIMx_CCMR1 register (TI1 selected).
-      //SET_BIT(htim4.Instance->CCMR1, TIM_CCMR1_CC1S_0);
-
-  //  ● Select the active polarity for TI1FP1 (used both for capture in TIMx_CCR1 and counter clear):
-  //    write the CC1P bit to ‘0’ (active on rising edge).
-      //SET_BIT(htim4.Instance->CCMR1, TIM_CCER_CC1P)
-      sConfigIC.ICFilter = 0;
-      sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
-      sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-      HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1);
-
-  //  ● Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
-
-  //  ● Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
-
-      sConfigIC.ICFilter = 0;
-      sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;// TIM_ICPOLARITY_RISING? TODO
-      sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-      HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1);//TIM_CHANNEL_2? TODO
-  //  ● Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
-  //  ● Configure the slave mode controller in reset mode: write the SMS bits to 100 in the TIMx_SMCR register.
-      sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
-      sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-      HAL_TIM_SlaveConfigSynchronization(&htim2, &sSlaveConfig);
-  //  ● Enable the captures: write the CC1E and CC2E bits to ‘1’ in the TIMx_CCER register.
-
+    HAL_TIM_Base_Init(&htim2);
 }
 
 /* TIM3 init function */

@@ -33,12 +33,12 @@ enum StartStopSequenceStates
     STAGE_OFF0,
     STAGE_OFF0_ON1,
     STAGE_ON1,
-    STAGE_ON1_OFF1,
+    STAGE_PREAMBLE_LONGBIT_FINISHED,
     STAGE_OFF1,
-    STAGE_OFF1_ON2,
+    STAGE_PREAMBLE_SHORTDELAY1_FINISHED,
     STAGE_ON2,
-    STAGE_ON2_OFF2,
-    STAGE_OFF2,
+    STAGE_PREAMBLE_SHORTBIT_FINISHED,
+    STAGE_PREAMBLE_SHORTDELAY2_FINISHED,
     STAGE_OFF2_ON3,
     STAGE_ON3,
     STAGE_ON3_OFF3,
@@ -61,6 +61,7 @@ enum LineLevels
 /// Function prototypes
 
 // main functions used in timer interrupt handlers
+void irreceiver_timer_prob_handler(); // for update timer
 void irreceiver_timer_up_handler(); // for update timer
 void irreceiver_timer_ic_handler(); // for input capture timer
 

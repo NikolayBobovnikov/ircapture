@@ -4,6 +4,7 @@
 /// Parameters
 extern TIM_HandleTypeDef* ic_tim_p;
 extern TIM_HandleTypeDef* up_tim_p;
+extern TIM_HandleTypeDef  htim2;
 extern GPIO_TypeDef * GPIO_PORT_IR_IN;
 extern uint16_t GPIO_PIN_IR_IN;
 extern const bool _is_direct_logic;
@@ -19,6 +20,7 @@ const uint16_t PreambleDelayLength = 350 - 1;    // 270 works not reliably; 280 
 const uint16_t DataBitLength = 500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits.
                                                // Start/Stop bit should on and off in less than data bit length
 const uint16_t DelayBetweenDataFramesTotal = 15000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
+const uint16_t PreambleLength = 1800 - 1;
 const uint16_t HalfDataBitLength = 250 - 1;
 const uint16_t HalfPreambleShortBitLength = 175 - 1;
 const uint16_t HalfPreambleDelayLength = 175 - 1;
@@ -65,7 +67,7 @@ volatile uint8_t rx_bit = 0;
 volatile bool _is_rising_edge = false;
 volatile bool _is_falling_edge = false;
 volatile bool _is_uptimer_update_event = false;
-volatile bool _is_ictimer_update_event = false;
+volatile bool _is_prob_timer_update_event = false;
 
 bool is_ic_after_interframe_delay;
 bool is_preamble_long_bit_length_ok;
@@ -116,6 +118,32 @@ int dbg_index=0;
  *  Function definitions
 */
 
+inline void irreceiver_timer_prob_handler()
+{
+    if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_SET)
+    {
+        LineLevelState = LINE_HIGH_ON_UPDATE_EVENT;
+    }
+    else if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_RESET)
+    {
+        LineLevelState = LINE_LOW_ON_UPDATE_EVENT;
+
+#ifdef DEBUG_LOW_CHECK_2
+        dbg_pulse_2();
+#endif
+#ifdef DEBUG_LOW_CHECK_1
+        dbg_pulse_1();
+#endif
+    }
+    else
+    {
+        LineLevelState = LINE_UNDEFINED;
+        reset_delay_cnt();
+        return;
+    }
+    _is_prob_timer_update_event = true;
+    update_cnt();
+}
 inline void irreceiver_timer_up_handler()
 {
     if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_SET)
@@ -140,19 +168,18 @@ inline void irreceiver_timer_up_handler()
         return;
     }
     _is_uptimer_update_event = true;
-    _is_ictimer_update_event = false;
+    _is_prob_timer_update_event = false;
     _is_rising_edge = false;
     _is_falling_edge = false;
-    update_cnt();
     receive_handler();
 
 
 
 #ifdef DEBUG_UPD_EVENT_1
-        dbg_pulse_1();
+    dbg_pulse_1();
 #endif
 #ifdef DEBUG_UPD_EVENT_2
-        dbg_pulse_2();
+    dbg_pulse_2();
 #endif
 
 }
@@ -211,13 +238,7 @@ inline void irreceiver_timer_ic_handler()
 #endif
         }
     }
-    else if(__HAL_TIM_GET_FLAG(ic_tim_p, TIM_FLAG_UPDATE) != RESET)
-    {
-        if(__HAL_TIM_GET_IT_SOURCE(ic_tim_p, TIM_IT_UPDATE) != RESET)
-        {
-            _is_ictimer_update_event = true;
-        }
-    }
+
     _is_uptimer_update_event = false;
     LineLevelState = LINE_UNDEFINED;
 
@@ -225,7 +246,7 @@ inline void irreceiver_timer_ic_handler()
     // reset helper vars
     _is_rising_edge = false;
     _is_falling_edge = false;
-    _is_ictimer_update_event = false;
+    _is_prob_timer_update_event = false;
 
 }
 
@@ -275,7 +296,6 @@ static inline void receive_handler()
                 if(is_ic_after_interframe_delay) //TODO: check delay before data frame
                 {
                     is_ic_after_interframe_delay = false;
-                    up_tim_p->Instance->CNT = 0;
                     ReceiverState = RX_START_BIT_PROCESSING;
                     StartStopSequenceReceiveState = STAGE_PREAMBLE_LONGBIT_FINISHED;
                     // wait for half a period of startstop bit sequence
@@ -290,7 +310,6 @@ static inline void receive_handler()
             // Start sequence consists of signal sequence {1,0,1,0}, each bit of length PeriodOfStartStopBits
             switch(StartStopSequenceReceiveState)
             {
-                //Low: STAGE_ON1 -> STAGE_OFF1 input capture
                 case STAGE_PREAMBLE_LONGBIT_FINISHED:
                 {
                     if(is_1_to_0_edge())
@@ -305,7 +324,6 @@ static inline void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                //High: STAGE_OFF1 -> STAGE_ON2 input capture
                 case STAGE_PREAMBLE_SHORTDELAY1_FINISHED:
                 {
                     if(is_0_to_1_edge())
@@ -321,7 +339,6 @@ static inline void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                //Low: STAGE_ON2 -> STAGE_OFF2 input capture
                 case STAGE_PREAMBLE_SHORTBIT_FINISHED:
                 {
                     if(is_1_to_0_edge())
@@ -333,10 +350,7 @@ static inline void receive_handler()
 
                             // check signal level on each udpate during DelayCheckingPeriod
                             // check result of this checking before receiving first bit of data
-                            up_tim_p->Instance->ARR = ProbingPeriod;
-
-                            // limits period of checking signal level. Next expected event on [ic_tim_p] is update
-                            ic_tim_p->Instance->ARR = PreambleDelayLength;
+                            up_tim_p->Instance->ARR = PreambleDelayLength;
                         }
                     }
                     reset_receiver_state();
@@ -345,12 +359,15 @@ static inline void receive_handler()
                 case STAGE_PREAMBLE_SHORTDELAY2_FINISHED:
                 {
                     // this time it should be update event for ic timer
-                    if(_is_ictimer_update_event)
+                    if(_is_uptimer_update_event)
                     {
                         if(is_preamble_short_delay_length_ok)
                         {
-                            is_preamble_short_delay_length_ok = false;
                             up_tim_p->Instance->ARR = HalfDataBitLength;
+                            HAL_TIM_Base_Start_IT(up_tim_p);
+                            HAL_TIM_Base_Stop_IT(&htim2);
+
+                            is_preamble_short_delay_length_ok = false;
                             StartStopSequenceReceiveState = STAGE_0;
                             ReceiverState = RX_DATA_PROCESSNG;
                             DataFrameState = DATAFRAME_1_BEAMER_ID;
@@ -510,7 +527,8 @@ static inline void receive_handler()
                     // start verifying first short delay
                     if(_is_uptimer_update_event)
                     {
-                        up_tim_p->Instance->ARR = ProbingPeriod;
+                        HAL_TIM_Base_Start_IT(&htim2);
+                        HAL_TIM_Base_Stop_IT(up_tim_p);
                         StartStopSequenceReceiveState = STAGE_OFF0_ON1;
                         break;
                     }
@@ -633,12 +651,11 @@ static inline void reset_receiver_state()
     ReceiverState = RX_WAITING_FOR_START_BIT;
     StartStopSequenceReceiveState = STAGE_0;
     DataFrameState = DATAFRAME_1_BEAMER_ID;
-
-    ic_tim_p->Instance->ARR = 65535;
-    up_tim_p->Instance->ARR = 65535;
     reset_delay_cnt();
+    ic_tim_p->Instance->ARR = 65535;
     ic_tim_p->Instance->CNT = 0;
-    up_tim_p->Instance->CNT = 0;
+    HAL_TIM_Base_Stop_IT(up_tim_p);
+    HAL_TIM_Base_Start_IT(&htim2);
 }
 static inline void reset_delay_cnt()
 {
