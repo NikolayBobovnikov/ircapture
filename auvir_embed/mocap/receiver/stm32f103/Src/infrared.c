@@ -19,14 +19,11 @@ const uint16_t DataBitLength = 1500 - 1;        // TODO: justify value. Need to 
 const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
 
 
-
-
 const uint16_t HalfDataBitLength = 750 - 1;
 const uint16_t HalfStartStopBitLength = 250 - 1;
 const uint16_t HalfStartStopHalfDataBitLength = 1000 - 1;
 const uint16_t StartStopBitPeriod = 1000 - 1; // 2 * StartStopBitLength
 const uint16_t DelayCheckingPeriod = 100 - 1;
-
 const uint16_t max_delta_pwm_pulse = 40; // 30 work unreliably, which means that error/drift variance is more than 30 ticks. 35 works
 const uint16_t max_delta_pwm_width = 40; // 30 work unreliably, which means that error/drift variance is more than 30 ticks. 35 works
 const uint16_t  max_delta_cnt_delay = 10;
@@ -70,14 +67,14 @@ int dbg[1000]={0};
 int dbg_index=0;
 
 //#define DEBUG_READING_DATA_1
-#define DEBUG_READING_DATA_2
-#define DEBUG_DATA_RECEIVED_1
-//#define DEBUG_DATA_RECEIVED_2
+//#define DEBUG_READING_DATA_2
+//#define DEBUG_DATA_RECEIVED_1
+#define DEBUG_DATA_RECEIVED_2
 //#define DEBUG_UPD_EVENT_1
 //#define DEBUG_UPD_EVENT_2
 //#define DEBUG_LOW_CHECK_1
 //#define DEBUG_LOW_CHECK_2
-//#define DEBUG_DELAY_CHECK_1
+#define DEBUG_DELAY_CHECK_1
 //#define DEBUG_DELAY_CHECK_2
 //#define DEBUG_0_to_1_EDGE_1
 //#define DEBUG_0_to_1_EDGE_2
@@ -102,6 +99,7 @@ int dbg_index=0;
 /*
  *  Function definitions
 */
+void send_data_uart(uint8_t * pdata, uint16_t size);
 
 inline void irreceiver_timer_up_handler()
 {
@@ -706,7 +704,7 @@ static inline void receive_handler()
                 // we successfully received data, send corresponding event for listeners to read from the data buffer
 
                 /// verify correctness
-                if( rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev == 0)
+                if( 0 == (rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev))
                 {
                     copy_data_frame_to_buffer(&rx_data_frame);
                     send_dataready_signal();
@@ -959,7 +957,7 @@ static inline void send_dataready_signal()
     // So the first sensor (with ID == 1) checks if ID_msg == N, if so - it is next to send data
 
 
-    send_data_uart(&rx_data_frame, sizeof(rx_data_frame));
+    send_data_uart( (uint8_t *)&rx_data_frame, sizeof(rx_data_frame));
 }
 static inline void dbg_pulse_1()
 {
