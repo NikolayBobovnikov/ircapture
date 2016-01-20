@@ -4,11 +4,12 @@
 /// ================== Parameters ================
 //TODO: cleanup when done debugging
 extern const bool _debug;
+//TODO: cleanup when done debugging
+const bool _is_direct_logic = true;
+
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;
-const bool _is_direct_logic = true;
-
 
 /// ================== Variables ================
 uint8_t StartStopSequenceTransmitState = STAGE_0;
@@ -31,9 +32,9 @@ static inline void switch_to_data_transmission_state();
 static inline void p_w_modulate(uint8_t bit);
 static inline void force_envelop_timer_output_on();
 static inline void force_envelop_timer_output_off();
-static inline void nop();
 
 
+/// ================== Functions ================
 void send_data()
 {
     // fill tx_data_frame with data
@@ -108,7 +109,7 @@ void transmit_handler()
     {
         case TX_WAITING:
         {
-            nop();
+            ; // do nothing
             break;
         }
         case TX_START_BIT:
@@ -354,5 +355,4 @@ static inline void force_envelop_timer_output_off()
     }
 
 }
-static inline void nop(){}
 
