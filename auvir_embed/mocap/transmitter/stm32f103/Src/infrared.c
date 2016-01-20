@@ -215,11 +215,15 @@ void transmit_handler()
                     }
                     else
                     {
+                        /// start epologue
+
                         /* Set the Autoreload value for start sequence bits*/
+                        force_envelop_timer_output_off();
                         phtim_envelop->Instance->ARR = PreambleDelayLength;
 
                         // move on to next stage
                         TransmitterState = TX_EPILOGUE;
+                        StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
                         DataFrameState = DATAFRAME_0_NODATA;
                         tx_current_bit_pos = 0;
                     }
@@ -256,7 +260,6 @@ void transmit_handler()
                     StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_2;
                     break;
                 }
-
                 // transitional state
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
                 case STAGE_PREAMBLE_DELAY_2:

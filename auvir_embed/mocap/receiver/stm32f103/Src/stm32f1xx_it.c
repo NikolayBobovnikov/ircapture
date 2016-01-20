@@ -40,7 +40,6 @@
 // TODO: read more about .h and .c file including during compiling. Check if this include is needed
 // #include "infrared.h"
 
-extern void irreceiver_timer_prob_handler();
 extern void irreceiver_timer_up_handler();
 extern void irreceiver_timer_ic_handler();
 
@@ -115,7 +114,6 @@ void DMA1_Channel3_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {   
     /* USER CODE BEGIN TIM3_IRQn 0 */
-    irreceiver_timer_prob_handler();
     /* USER CODE END TIM3_IRQn 0 */
     HAL_TIM_IRQHandler(&htim2);
     /* USER CODE BEGIN TIM3_IRQn 1 */
