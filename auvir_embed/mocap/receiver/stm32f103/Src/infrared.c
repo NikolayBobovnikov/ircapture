@@ -4,7 +4,6 @@
 extern TIM_HandleTypeDef* ptim_input_capture;
 extern TIM_HandleTypeDef* ptim_data_read;
 extern TIM_HandleTypeDef* ptim_cnt_update;
-extern TIM_HandleTypeDef  htim2;
 extern GPIO_TypeDef * GPIO_PORT_IR_IN;
 extern uint16_t GPIO_PIN_IR_IN;
 extern const bool _is_direct_logic;

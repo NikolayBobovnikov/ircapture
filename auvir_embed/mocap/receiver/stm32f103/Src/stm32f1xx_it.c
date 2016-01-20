@@ -117,7 +117,7 @@ void TIM2_IRQHandler(void)
     /* USER CODE BEGIN TIM3_IRQn 0 */
     irreceiver_timer_prob_handler();
     /* USER CODE END TIM3_IRQn 0 */
-    HAL_TIM_IRQHandler(&htim3);
+    HAL_TIM_IRQHandler(&htim2);
     /* USER CODE BEGIN TIM3_IRQn 1 */
     /* USER CODE END TIM3_IRQn 1 */
 }
