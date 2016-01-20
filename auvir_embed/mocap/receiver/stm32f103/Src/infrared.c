@@ -40,8 +40,8 @@ int dbg[1000]={0};
 int dbg_index=0;
 
 //#define DEBUG_READING_DATA_1
-#define DEBUG_READING_DATA_2
-#define DEBUG_DATA_RECEIVED_1
+//#define DEBUG_READING_DATA_2
+//#define DEBUG_DATA_RECEIVED_1
 //#define DEBUG_DATA_RECEIVED_2
 //#define DEBUG_UPD_EVENT_1
 //#define DEBUG_UPD_EVENT_2
@@ -217,7 +217,7 @@ static inline void receive_handler()
         case RX_WAITING_FOR_START_BIT:
         {
             // ensure than last data frame was DelayBetweenDataFrames ticks before
-            if(is_0_to_1_edge() )
+            if(is_0_to_1_edge() ) // rising edge -> bit may have started
             {
                 if(is_correct_timming_interframe_delay()) //TODO: check delay before data frame
                 {
@@ -274,6 +274,7 @@ static inline void receive_handler()
                             // After second preamble bit there is last preamble delay, after which data will begin
                             // Thus, need to start dataread timer here (using last edge as sync event)
                             HAL_TIM_Base_Start_IT(ptim_data_read);
+                            ptim_data_read->Instance->CNT = 0;
                             ptim_data_read->Instance->ARR = PreambleDelayLength;
                             StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_2;
                             break;
@@ -284,12 +285,18 @@ static inline void receive_handler()
                 }
                 case STAGE_PREAMBLE_DELAY_2:
                 {
+                    //FIXME TODO ISSUE
+
                     // this time it should be update event for dataread timer started on previous step
                     if(_is_uptimer_update_event) // delay finished
                     {
                         /// don't check delay length here
 
-                        ptim_data_read->Instance->ARR = HalfDataBitLength;
+                        // TODO FIXME: why the hell it needs that much time of delay???
+                        // At this point we are expected to be at the very beginning of the data frame, so
+                        // to start reading data bits need to wait exactly HalfDataBitLength ticks
+                        // But we are out of sync with offset of DataBitLength, for some reason
+                        ptim_data_read->Instance->ARR = DataBitLength + DataBitLength;
                         // preamble is received, stopping timer verifying preamble bits
 
                         StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_1; // TODO: needless?
@@ -343,13 +350,6 @@ static inline void receive_handler()
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
-
-#ifdef DEBUG_READING_DATA_1
-                            dbg_pulse_1();
-#endif
-#ifdef DEBUG_READING_DATA_2
-                            dbg_pulse_2();
-#endif
                         }
                         // move to next state and wait a delay between data fields
                         else
@@ -380,12 +380,6 @@ static inline void receive_handler()
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
-#ifdef DEBUG_READING_DATA_1
-                            dbg_pulse_1();
-#endif
-#ifdef DEBUG_READING_DATA_2
-                            dbg_pulse_2();
-#endif
                         }
                         else
                         {
@@ -415,12 +409,6 @@ static inline void receive_handler()
                             }
                             /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
                             rx_current_bit_pos++;
-#ifdef DEBUG_READING_DATA_1
-                            dbg_pulse_1();
-#endif
-#ifdef DEBUG_READING_DATA_2
-                            dbg_pulse_2();
-#endif
                         }
 
                         if(rx_current_bit_pos == rx_total_bits)
@@ -435,6 +423,13 @@ static inline void receive_handler()
                     }
 
                 }
+
+#ifdef DEBUG_READING_DATA_1
+                            dbg_pulse_1();
+#endif
+#ifdef DEBUG_READING_DATA_2
+                            dbg_pulse_2();
+#endif
             }// end of _is_timer_update
             /// else - input capture during data receiving, nothing to do.
             /// TODO: turn off input capture timer when it is not supposed to be used
@@ -450,7 +445,7 @@ static inline void receive_handler()
                     // start verifying first short delay
                     if(_is_uptimer_update_event)
                     {
-                    	ptim_input_capture->Instance->CNT=0;
+                        ptim_input_capture->Instance->CNT=0;
                     	HAL_TIM_Base_Stop_IT(ptim_data_read);
                         StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_1;
                         break;

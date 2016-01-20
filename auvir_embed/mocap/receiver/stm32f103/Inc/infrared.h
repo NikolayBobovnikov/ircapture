@@ -27,35 +27,14 @@
 #define PreambleDelayLength         (750 - 1)    // 270 works not reliably; 280 works;  chosen more
 #define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
 #define InterframeDelayLength       (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
-#define HalfDataBitLength   (250 - 1)   //(DataBitLength + 1) / 2 - 1; // TODO: check the value
+#define HalfDataBitLength   ((DataBitLength + 1) / 2 - 1)   //(DataBitLength + 1) / 2 - 1; // TODO: check the value
 #define max_delta_pwm_pulse 40          // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
 #define max_delta_pwm_width 40          // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
+#define PreambleTotalLength         (3000 - 1)
 
-#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.1) // 5%
+#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.1) // 10%
 #define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1) // 10%
 #define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1) // 10%
-
-
-
-// for checking with separate timer
-#define PreambleProbingPeriod (10 - 1)
-#define InterframeDelayProbingPeriod (100 - 1)
-
-// take into account off-by-one offset in timer periods
-#define InterframeDelayCounterExpected  ((InterframeDelayLength + 1 - PreambleDelayLength + 1) / InterframeDelayProbingPeriod) // TODO: check for necessity of PreambleDelayLength
-#define PreambleLongBitCounterExpected  ((PreambleBitLength + 1)  / PreambleProbingPeriod)
-#define PreambleDelayCounterExpected    ((PreambleDelayLength + 1)    / PreambleProbingPeriod)
-
-#define max_delta_cnt_interframe_delay          (int)(InterframeDelayCounterExpected * 0.05) // 5%
-#define max_delta_cnt_preamble_long_bit_length  (int)(PreambleLongBitCounterExpected * 0.1) // 10%
-#define max_delta_cnt_preamble_delay_length     (int)(PreambleDelayCounterExpected * 0.1) // 10%
-
-
-// take into account off-by-one offset in timer periods
-#define InterframeDelayCounterMin   (InterframeDelayCounterExpected  - max_delta_cnt_interframe_delay)
-#define PreambleLongBitCounterMin   (PreambleLongBitCounterExpected  - max_delta_cnt_preamble_long_bit_length)
-#define PreambleDelayCounterMin     (PreambleDelayCounterExpected    - max_delta_cnt_preamble_delay_length)
-
 
 ///====================== Type definitions ======================
 // TODO: learn more about typedefs and structs
@@ -81,7 +60,8 @@ enum StartStopSequenceStates
     STAGE_PREAMBLE_BIT_1,
     STAGE_PREAMBLE_DELAY_1,
     STAGE_PREAMBLE_BIT_2,
-    STAGE_PREAMBLE_DELAY_2
+    STAGE_PREAMBLE_DELAY_2,
+    STAGE_PREAMBLE_STOP
 };
 enum DataFrameStates
 {
