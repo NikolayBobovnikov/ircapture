@@ -1,38 +1,19 @@
 #include "infrared.h"
 #include <stdbool.h>
 
-
+/// ================== Parameters ================
 //TODO: cleanup when done debugging
 extern const bool _debug;
-
-
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;
-
-const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 1880 - 1;
-const uint16_t pwm_pulse_width = 940 - 1;
 const bool _is_direct_logic = true;
 
-// INFO: values below has been chosen manually
-// need to work with IR receiver TL1838, and to be as low as possible,
-// but not too low - beware of jitter!
-// FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
-const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for particular prescaler
-const uint16_t PreambleLongBitLength = 500 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t PreambleShortBitLength = 500 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t PreambleDelayLength = 300 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t DataBitLength = 300 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-const uint16_t DelayBetweenDataFramesTotal = 13000 - 1;//12900 doesn't work; 13000 works; chosen more
 
-///TODO: refactor constants below
-typedef struct
-{
-    uint8_t _1_beamer_id;
-    uint8_t _2_angle_code;
-    uint8_t _3_angle_code_rev;
-} DataFrame_t;
+/// ================== Variables ================
+uint8_t StartStopSequenceTransmitState = STAGE_0;
+uint8_t DataFrameState = DATAFRAME_0_NODATA;
+uint8_t TransmitterState = TX_WAITING;
 
 DataFrame_t tx_data_frame;
 volatile size_t tx_total_bits = 0;
@@ -43,6 +24,14 @@ uint8_t level[100] = {0};
 uint16_t pwm_period[100] = {0};
 uint8_t arr_index = 0;
 
+
+/// ================== Private function declarations ================
+static inline void reset_transmitter();
+static inline void switch_to_data_transmission_state();
+static inline void p_w_modulate(uint8_t bit);
+static inline void force_envelop_timer_output_on();
+static inline void force_envelop_timer_output_off();
+static inline void nop();
 
 
 void send_data()

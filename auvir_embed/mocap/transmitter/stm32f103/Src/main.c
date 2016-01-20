@@ -35,6 +35,7 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+#include "infrared.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -58,12 +59,6 @@ const bool _debug = true;
 
 TIM_HandleTypeDef * phtim_envelop = &htim3;
 TIM_HandleTypeDef * phtim_pwm = &htim4;
-
-extern const uint16_t pwm_timer_prescaler;
-extern const uint16_t pwm_timer_period;
-extern const uint16_t pwm_pulse_width;
-extern const uint16_t envelop_timer_prescaler;
-extern const uint16_t DataBitLength;
 
 /* USER CODE END PV */
 

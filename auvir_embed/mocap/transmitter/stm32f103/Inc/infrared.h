@@ -3,6 +3,22 @@
 
 #include "stm32f1xx_hal.h"
 
+// INFO: values below has been chosen manually
+// need to work with IR receiver TL1838, and to be as low as possible,
+// but not too low - beware of jitter!
+// FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
+#define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
+#define PreambleLongBitLength       (750 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleShortBitLength      (750 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleDelayLength         (500 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+#define DelayBetweenDataFramesTotal (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
+
+#define pwm_timer_prescaler     0
+#define pwm_timer_period        (1880 - 1)
+#define pwm_pulse_width         (940 - 1)
+
+
 enum TransmitterStates
 {
     TX_WAITING,
@@ -11,7 +27,6 @@ enum TransmitterStates
     TX_STOP_BIT,
     TX_DELAY
 };
-volatile uint8_t TransmitterState = TX_WAITING;
 
 enum DataFrameStates
 {
@@ -20,7 +35,6 @@ enum DataFrameStates
     DATAFRAME_2_ANGLE,
     DATAFRAME_3_TIME
 };
-volatile uint8_t DataFrameState = DATAFRAME_0_NODATA;
 
 enum StartStopSequenceStates
 {
@@ -32,17 +46,15 @@ enum StartStopSequenceStates
     STAGE_ON3,
     STAGE_OFF3
 };
-volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
+
+typedef struct
+{
+    uint8_t _1_beamer_id;
+    uint8_t _2_angle_code;
+    uint8_t _3_angle_code_rev;
+} DataFrame_t;
 
 void send_data();
 void transmit_handler();
-
-static inline void reset_transmitter();
-static inline void switch_to_data_transmission_state();
-static inline void p_w_modulate(uint8_t bit);
-static inline void force_envelop_timer_output_on();
-static inline void force_envelop_timer_output_off();
-static inline void nop();
-
 
 #endif //INFRARED_H
