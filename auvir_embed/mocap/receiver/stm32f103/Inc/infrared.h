@@ -26,6 +26,14 @@
 #define max_delta_pwm_pulse 40          // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
 #define max_delta_pwm_width 40          // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
 
+#define max_delta_interframe_delay          (int)(InterframeDelayLength * 0.05) // 5%
+#define max_delta_preamble_long_bit_length  (int)(PreambleLongBitLength * 0.1) // 10%
+#define max_delta_preamble_short_bit_length (int)(PreambleShortBitLength * 0.1) // 10%
+#define max_delta_preamble_delay_length     (int)(PreambleDelayLength * 0.1) // 10%
+
+
+
+// for checking with separate timer
 #define PreambleProbingPeriod (10 - 1)
 #define InterframeDelayProbingPeriod (100 - 1)
 

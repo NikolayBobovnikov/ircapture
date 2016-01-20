@@ -775,6 +775,156 @@ static inline void get_logical_level()
     }
 }
 
+static inline bool is_0_to_1_edge_timing_ok()
+{
+#ifdef DEBUG_CHECK_IC_TIMING_1
+        dbg_pulse_1();
+#endif
+#ifdef DEBUG_CHECK_IC_TIMING_2
+        dbg_pulse_2();
+#endif
+    // current falling edge happens after Period ticks from previous rising edge
+    if(_ccr1 - StartStopBitPeriod  < 0)
+    {
+        if(StartStopBitPeriod - _ccr1 < max_delta_pwm_pulse)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        if(_ccr1 - StartStopBitPeriod < max_delta_pwm_pulse)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+static inline bool is_first_0_to_1_edge_timing_ok()
+{
+#ifdef DEBUG_CHECK_IC_TIMING_1
+        dbg_pulse_1();
+#endif
+#ifdef DEBUG_CHECK_IC_TIMING_2
+        dbg_pulse_2();
+#endif
+    // current falling edge happens after Period ticks from previous rising edge
+    if(_ccr1 - StartStopBitLength  < 0)
+    {
+        if(StartStopBitLength - _ccr1 < max_delta_pwm_pulse)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        if(_ccr1 - StartStopBitLength < max_delta_pwm_pulse)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+static inline bool is_1_to_0_edge_timing_ok()
+{
+#ifdef DEBUG_CHECK_IC_TIMING_1
+        dbg_pulse_1();
+#endif
+#ifdef DEBUG_CHECK_IC_TIMING_2
+        dbg_pulse_2();
+#endif
+    // falling edge happens after StartStopBitLength ticks from rising edge
+    if(_ccr2 - StartStopBitLength < 0)
+    {
+//#ifdef DEBUG
+//            dbg[dbg_index++] = StartStopBitLength - _ccr2 ;
+//#endif
+        if(StartStopBitLength - _ccr2 < max_delta_pwm_pulse)
+        {
+            return true;
+        }
+    }
+    else
+    {
+//#ifdef DEBUG
+//dbg[dbg_index++] = _ccr2 - StartStopBitLength;
+//#endif
+        if(_ccr2 - StartStopBitLength < max_delta_pwm_pulse)
+        {
+
+            return true;
+        }
+    }
+    return false;
+}
+static inline bool is_ic_after_interframe_delay()
+{
+#ifdef DEBUG_DELAY_CHECK_1
+        dbg_pulse_1();
+#endif
+#ifdef DEBUG_DELAY_CHECK_2
+        dbg_pulse_2();
+#endif
+
+    /* TODO: check alternative below
+    if(ccr1 > 2500)
+    {
+        return true;
+    }
+    return false;
+    */
+    return _is_interframe_delay_long_enough;
+
+/*
+    if(ccr1 - DelayBetweenDataFrames < 0)
+    {
+        int delta = DelayBetweenDataFrames - ccr1;
+        delay_delta[delaydelta_index++] = delta;
+        if(DelayBetweenDataFrames - ccr1 < max_delta_delay)
+        {
+            return true;
+        }
+    }
+    else
+    {
+        int delta = ccr1 - DelayBetweenDataFrames;
+        delay_delta[delaydelta_index++] = delta;
+        if(ccr1 - DelayBetweenDataFrames < max_delta_delay)
+        {
+            return true;
+        }
+    }
+    return false;
+*/
+}
+
+static inline bool is_correct_timming_interframe_delay()
+{
+    return (ccr1 < InterframeDelayLength + max_delta_interframe_delay)
+            &&
+           (ccr1 > InterframeDelayLength - max_delta_interframe_delay);
+}
+static inline bool is_correct_timming_preamble_long_bit()
+{
+    return (ccr1 < PreambleLongBitLength + max_delta_preamble_long_bit_length)
+            &&
+           (ccr1 > PreambleLongBitLength - max_delta_preamble_long_bit_length);
+}
+static inline bool is_correct_timming_preamble_short_bit()
+{
+    return (ccr1 < PreambleShortBitLength + max_delta_preamble_short_bit_length)
+            &&
+           (ccr1 > PreambleShortBitLength - max_delta_preamble_short_bit_length);
+}
+static inline bool is_correct_timming_preamble_delay()
+{
+    return (ccr1 < PreambleShortBitLength + max_delta_preamble_short_bit_length)
+            &&
+           (ccr1 > PreambleShortBitLength - max_delta_preamble_short_bit_length);
+}
+
+
+
 static inline void send_dataready_signal()
 {
     /// TODO: Implement me

@@ -12,7 +12,7 @@ extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;
 
 /// ================== Variables ================
-uint8_t StartStopSequenceTransmitState = STAGE_0;
+uint8_t StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
 uint8_t DataFrameState = DATAFRAME_0_NODATA;
 uint8_t TransmitterState = TX_WAITING;
 
@@ -48,7 +48,7 @@ void send_data()
     // TODO: send updated time
     if(TX_WAITING == TransmitterState)
     {
-        TransmitterState = TX_START_BIT;
+        TransmitterState = TX_PREAMBLE;
     }
     else
     {
@@ -112,40 +112,45 @@ void transmit_handler()
             ; // do nothing
             break;
         }
-        case TX_START_BIT:
+        case TX_PREAMBLE:
         {
             // Start sequence consists of signal sequence {1,0,1}
             switch(StartStopSequenceTransmitState)
             {
                 // First (long) bit
-                case STAGE_0:
+                case STAGE_PREAMBLE_BIT_1:
                 {
-                    phtim_envelop->Instance->ARR = PreambleLongBitLength;
-                    StartStopSequenceTransmitState = STAGE_ON1;
                     force_envelop_timer_output_on();
+                    phtim_envelop->Instance->ARR = PreambleBitLength;
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_1;
                     break;
                 }
                 // First short delay
-                case STAGE_ON1:
+                case STAGE_PREAMBLE_DELAY_1:
                 {
-                    phtim_envelop->Instance->ARR = PreambleDelayLength;
-                    StartStopSequenceTransmitState = STAGE_OFF1;
                     force_envelop_timer_output_off(); //TODO done anyway in timer interrupt handler?
+                    phtim_envelop->Instance->ARR = PreambleDelayLength;
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_2;
                     break;
                 }
                 // Second (short) bit
-                case STAGE_OFF1:
+                case STAGE_PREAMBLE_BIT_2:
                 {
-                    phtim_envelop->Instance->ARR = PreambleShortBitLength;
-                    StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
+                    phtim_envelop->Instance->ARR = PreambleBitLength;
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_2;
                     break;
                 }
                 // Second short delay
-                case STAGE_ON2:
+                case STAGE_PREAMBLE_DELAY_2:
                 {
+                    force_envelop_timer_output_off();
                     phtim_envelop->Instance->ARR = PreambleDelayLength;
-                    switch_to_data_transmission_state();
+
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
+                    TransmitterState = TX_DATA;
+                    DataFrameState = DATAFRAME_1_BEAMER_ID;
+                    tx_current_bit_pos = 0;
                     break;
                 }
             }
@@ -214,7 +219,7 @@ void transmit_handler()
                         phtim_envelop->Instance->ARR = PreambleDelayLength;
 
                         // move on to next stage
-                        TransmitterState = TX_STOP_BIT;
+                        TransmitterState = TX_EPILOGUE;
                         DataFrameState = DATAFRAME_0_NODATA;
                         tx_current_bit_pos = 0;
                     }
@@ -225,41 +230,40 @@ void transmit_handler()
             // TODO: check if some errors or other options are possible here?
             break;
         }
-        case TX_STOP_BIT:
+        case TX_EPILOGUE:
         {
-            // TODO: check if worth to move ARR update to step abore
-
             // Start sequence consists of signal sequence {1,0,1}
             switch(StartStopSequenceTransmitState)
             {
-                case STAGE_0:
+                case STAGE_PREAMBLE_BIT_1:
                 {
-                    phtim_envelop->Instance->ARR = PreambleShortBitLength;
-                    StartStopSequenceTransmitState = STAGE_ON1;
                     force_envelop_timer_output_on();
+                    phtim_envelop->Instance->ARR = PreambleBitLength;
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_1;
                     break;
                 }
-                case STAGE_ON1:
+                case STAGE_PREAMBLE_DELAY_1:
                 {
-                    phtim_envelop->Instance->ARR = PreambleDelayLength;
-                    StartStopSequenceTransmitState = STAGE_OFF1;
                     force_envelop_timer_output_off();
+                    phtim_envelop->Instance->ARR = PreambleDelayLength;
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_2;
                     break;
                 }
-                case STAGE_OFF1:
+                case STAGE_PREAMBLE_BIT_2:
                 {
-                    phtim_envelop->Instance->ARR = PreambleLongBitLength;
-                    StartStopSequenceTransmitState = STAGE_ON2;
                     force_envelop_timer_output_on();
+                    phtim_envelop->Instance->ARR = PreambleBitLength;
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_2;
                     break;
                 }
 
                 // transitional state
                 // TODO: check if possible to move to beginning of next state (thus remove delay)
-                case STAGE_ON2:
+                case STAGE_PREAMBLE_DELAY_2:
                 {
+                    force_envelop_timer_output_off();
                     phtim_envelop->Instance->ARR = DelayBetweenDataFramesTotal;
-                    StartStopSequenceTransmitState = STAGE_0;
+                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
                     TransmitterState = TX_DELAY;
                     break;
                 }
@@ -278,17 +282,13 @@ static inline void reset_transmitter()
 {
     TransmitterState = TX_WAITING;
     // TODO: add other steps if needed
-    phtim_envelop->Instance->ARR = PreambleLongBitLength;
-    StartStopSequenceTransmitState = STAGE_0;
+    phtim_envelop->Instance->ARR = PreambleBitLength;
+    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
     DataFrameState = DATAFRAME_0_NODATA;
 }
 static inline void switch_to_data_transmission_state()
 {
-    TransmitterState = TX_DATA;
-    DataFrameState = DATAFRAME_1_BEAMER_ID;
-    StartStopSequenceTransmitState = STAGE_0;
-    tx_current_bit_pos = 0;
-    force_envelop_timer_output_off();
+
 }
 static inline void p_w_modulate(uint8_t bit)
 {
