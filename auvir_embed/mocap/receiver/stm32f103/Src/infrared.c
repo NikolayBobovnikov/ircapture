@@ -185,8 +185,6 @@ inline void irreceiver_timer_ic_handler()
     }
 
     _is_uptimer_update_event = false;
-    _is_rising_edge = false;
-    _is_falling_edge = false;
     LineLevelState = LINE_UNDEFINED;
 
     receive_handler();
@@ -297,6 +295,7 @@ static inline void receive_handler()
 
                             _is_preamble_short_bit_length_ok = false;
                             StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_2;
+                            break;
                         }
                     }
                     reset_receiver_state();
@@ -606,28 +605,21 @@ static inline void reset_delay_cnt()
 }
 static inline void check_0_update_cnt()
 {
-    if(is_0_on_update_event())
-    {
-        _delay_counter++;
-    }
-    else if(is_1_on_update_event())
+    if(is_1_on_update_event())
     {
         reset_delay_cnt();
     }
 }
 static inline void check_1_update_cnt()
 {
-    if(is_1_on_update_event())
-    {
-        _delay_counter++;
-    }
-    else if(is_0_on_update_event())
+    if(is_0_on_update_event())
     {
         reset_delay_cnt();
     }
 }
 static inline void update_cnt()
 {
+	_delay_counter++;
     // reset all vars
     // TODO: check necessity
     _is_ic_after_interframe_delay       = false;
@@ -653,20 +645,22 @@ static inline void update_cnt()
             {
                 case STAGE_PREAMBLE_LONG_BIT:
                 {
-                    check_0_update_cnt();
+                    check_1_update_cnt();
+                    int m = PreambleLongBitCounterMin;
                     _is_preamble_long_bit_length_ok = _is_preamble_long_bit_length_ok || (_delay_counter > PreambleLongBitCounterMin);
                     break;
                 }
                 case STAGE_PREAMBLE_DELAY_1:
                 {
-                    check_1_update_cnt();
-                    _is_preamble_short_bit_length_ok = _is_preamble_short_bit_length_ok || (_delay_counter > PreambleShortBitCounterMin);
+                    check_0_update_cnt();
+                    int m = PreambleDelayCounterMin;
+                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > PreambleDelayCounterMin);
                     break;
                 }
                 case STAGE_PREAMBLE_SHORT_BIT:
                 {
-                    check_0_update_cnt();
-                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > PreambleDelayCounterMin);
+                    check_1_update_cnt();
+                    _is_preamble_short_bit_length_ok = _is_preamble_short_bit_length_ok || (_delay_counter > PreambleShortBitCounterMin);
                     break;
                 }
             }
@@ -703,6 +697,13 @@ static inline void update_cnt()
                     check_1_update_cnt();
                     _is_preamble_long_bit_length_ok = _is_preamble_long_bit_length_ok || (_delay_counter > max_delta_cnt_preamble_long_bit_length);
                     break;
+                }
+                //high rising edge: STAGE_OFF1 -> STAGE_ON1
+                case STAGE_PREAMBLE_DELAY_1:
+                {
+                      check_0_update_cnt();
+                      _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > max_delta_cnt_preamble_delay_length);
+                      break;
                 }
                 default:
                 {
