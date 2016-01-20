@@ -9,7 +9,26 @@
 // TODO: cleanup when done debugging
 #define DEBUG
 
-/// Type definitions
+///====================== parameters ======================
+// FIXME: TODO: keep values below in sync with transmitter
+#define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
+#define PreambleLongBitLength       (750 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleShortBitLength      (750 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleDelayLength         (500 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+#define DelayBetweenDataFramesTotal (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
+
+#define pwm_timer_prescaler     0
+#define pwm_timer_period        (1880 - 1)
+#define pwm_pulse_width         (940 - 1)
+
+#define HalfDataBitLength   250 - 1 //(DataBitLength + 1) / 2 - 1; // TODO: check the value
+#define max_delta_pwm_pulse 40      // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
+#define max_delta_pwm_width 40      // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
+#define ProbingPeriod       10 - 1
+#define max_delta_cnt_delay 100
+
+///====================== Type definitions ======================
 // TODO: learn more about typedefs and structs
 typedef struct
 {
@@ -29,20 +48,11 @@ enum ReceiverStates
 };
 enum StartStopSequenceStates
 {
-    STAGE_0,
     STAGE_OFF0,
-    STAGE_OFF0_ON1,
-    STAGE_ON1,
-    STAGE_PREAMBLE_LONGBIT_FINISHED,
-    STAGE_OFF1,
-    STAGE_PREAMBLE_SHORTDELAY1_FINISHED,
-    STAGE_ON2,
-    STAGE_PREAMBLE_SHORTBIT_FINISHED,
-    STAGE_PREAMBLE_SHORTDELAY2_FINISHED,
-    STAGE_OFF2_ON3,
-    STAGE_ON3,
-    STAGE_ON3_OFF3,
-    STAGE_OFF3
+    STAGE_PREAMBLE_LONG_BIT,
+    STAGE_PREAMBLE_DELAY_1,
+    STAGE_PREAMBLE_SHORT_BIT,
+    STAGE_PREAMBLE_DELAY_2
 };
 enum DataFrameStates
 {
@@ -58,34 +68,11 @@ enum LineLevels
 };
 
 
-/// Function prototypes
-
+///====================== Function prototypes ======================
 // main functions used in timer interrupt handlers
 void irreceiver_timer_prob_handler(); // for update timer
 void irreceiver_timer_up_handler(); // for update timer
 void irreceiver_timer_ic_handler(); // for input capture timer
-
-// main routine called from timer interrupts to manage receiving process
-static inline void receive_handler();
-
-// helper functions
-static inline bool is_1_to_0_edge();
-static inline bool is_0_to_1_edge();
-static inline bool is_1_on_update_event();
-static inline bool is_0_on_update_event();
-static inline void reset_receiver_state();
-static inline void reset_delay_cnt();
-static inline void update_cnt();
-static inline void check_0_update_cnt();
-static inline void check_1_update_cnt();
-static inline void send_dataready_signal();
-
-// function to copy data frame to the main buffer, when data is received successfully
-static inline void copy_data_frame_to_buffer(DataFrame_t* df);
-
-// for debugging. TODO: cleanup when done
-static inline void dbg_pulse_1();
-static inline void dbg_pulse_2();
 
 
 #endif //INFRARED_H

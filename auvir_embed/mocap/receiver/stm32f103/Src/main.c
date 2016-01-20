@@ -35,6 +35,8 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+#include "infrared.h"
+
 // TODO: cleanup when done debugging
 #define DEBUG
 /* USER CODE END Includes */
@@ -65,7 +67,7 @@
  *              disconnected.
  *              When sensor is disconnected, free according item in the array
  * 4.
- * /
+ */
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
@@ -83,14 +85,12 @@ TIM_HandleTypeDef htim4;
 /// parameters for receiver ===================
 const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
 const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
-const TIM_HandleTypeDef* ic_tim_p = &htim4;
-const TIM_HandleTypeDef* up_tim_p = &htim3;
+TIM_HandleTypeDef* ptim_input_capture = &htim4;
+TIM_HandleTypeDef* ptim_data_read = &htim3;
+TIM_HandleTypeDef* ptim_cnt_update = &htim2;
 const bool _is_direct_logic = false;
 /// ===========================================
 
-// TODO: cleanup?
-extern const uint16_t envelop_timer_prescaler;
-extern const uint16_t ProbingPeriod;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -137,9 +137,9 @@ int main(void)
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim2);
-  HAL_TIM_Base_Start_IT(up_tim_p);
-  HAL_TIM_IC_PWM_Start_IT(ic_tim_p);
+  HAL_TIM_Base_Start_IT(ptim_cnt_update);
+  HAL_TIM_Base_Start_IT(ptim_data_read);
+  HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -282,13 +282,9 @@ void MX_TIM4_Init(void)
 
   /// TIM_TI1_SetConfig
 //  ● Select the active input for TIMx_CCR1: write the CC1S bits to 01 in the TIMx_CCMR1 register (TI1 selected).
-    //SET_BIT(htim4.Instance->CCMR1, TIM_CCMR1_CC1S_0);
-
 //  ● Select the active polarity for TI1FP1 (used both for capture in TIMx_CCR1 and counter clear):
 //    write the CC1P bit to ‘0’ (active on rising edge).
-    //SET_BIT(htim4.Instance->CCMR1, TIM_CCER_CC1P)
     sConfigIC.ICFilter = 0;
-    //sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
     //TODO: cleanip?
     if(_is_direct_logic)
     {
@@ -305,7 +301,6 @@ void MX_TIM4_Init(void)
 //  ● Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
 //  ● Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
     sConfigIC.ICFilter = 0;
-    //sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
     //TODO: cleanip?
     if(_is_direct_logic)
     {
