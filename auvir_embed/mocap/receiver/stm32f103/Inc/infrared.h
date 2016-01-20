@@ -10,23 +10,43 @@
 #define DEBUG
 
 ///====================== parameters ======================
+
+#define pwm_timer_prescaler     0
+#define pwm_timer_period        (1880 - 1)
+#define pwm_pulse_width         (940 - 1)
+
 // FIXME: TODO: keep values below in sync with transmitter
 #define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
 #define PreambleLongBitLength       (750 - 1)    // 270 works not reliably; 280 works;  chosen more
 #define PreambleShortBitLength      (750 - 1)    // 270 works not reliably; 280 works;  chosen more
 #define PreambleDelayLength         (500 - 1)    // 270 works not reliably; 280 works;  chosen more
 #define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-#define DelayBetweenDataFramesTotal (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
+#define InterframeDelayLength       (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
+#define HalfDataBitLength   (250 - 1)   //(DataBitLength + 1) / 2 - 1; // TODO: check the value
+#define max_delta_pwm_pulse 40          // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
+#define max_delta_pwm_width 40          // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
 
-#define pwm_timer_prescaler     0
-#define pwm_timer_period        (1880 - 1)
-#define pwm_pulse_width         (940 - 1)
+#define PreambleProbingPeriod (10 - 1)
+#define InterframeDelayProbingPeriod (100 - 1)
 
-#define HalfDataBitLength   250 - 1 //(DataBitLength + 1) / 2 - 1; // TODO: check the value
-#define max_delta_pwm_pulse 40      // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
-#define max_delta_pwm_width 40      // 30 work unreliably, which means that error/drift variance is more than 30 ticks?. 35 works
-#define ProbingPeriod       10 - 1
-#define max_delta_cnt_delay 100
+// take into account off-by-one offset in timer periods
+#define InterframeDelayCounterExpected  ((InterframeDelayLength + 1 - PreambleDelayLength + 1) / InterframeDelayProbingPeriod) // TODO: check for necessity of PreambleDelayLength
+#define PreambleLongBitCounterExpected  ((PreambleLongBitLength + 1)  / PreambleProbingPeriod)
+#define PreambleShortBitCounterExpected ((PreambleShortBitLength + 1) / PreambleProbingPeriod)
+#define PreambleDelayCounterExpected    ((PreambleDelayLength + 1)    / PreambleProbingPeriod)
+
+#define max_delta_cnt_interframe_delay          (int)(InterframeDelayCounterExpected * 0.05) // 5%
+#define max_delta_cnt_preamble_long_bit_length  (int)(PreambleLongBitCounterExpected * 0.1) // 10%
+#define max_delta_cnt_preamble_short_bit_length (int)(PreambleShortBitCounterExpected * 0.1) // 10%
+#define max_delta_cnt_preamble_delay_length     (int)(PreambleDelayCounterExpected * 0.1) // 10%
+
+
+// take into account off-by-one offset in timer periods
+#define InterframeDelayCounterMin   (InterframeDelayCounterExpected  - max_delta_cnt_interframe_delay)
+#define PreambleLongBitCounterMin   (PreambleLongBitCounterExpected  - max_delta_cnt_preamble_long_bit_length)
+#define PreambleShortBitCounterMin  (PreambleShortBitCounterExpected - max_delta_cnt_preamble_short_bit_length)
+#define PreambleDelayCounterMin     (PreambleDelayCounterExpected    - max_delta_cnt_preamble_delay_length)
+
 
 ///====================== Type definitions ======================
 // TODO: learn more about typedefs and structs

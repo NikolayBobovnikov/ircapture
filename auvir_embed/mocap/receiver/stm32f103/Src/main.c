@@ -138,7 +138,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(ptim_cnt_update);
-  HAL_TIM_Base_Start_IT(ptim_data_read);
+  //HAL_TIM_Base_Start_IT(ptim_data_read);
   HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
   /* USER CODE END 2 */
 
@@ -146,6 +146,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  int a = 0;
   /* USER CODE END WHILE */
   /* USER CODE BEGIN 3 */
   }
@@ -226,16 +227,14 @@ void MX_TIM2_Init(void)
 {
 
     TIM_ClockConfigTypeDef sClockSourceConfig;
-    htim4.Instance = TIM2;
-    htim4.Init.Prescaler = 71;
-    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 10-1;
-    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim2.Instance = TIM2;
+    htim2.Init.Prescaler = 71;
+    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim2.Init.Period = InterframeDelayProbingPeriod;
+    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim2);
     sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
     HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
-
-    HAL_TIM_Base_Init(&htim2);
 }
 
 /* TIM3 init function */
@@ -248,7 +247,7 @@ void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = envelop_timer_prescaler;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = ProbingPeriod;
+  htim3.Init.Period = PreambleProbingPeriod;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim3);
 
@@ -345,10 +344,10 @@ void MX_TIM4_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-void MX_DMA_Init(void) 
+void MX_DMA_Init(void)
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -361,9 +360,9 @@ void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -450,10 +449,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

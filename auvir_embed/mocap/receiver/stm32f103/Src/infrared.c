@@ -1,5 +1,4 @@
 #include "infrared.h"
-// b infrared.c:
 
 /// Parameters
 extern TIM_HandleTypeDef* ptim_input_capture;
@@ -11,16 +10,6 @@ extern uint16_t GPIO_PIN_IR_IN;
 extern const bool _is_direct_logic;
 
 // TODO: parametrize values below
-const uint16_t BigDelayCounterMin = ((DelayBetweenDataFramesTotal + 1 - PreambleDelayLength + 1) / ProbingPeriod) - max_delta_cnt_delay; // take into account off-by-one offset in timer periods
-const uint16_t LongBitCounterMin = 75 - 5; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
-const uint16_t ShortBitCounterMin = 35 - 5; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
-const uint16_t ShortDelayCounterMin = 35 - 5; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
-const uint16_t PreambleLength = (PreambleLongBitLength  + 1) +
-                                (PreambleDelayLength    + 1) +
-                                (PreambleShortBitLength + 1) +
-                                (PreambleDelayLength    + 1) - 1;
-
-
 
 ///====================== Variables ======================
 // main buffer for storing recent data frames
@@ -640,6 +629,14 @@ static inline void check_1_update_cnt()
 }
 static inline void update_cnt()
 {
+    // reset all vars
+    // TODO: check necessity
+    _is_ic_after_interframe_delay       = false;
+    _is_preamble_long_bit_length_ok     = false;
+    _is_preamble_short_bit_length_ok    = false;
+    _is_preamble_delay_length_ok        = false;
+
+
     /// measure length of each part of the preamble
     switch(ReceiverState)
     {
@@ -647,7 +644,7 @@ static inline void update_cnt()
         case RX_WAITING_FOR_START_BIT:
         {
             check_0_update_cnt();
-            _is_ic_after_interframe_delay = _is_ic_after_interframe_delay || (_delay_counter > BigDelayCounterMin);
+            _is_ic_after_interframe_delay = _is_ic_after_interframe_delay || (_delay_counter > InterframeDelayCounterMin);
             break;
         }
         // check preamble
@@ -658,19 +655,19 @@ static inline void update_cnt()
                 case STAGE_PREAMBLE_LONG_BIT:
                 {
                     check_0_update_cnt();
-                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
+                    _is_preamble_long_bit_length_ok = _is_preamble_long_bit_length_ok || (_delay_counter > PreambleLongBitCounterMin);
                     break;
                 }
                 case STAGE_PREAMBLE_DELAY_1:
                 {
                     check_1_update_cnt();
-                    _is_preamble_short_bit_length_ok = _is_preamble_short_bit_length_ok || (_delay_counter > ShortBitCounterMin);
+                    _is_preamble_short_bit_length_ok = _is_preamble_short_bit_length_ok || (_delay_counter > PreambleShortBitCounterMin);
                     break;
                 }
                 case STAGE_PREAMBLE_SHORT_BIT:
                 {
                     check_0_update_cnt();
-                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
+                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > PreambleDelayCounterMin);
                     break;
                 }
             }
@@ -684,34 +681,28 @@ static inline void update_cnt()
                 case STAGE_OFF0:
                 {
                     check_0_update_cnt();
-                    break;
-                }
-                //high rising edge: STAGE_OFF1 -> STAGE_ON1
-                case STAGE_PREAMBLE_DELAY_2:
-                {
-                    check_0_update_cnt();
-                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
-                    break;
-                }
-                //low falling edge: STAGE_ON1 -> STAGE_OFF1
-                case STAGE_PREAMBLE_LONG_BIT:
-                {
-                    check_1_update_cnt();
-                    _is_preamble_short_bit_length_ok = _is_preamble_short_bit_length_ok || (_delay_counter > ShortBitCounterMin);
-                    break;
-                }
-                // high rising edge: STAGE_OFF1 -> STAGE_ON2
-                case STAGE_PREAMBLE_DELAY_1:
-                {
-                    check_0_update_cnt();
-                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > ShortDelayCounterMin);
+                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > max_delta_cnt_preamble_delay_length);
                     break;
                 }
                 // low falling edge: STAGE_ON2 -> STAGE_OFFF2
                 case STAGE_PREAMBLE_SHORT_BIT:
                 {
                     check_1_update_cnt(); // second half
-                    _is_preamble_long_bit_length_ok = _is_preamble_long_bit_length_ok || (_delay_counter > LongBitCounterMin);
+                    _is_preamble_short_bit_length_ok = _is_preamble_short_bit_length_ok || (_delay_counter > max_delta_cnt_preamble_short_bit_length);
+                    break;
+                }
+                //high rising edge: STAGE_OFF1 -> STAGE_ON1
+                case STAGE_PREAMBLE_DELAY_2:
+                {
+                    check_0_update_cnt();
+                    _is_preamble_delay_length_ok = _is_preamble_delay_length_ok || (_delay_counter > max_delta_cnt_preamble_delay_length);
+                    break;
+                }
+                //low falling edge: STAGE_ON1 -> STAGE_OFF1
+                case STAGE_PREAMBLE_LONG_BIT:
+                {
+                    check_1_update_cnt();
+                    _is_preamble_long_bit_length_ok = _is_preamble_long_bit_length_ok || (_delay_counter > max_delta_cnt_preamble_long_bit_length);
                     break;
                 }
                 default:
