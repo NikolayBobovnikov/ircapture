@@ -52,11 +52,17 @@ int dbg_index=0;
 #define DEBUG_1_to_0_EDGE_1     0
 #define DEBUG_1_to_0_EDGE_2     0
 
-#define DEBUG_EPILOGUE_END_1    1
-#define DEBUG_EPILOGUE_END_2    1
+#define DEBUG_EPILOGUE_BEGIN_1  0
+#define DEBUG_EPILOGUE_BEGIN_2  0
+#define DEBUG_EPILOGUE_END_1    0
+#define DEBUG_EPILOGUE_END_2    0
 
 #define DEBUG_READING_DATA_1    0
 #define DEBUG_READING_DATA_2    0
+#define DEBUG_DATA_VERIFIED_1   1
+#define DEBUG_DATA_VERIFIED_2   0
+#define DEBUG_DATA_END_1        0
+#define DEBUG_DATA_END_2        1
 #define DEBUG_DATA_RECEIVED_1   0
 #define DEBUG_DATA_RECEIVED_2   0
 
@@ -87,13 +93,25 @@ static inline void dbg_pulse_1();
 static inline void dbg_pulse_2();
 static inline void debug_interframe_delay();
 static inline void debug_reading_data();
+static inline void debug_data_verified();
+static inline void debug_data_end();
 static inline void debug_data_received();
 static inline void debug_upd_event();
 static inline void debug_0_to_1_edge();
 static inline void debug_1_to_0_edge();
-static inline void debug_epilogue();
+static inline void debug_epilogue_begin();
+static inline void debug_epilogue_end();
 
 ///====================== Functions ======================
+
+// 1) k-th bit of n: (n >> k) & 1
+// 2) set bit at the inversed position
+#define DECODE(data_bit) {                                          \
+    if(is_1_on_update_event())                                      \
+    {                                                               \
+        data_bit |= 1 << (rx_total_bits - rx_current_bit_pos - 1);  \
+    }                                                               \
+}                                                                   \
 
 inline void irreceiver_timer_up_handler()
 {
@@ -327,23 +345,13 @@ static inline void receive_handler()
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
-                            // k-th bit of n: (n >> k) & 1
-                            if(is_1_on_update_event())
-                            {
-                                // set bit at the inversed position
-                                rx_data_frame._1_beamer_id |= 1
-                                        << (rx_total_bits - rx_current_bit_pos - 1);
-                                //<< (rx_current_bit_pos);
-                            }
-                            /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
+                            DECODE(rx_data_frame._1_beamer_id);
                             rx_current_bit_pos++;
                         }
                         // move to next state and wait a delay between data fields
                         else
                         {
-                            // change state to process second part of the data frame
                             DataFrameState = DATAFRAME_2_ANGLE;
-                            // reset current bit position
                             rx_current_bit_pos = 0;
                         }
                         break;
@@ -357,15 +365,7 @@ static inline void receive_handler()
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
-                            // k-th bit of n: (n >> k) & 1
-                            if(is_1_on_update_event())
-                            {
-                                // set bit at the inversed position
-                                rx_data_frame._2_angle_code |= 1
-                                        << (rx_total_bits - rx_current_bit_pos - 1);
-                                //<< (rx_current_bit_pos);
-                            }
-                            /// no need to set bit to zero if signal is low, since all bits are initialized to zeros
+                            DECODE(rx_data_frame._2_angle_code);
                             rx_current_bit_pos++;
                         }
                         else
@@ -388,23 +388,15 @@ static inline void receive_handler()
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
-                            // k-th bit of n: (n >> k) & 1
-                            if(is_1_on_update_event())
-                            {
-                                // set bit at the inversed position
-                                rx_data_frame._3_angle_code_rev |= 1 << (rx_total_bits - rx_current_bit_pos - 1); //<< (rx_current_bit_pos);
-                            }
-
-                            // no need to set bit to zero if signal is low,
-                            // since all bits are initialized to zeros
-
-                            // go to next bit
+                            DECODE(rx_data_frame._3_angle_code_rev);
                             rx_current_bit_pos++;
                         }
 
                         // when all bits are done, go to next state
                         if(rx_current_bit_pos == rx_total_bits)
                         {
+                            debug_data_end();
+
                             rx_current_bit_pos = 0;
                             // waiting last HalfDataBitLength for beginning of epilogue
                             ptim_data_read->Instance->ARR = HalfDataBitLength;
@@ -431,9 +423,10 @@ static inline void receive_handler()
             //low: off confirmation
             case STAGE_PREAMBLE_START:
             {
-                // start verifying first short delay
+                // start verifying first delay
                 if(_is_uptimer_update_event)
                 {
+                    debug_epilogue_begin();
                     ptim_input_capture->Instance->CNT=0;
                     ptim_data_read->Instance->CNT = 0;
                     ptim_data_read->Instance->ARR = max_period;
@@ -493,7 +486,7 @@ static inline void receive_handler()
                 {
                     if(is_correct_timming_preamble_bit())// check bit length in allowed interval
                     {
-                        debug_epilogue();
+                        debug_epilogue_end();
 
                         ReceiverState = RX_STOP_BIT_DONE;
                         StartStopSequenceReceiveState = STAGE_PREAMBLE_START;
@@ -527,6 +520,8 @@ static inline void receive_handler()
                 /// verify correctness
                 if( 0 == (rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev))
                 {
+                    debug_data_verified();
+
                     copy_data_frame_to_buffer(&rx_data_frame);
                     send_dataready_signal();
                     dbg[dbg_index] = rx_data_frame._2_angle_code;
@@ -689,6 +684,18 @@ static inline void  debug_reading_data() {
     if( DEBUG_READING_DATA_2)
         dbg_pulse_2();
 }
+static inline void  debug_data_verified() {
+    if( DEBUG_DATA_VERIFIED_1)
+        dbg_pulse_1();
+    if( DEBUG_DATA_VERIFIED_2)
+        dbg_pulse_2();
+}
+static inline void  debug_data_end() {
+    if( DEBUG_DATA_END_1)
+        dbg_pulse_1();
+    if( DEBUG_DATA_END_2)
+        dbg_pulse_2();
+}
 static inline void  debug_data_received() {
     if( DEBUG_DATA_RECEIVED_1)
         dbg_pulse_1();
@@ -713,7 +720,13 @@ static inline void  debug_1_to_0_edge() {
     if( DEBUG_1_to_0_EDGE_2)
         dbg_pulse_2();
 }
-static inline void  debug_epilogue() {
+static inline void  debug_epilogue_begin() {
+    if( DEBUG_EPILOGUE_BEGIN_1)
+        dbg_pulse_1();
+    if( DEBUG_EPILOGUE_BEGIN_2)
+        dbg_pulse_2();
+}
+static inline void  debug_epilogue_end() {
     if( DEBUG_EPILOGUE_END_1)
         dbg_pulse_1();
     if( DEBUG_EPILOGUE_END_2)
