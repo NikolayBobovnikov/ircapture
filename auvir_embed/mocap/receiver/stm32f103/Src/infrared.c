@@ -59,19 +59,6 @@ int dbg_index=0;
 #define DEBUG_CHECK_IC_TIMING_2  0
 #define DEBUG_INTERFRAME_DELAY_1 0
 #define DEBUG_INTERFRAME_DELAY_2 0
-#define DEBUG_EDGES              0
-#define DEBUG_DATA               1
-
-/// should not be modified - automatically turnes corresponding pulses on
-#ifdef DEBUG_EDGES
-    #define DEBUG_0_to_1_EDGE_2	  1
-    #define DEBUG_1_to_0_EDGE_1   1
-#endif
-#ifdef DEBUG_DATA
-    #define DEBUG_READING_DATA_2  1
-    #define DEBUG_DATA_RECEIVED_1 1
-#endif
-
 
 ///====================== Private function declarations ======================
 // main routine called from timer interrupts to manage receiving process
@@ -723,3 +710,4 @@ inline void  debug_check_ic_timing() {
     if( DEBUG_CHECK_IC_TIMING_2)
         dbg_pulse_2();
 }
+
