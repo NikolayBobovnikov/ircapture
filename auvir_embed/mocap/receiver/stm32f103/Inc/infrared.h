@@ -33,9 +33,9 @@
 #define PreambleTotalLength         (3000 - 1)
 #define max_period         (65535)
 
-#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.1) // 10%
-#define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1) // 10%
-#define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1) // 10%
+#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.05) // 10%
+#define max_delta_preamble_bit      (int)(PreambleBitLength * 0.05) // 10%
+#define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.05) // 10%
 
 ///====================== Type definitions ======================
 // TODO: learn more about typedefs and structs
