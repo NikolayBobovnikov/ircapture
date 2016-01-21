@@ -52,9 +52,12 @@ int dbg_index=0;
 #define DEBUG_1_to_0_EDGE_1     0
 #define DEBUG_1_to_0_EDGE_2     0
 
+#define DEBUG_EPILOGUE_END_1    1
+#define DEBUG_EPILOGUE_END_2    1
+
 #define DEBUG_READING_DATA_1    0
-#define DEBUG_READING_DATA_2    1
-#define DEBUG_DATA_RECEIVED_1   1
+#define DEBUG_READING_DATA_2    0
+#define DEBUG_DATA_RECEIVED_1   0
 #define DEBUG_DATA_RECEIVED_2   0
 
 
@@ -88,6 +91,7 @@ static inline void debug_data_received();
 static inline void debug_upd_event();
 static inline void debug_0_to_1_edge();
 static inline void debug_1_to_0_edge();
+static inline void debug_epilogue();
 
 ///====================== Functions ======================
 
@@ -489,6 +493,8 @@ static inline void receive_handler()
                 {
                     if(is_correct_timming_preamble_bit())// check bit length in allowed interval
                     {
+                        debug_epilogue();
+
                         ReceiverState = RX_STOP_BIT_DONE;
                         StartStopSequenceReceiveState = STAGE_PREAMBLE_START;
 
@@ -705,6 +711,12 @@ static inline void  debug_1_to_0_edge() {
     if( DEBUG_1_to_0_EDGE_1)
         dbg_pulse_1();
     if( DEBUG_1_to_0_EDGE_2)
+        dbg_pulse_2();
+}
+static inline void  debug_epilogue() {
+    if( DEBUG_EPILOGUE_END_1)
+        dbg_pulse_1();
+    if( DEBUG_EPILOGUE_END_2)
         dbg_pulse_2();
 }
 
