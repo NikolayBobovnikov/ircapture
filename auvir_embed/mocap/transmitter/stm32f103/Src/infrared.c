@@ -1,48 +1,22 @@
 #include "infrared.h"
 #include <stdbool.h>
 
-<<<<<<< HEAD
+
 /// ================== Parameters ================
 //TODO: cleanup when done debugging
 extern const bool _debug;
 //TODO: cleanup when done debugging
 const bool _is_direct_logic = true;
-=======
-/// ============================== Variables and constatns ==============================
 
-//TODO: cleanup when done debugging
-extern const bool _debug;
->>>>>>> experimental
 
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;
 
-<<<<<<< HEAD
 /// ================== Variables ================
 uint8_t StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
 uint8_t DataFrameState = DATAFRAME_0_NODATA;
 uint8_t TransmitterState = TX_WAITING;
-=======
-const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 1880 - 1;
-const uint16_t pwm_pulse_width = 940 - 1;
-const bool _is_direct_logic = true;
-
-// INFO: values below has been chosen manually
-// need to work with IR receiver TL1838, and to be as low as possible,
-// but not too low - beware of jitter!
-// FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
-const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for prescaler=14
-const uint16_t StartStopBitLength = 500 - 1;    // 270 works not reliably; 280 works;  chosen more
-const uint16_t DataBitLength = 1500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//12900 doesn't work; 13000 works; chosen more
-
-volatile uint8_t TransmitterState = TX_WAITING;
-volatile uint8_t DataFrameState = DATAFRAME_0_NODATA;
-volatile uint8_t StartStopSequenceTransmitState = STAGE_0;
-volatile uint8_t StartStopSequenceReceiveState = STAGE_0;
->>>>>>> experimental
 
 ///TODO: refactor constants below
 DataFrame_t tx_data_frame;
@@ -55,26 +29,16 @@ uint16_t pwm_period[100] = {0};
 uint8_t arr_index = 0;
 
 
-<<<<<<< HEAD
-/// ================== Private function declarations ================
-=======
 /// ============================== Function declarations ==============================
-void notify_transmission_finished();
->>>>>>> experimental
 static inline void reset_transmitter();
 static inline void switch_to_data_transmission_state();
 static inline void p_w_modulate(uint8_t bit);
 static inline void force_envelop_timer_output_on();
 static inline void force_envelop_timer_output_off();
-<<<<<<< HEAD
 
-
-/// ================== Functions ================
-=======
 
 /// ============================== Function definitions ==============================
-/// exposed to external modules
->>>>>>> experimental
+///
 void send_data()
 {
     // fill tx_data_frame with data
@@ -149,12 +113,7 @@ void transmit_handler()
     {
         case TX_WAITING:
         {
-<<<<<<< HEAD
             ; // do nothing
-=======
-            // do nothing
-            // TODO: eliminate this step?
->>>>>>> experimental
             break;
         }
         case TX_PREAMBLE:
@@ -299,15 +258,6 @@ void transmit_handler()
             }
             break;
         }
-<<<<<<< HEAD
-=======
-        case TX_DELAY:
-        {
-            notify_transmission_finished();
-            reset_transmitter();
-            break;
-        }
->>>>>>> experimental
     } // switch(TransmitterState)
 }
 /// private, used only in infrared module
@@ -388,7 +338,3 @@ static inline void force_envelop_timer_output_off()
     }
 
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> experimental
