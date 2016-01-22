@@ -51,8 +51,8 @@ int dbg_index=0;
 #define DEBUG_UPD_EVENT_1       0
 #define DEBUG_UPD_EVENT_2       0
 #define DEBUG_0_to_1_EDGE_1     0
-#define DEBUG_0_to_1_EDGE_2     1
-#define DEBUG_1_to_0_EDGE_1     1
+#define DEBUG_0_to_1_EDGE_2     0
+#define DEBUG_1_to_0_EDGE_1     0
 #define DEBUG_1_to_0_EDGE_2     0
 
 #define DEBUG_EPILOGUE_BEGIN_1  0
@@ -62,7 +62,7 @@ int dbg_index=0;
 
 #define DEBUG_READING_DATA_1    0
 #define DEBUG_READING_DATA_2    0
-#define DEBUG_DATA_VERIFIED_1   0
+#define DEBUG_DATA_VERIFIED_1   1
 #define DEBUG_DATA_VERIFIED_2   0
 #define DEBUG_DATA_END_1        0
 #define DEBUG_DATA_END_2        0
@@ -94,8 +94,6 @@ static inline bool is_correct_timming_preamble_delay();
 
 
 // for debugging. TODO: cleanup when done
-inline void debug_init_gpio();
-
 static inline void dbg_pulse_1();
 static inline void dbg_pulse_2();
 static inline void debug_interframe_delay();
@@ -643,11 +641,15 @@ static inline void dbg_pulse_2()
 #endif
 }
 
-static inline void  debug_init_gpio() {
-    if(DEBUG)   {
+void  debug_init_gpio() {
+    if(DEBUG)
+    {
+        GPIO_InitTypeDef GPIO_InitStruct;
+
         GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
 }

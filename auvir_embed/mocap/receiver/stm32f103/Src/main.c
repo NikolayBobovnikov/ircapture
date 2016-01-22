@@ -78,7 +78,6 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-debug_init_gpio();
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
@@ -112,6 +111,7 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
+  debug_init_gpio();
   HAL_TIM_Base_Start_IT(ptim_data_read);
   HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
   /* USER CODE END 2 */
