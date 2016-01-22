@@ -56,10 +56,15 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 /// parameters for receiver ===================
+TIM_HandleTypeDef* ic_tim_p = &htim4;
+TIM_HandleTypeDef* up_tim_p = &htim3;
 const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
 const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
+<<<<<<< HEAD
 TIM_HandleTypeDef* ptim_input_capture = &htim4;
 TIM_HandleTypeDef* ptim_data_read = &htim3;
+=======
+>>>>>>> experimental
 const bool _is_direct_logic = false;
 /// ===========================================
 
@@ -78,8 +83,9 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim);
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
+void send_data_uart(uint8_t * pdata, uint16_t size);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -369,6 +375,21 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+<<<<<<< HEAD
+=======
+
+  /*Configure GPIO pin : PA3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+>>>>>>> experimental
 
   /*Configure GPIO pin : PA3 */
   GPIO_InitStruct.Pin = GPIO_PIN_3;
@@ -385,7 +406,7 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim)
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim)
 {
   /* Check the parameters */
   assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
@@ -407,7 +428,7 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim)
   /* Return function status */
   return HAL_OK;
 }
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim)
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim)
 {
     assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
     assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
@@ -424,6 +445,10 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim)
 
     /* Return function status */
     return HAL_OK;
+}
+void send_data_uart(uint8_t * pdata, uint16_t size)
+{
+    HAL_UART_Transmit(&huart1, pdata, size, 1000);
 }
 /* USER CODE END 4 */
 

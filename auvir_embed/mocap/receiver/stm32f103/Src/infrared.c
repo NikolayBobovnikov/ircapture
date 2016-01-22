@@ -1,15 +1,49 @@
 #include "infrared.h"
 
+<<<<<<< HEAD
 /// Parameters
 extern TIM_HandleTypeDef* ptim_input_capture;
 extern TIM_HandleTypeDef* ptim_data_read;
+=======
+/// ============================ Parameters ============================
+extern TIM_HandleTypeDef* ic_tim_p;
+extern TIM_HandleTypeDef* up_tim_p;
+>>>>>>> experimental
 extern GPIO_TypeDef * GPIO_PORT_IR_IN;
 extern uint16_t GPIO_PIN_IR_IN;
 extern const bool _is_direct_logic;
 
+<<<<<<< HEAD
 // TODO: parametrize values below
 
 ///====================== Variables ======================
+=======
+
+/// ============================ Constants ============================
+// FIXME: TODO: keep values below in sync with transmitter
+const uint16_t envelop_timer_prescaler = 72 - 1;    // values below are for prescaler=14
+const uint16_t StartStopBitLength = 500 - 1;    // 270 works not reliably; 280 works; 400 chosen
+const uint16_t DataBitLength = 1500 - 1;        // TODO: justify value. Need to be distinguishable from start/stop bits.
+                                               // Start/Stop bit should on and off in less than data bit length
+const uint16_t DelayBetweenDataFramesTotal = 20000 - 1;//12900 doesn't work; 13000 works; 14000 chosen
+
+
+const uint16_t HalfDataBitLength = 750 - 1;
+const uint16_t HalfStartStopBitLength = 250 - 1;
+const uint16_t HalfStartStopHalfDataBitLength = 1000 - 1;
+const uint16_t StartStopBitPeriod = 1000 - 1; // 2 * StartStopBitLength
+const uint16_t DelayCheckingPeriod = 100 - 1;
+const uint16_t max_delta_pwm_pulse = 40; // 30 work unreliably, which means that error/drift variance is more than 30 ticks. 35 works
+const uint16_t max_delta_pwm_width = 40; // 30 work unreliably, which means that error/drift variance is more than 30 ticks. 35 works
+const uint16_t  max_delta_cnt_delay = 10;
+
+// TODO: parametrize values below
+const uint16_t DelayBetweenDataFramesToCheck = 19750; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
+const uint16_t DelayCounterMin = 197 - 10; // round(DelayBetweenDataFramesToCheck / DelayCheckingPeriod) - max_delta_cnt_delay;
+
+
+/// ============================ Variables ============================
+>>>>>>> experimental
 // main buffer for storing recent data frames
 #define  RX_BUF_SIZE 10
 DataFrame_t data_frames[RX_BUF_SIZE] = {0}; // TODO: verify initialization
@@ -41,6 +75,7 @@ volatile uint16_t _delay_counter = 0;
 int dbg[1000]={0};
 int dbg_index=0;
 
+<<<<<<< HEAD
 ///======= Turn on/off particular testing pulses
 
 #define DEBUG   1
@@ -113,6 +148,46 @@ static inline void debug_epilogue_end();
 
 static inline void decode_bit(uint8_t *data_word) {
     if(is_1_on_update_event())
+=======
+#define DEBUG_READING_DATA_1
+//#define DEBUG_READING_DATA_2
+//#define DEBUG_DATA_RECEIVED_1
+#define DEBUG_DATA_RECEIVED_2
+//#define DEBUG_UPD_EVENT_1
+//#define DEBUG_UPD_EVENT_2
+//#define DEBUG_LOW_CHECK_1
+//#define DEBUG_LOW_CHECK_2
+//#define DEBUG_DELAY_CHECK_1
+//#define DEBUG_DELAY_CHECK_2
+//#define DEBUG_0_to_1_EDGE_1
+//#define DEBUG_0_to_1_EDGE_2
+//#define DEBUG_1_to_0_EDGE_1
+//#define DEBUG_1_to_0_EDGE_2
+//#define DEBUG_CHECK_IC_TIMING_1
+//#define DEBUG_CHECK_IC_TIMING_2
+
+//#define DEBUG_EDGES
+//#define DEBUG_DATA
+
+#ifdef DEBUG_EDGES
+    #define DEBUG_0_to_1_EDGE_2
+    #define DEBUG_1_to_0_EDGE_1
+#endif
+
+#ifdef DEBUG_DATA
+#define DEBUG_READING_DATA_2
+#define DEBUG_DATA_RECEIVED_1
+#endif
+
+/// ============================ Function declarations ============================
+void send_data_uart(uint8_t * pdata, uint16_t size);
+
+/// ============================ Function definitions ============================
+// public
+inline void irreceiver_timer_up_handler()
+{
+    if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_SET)
+>>>>>>> experimental
     {
         // 1) k-th bit of n: (n >> k) & 1
         // 2) set bit at the inversed position
@@ -185,7 +260,7 @@ inline void irreceiver_timer_ic_handler()
     _is_falling_edge = false;
 
 }
-
+// private
 static inline void receive_handler()
 {
     if(dbg_index >= 998)
@@ -482,7 +557,47 @@ static inline void receive_handler()
                     reset_receiver_state();
                     break;
                 }
+<<<<<<< HEAD
             }// end of switch (StartStopSequenceReceiveState)
+=======
+            }
+
+            break;
+        }
+        case RX_STOP_BIT_DONE:
+        {
+            // immediately after stop sequence, line should be low
+            // low confirmation
+            if(is_0_on_update_event())
+            {
+                // we successfully received data, send corresponding event for listeners to read from the data buffer
+
+                /// verify correctness
+                if( 0 == (rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev))
+                {
+                    copy_data_frame_to_buffer(&rx_data_frame);
+                    send_dataready_signal();
+                    dbg[dbg_index] = rx_data_frame._2_angle_code;
+                    dbg[dbg_index+1] = rx_data_frame._3_angle_code_rev;
+                    dbg_index = dbg_index + 2;
+                }
+                else
+                {
+
+
+                }
+
+
+
+#ifdef DEBUG_DATA_RECEIVED_1
+                dbg_pulse_1();
+#endif
+#ifdef DEBUG_DATA_RECEIVED_2
+                dbg_pulse_2();
+#endif
+            }
+            reset_receiver_state();
+>>>>>>> experimental
             break;
         }
         default:
@@ -615,14 +730,17 @@ static inline void send_dataready_signal()
     // There is an array of sensors whith ID = [1..N]
     // All sensors initially are in listening mode
 
-    // Each sensor checks its ID. If it is first in the array (ID == 1), it first sends message with its ID and data.
-    // Hub and all remaining sensors receives the message
+    // Each sensor checks its ID. If it is first in the array (ID == 1), it first sends message with its ID and data, without waiting
+    // Hub and all remaining sensors are waiting for receiving the message
     // Each sensor checks if it is his turn to send data (its Id is the next ID after that which has been received).
     // If his ID is the next, it sends the latest data
     // if (ID_from_msg == ID_self - 1):
     //      send data()
     // When all sensors have sent data (last ID == N), process should be repeated.
     // So the first sensor (with ID == 1) checks if ID_msg == N, if so - it is next to send data
+
+
+    send_data_uart( (uint8_t *)&rx_data_frame, sizeof(rx_data_frame));
 }
 static inline void dbg_pulse_1()
 {

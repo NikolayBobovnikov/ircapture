@@ -57,8 +57,30 @@ UART_HandleTypeDef huart1;
 //TODO: cleanup when done debugging
 const bool _debug = true;
 
+/// IR transmitter stuff
 TIM_HandleTypeDef * phtim_envelop = &htim3;
 TIM_HandleTypeDef * phtim_pwm = &htim4;
+<<<<<<< HEAD
+=======
+extern const uint16_t pwm_timer_prescaler;
+extern const uint16_t pwm_timer_period;
+extern const uint16_t pwm_pulse_width;
+extern const uint16_t envelop_timer_prescaler;
+extern const uint16_t DataBitLength;
+
+/// USART stuff
+HAL_StatusTypeDef status;
+extern DataFrame_t tx_data_frame;
+
+enum UART_Commands {
+    UART_COMMAND_NOT_RECEIVED = 0,
+    UART_DEBUG_DATA_TRANSMIT,
+    UART_DEBUG_DATA_TRANSMIT_OK,
+    UART_ECHO
+};
+uint8_t command = UART_COMMAND_NOT_RECEIVED;
+uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
+>>>>>>> experimental
 
 /* USER CODE END PV */
 
@@ -75,7 +97,8 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void send_data();
+void notify_transmission_finished();
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -115,7 +138,41 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  send_data();
+      send_data();
+      /*
+      command = UART_COMMAND_NOT_RECEIVED;
+      status = HAL_UART_Receive(&huart1, &command, sizeof(command), 1000);
+
+      if(status != HAL_OK)
+      {
+          // TODO: process error
+          break;
+      }
+
+      // if received command, dispatch it
+      switch(command)
+      {
+          case UART_DEBUG_DATA_TRANSMIT:
+          {
+              // receive data to transmit
+              status = HAL_UART_Receive(&huart1, (uint8_t*)&tx_data_frame, sizeof(tx_data_frame), 1000);
+              if(status != HAL_OK)
+              {
+                  // TODO: process error
+                  break;
+              }
+              //responce = HAL_UART_Transmit(&huart1, (uint8_t*)&responce, sizeof(responce), 1000);
+
+              // transmit data
+              send_data();
+
+              // notify that data has been sent (future callback - )
+              notify_transmission_finished();
+          }
+
+      }
+      */
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -320,6 +377,15 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void notify_transmission_finished()
+{
+    responce = UART_DEBUG_DATA_TRANSMIT_OK;
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&responce, sizeof(responce), 1000);
+    if(status != HAL_OK)
+    {
+        // TODO: process error
+    }
+}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT

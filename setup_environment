@@ -13,7 +13,7 @@ sudo -S aptitude install -y --with-recommends checkinstall pkg-config gdebi \
 sudo -S aptitude install -y --with-recommends zip unzip \
 
 # console stuff
-sudo -S aptitude install -y --with-recommends vim tmux zsh mc \
+sudo -S aptitude install -y --with-recommends vim tmux zsh mc picocom \
 
 # version control
 sudo -S aptitude install -y --with-recommends git mercurial subversion
@@ -85,7 +85,7 @@ eclipse-cdt-profiling-framework-remote eclipse-cdt-launch-remote
 sudo -S aptitude install -y --with-recommends mono-gmcs mono-xbuild mono-dmcs libmono-corlib4.0-cil libmono-system-data-datasetextensions4.0-cil \
 libmono-system-web-extensions4.0-cil libmono-system-management4.0-cil libmono-system-xml-linq4.0-cil cmake dos2unix clang-3.5 xdg-user-dirs libqt4-dev
 # TODO: remaining steps
-cd ~/gitclones && git clone https://github.com/EpicGames/UnrealEngine
+#cd ~/gitclones && git clone https://github.com/EpicGames/UnrealEngine
 
 
 # Applied Programs

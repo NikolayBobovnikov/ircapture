@@ -28,11 +28,10 @@ hcrc                0x8               ..\obj\main.o
 pFlash              0x20              ..\obj\stm32f1xx_hal_flash.o
 htim3               0x3c              ..\obj\main.o
 huart1              0x40              ..\obj\main.o
+rx_data_frame       0x3               ..\obj\infrared.o
 hspi1               0x58              ..\obj\main.o
-tx_data_frame       0x3               ..\obj\infrared.o
 hdma_spi1_rx        0x38              ..\obj\main.o
 hdma_spi1_tx        0x38              ..\obj\main.o
-status              0x1               ..\obj\main.o
 
 Discarded input sections
 
@@ -56,8 +55,8 @@ Discarded input sections
  .debug_abbrev  0x00000000      0x236 ..\obj\stm32f1xx_hal_flash_ex.o
  .debug_aranges
                 0x00000000       0x20 ..\obj\stm32f1xx_hal_flash_ex.o
- .debug_line    0x00000000      0x481 ..\obj\stm32f1xx_hal_flash_ex.o
- .debug_str     0x00000000      0x676 ..\obj\stm32f1xx_hal_flash_ex.o
+ .debug_line    0x00000000      0x475 ..\obj\stm32f1xx_hal_flash_ex.o
+ .debug_str     0x00000000      0x670 ..\obj\stm32f1xx_hal_flash_ex.o
  .comment       0x00000000       0x71 ..\obj\stm32f1xx_hal_flash_ex.o
  .debug_frame   0x00000000      0x238 ..\obj\stm32f1xx_hal_flash_ex.o
  .ARM.attributes
@@ -79,8 +78,8 @@ Discarded input sections
  .debug_abbrev  0x00000000      0x1e9 ..\obj\stm32f1xx_hal_rcc_ex.o
  .debug_aranges
                 0x00000000       0x20 ..\obj\stm32f1xx_hal_rcc_ex.o
- .debug_line    0x00000000      0x42e ..\obj\stm32f1xx_hal_rcc_ex.o
- .debug_str     0x00000000      0x410 ..\obj\stm32f1xx_hal_rcc_ex.o
+ .debug_line    0x00000000      0x422 ..\obj\stm32f1xx_hal_rcc_ex.o
+ .debug_str     0x00000000      0x40a ..\obj\stm32f1xx_hal_rcc_ex.o
  .comment       0x00000000       0x71 ..\obj\stm32f1xx_hal_rcc_ex.o
  .debug_frame   0x00000000       0x84 ..\obj\stm32f1xx_hal_rcc_ex.o
  .ARM.attributes
@@ -94,8 +93,8 @@ Discarded input sections
  .debug_abbrev  0x00000000       0xcb ..\obj\stm32f1xx_hal_gpio_ex.o
  .debug_aranges
                 0x00000000       0x20 ..\obj\stm32f1xx_hal_gpio_ex.o
- .debug_line    0x00000000      0x26b ..\obj\stm32f1xx_hal_gpio_ex.o
- .debug_str     0x00000000      0x2ba ..\obj\stm32f1xx_hal_gpio_ex.o
+ .debug_line    0x00000000      0x262 ..\obj\stm32f1xx_hal_gpio_ex.o
+ .debug_str     0x00000000      0x2b4 ..\obj\stm32f1xx_hal_gpio_ex.o
  .comment       0x00000000       0x71 ..\obj\stm32f1xx_hal_gpio_ex.o
  .debug_frame   0x00000000       0x78 ..\obj\stm32f1xx_hal_gpio_ex.o
  .ARM.attributes
@@ -105,8 +104,7 @@ Discarded input sections
  .text          0x00000000       0x14 ..\obj\startup_stm32f103xb.o
  .data          0x00000000        0x0 ..\obj\startup_stm32f103xb.o
  .bss           0x00000000        0x0 ..\obj\startup_stm32f103xb.o
- .data          0x00000000        0x0 ..\obj\infrared.o
- .bss           0x00000000        0x1 ..\obj\main.o
+ .bss           0x00000000        0x0 ..\obj\main.o
  .data          0x00000000        0x0 ..\obj\stm32f1xx_hal_uart.o
  .bss           0x00000000        0x0 ..\obj\stm32f1xx_hal_uart.o
  .text          0x00000000      0x268 ..\obj\syscalls.o
@@ -117,8 +115,8 @@ Discarded input sections
  .debug_abbrev  0x00000000      0x1ae ..\obj\syscalls.o
  .debug_aranges
                 0x00000000       0x20 ..\obj\syscalls.o
- .debug_line    0x00000000      0x263 ..\obj\syscalls.o
- .debug_str     0x00000000      0x3f0 ..\obj\syscalls.o
+ .debug_line    0x00000000      0x25d ..\obj\syscalls.o
+ .debug_str     0x00000000      0x3ea ..\obj\syscalls.o
  .comment       0x00000000       0x71 ..\obj\syscalls.o
  .debug_frame   0x00000000      0x278 ..\obj\syscalls.o
  .ARM.attributes
@@ -132,8 +130,8 @@ Discarded input sections
  .debug_abbrev  0x00000000      0x1dd ..\obj\stm32f1xx_hal_flash.o
  .debug_aranges
                 0x00000000       0x20 ..\obj\stm32f1xx_hal_flash.o
- .debug_line    0x00000000      0x434 ..\obj\stm32f1xx_hal_flash.o
- .debug_str     0x00000000      0x55b ..\obj\stm32f1xx_hal_flash.o
+ .debug_line    0x00000000      0x428 ..\obj\stm32f1xx_hal_flash.o
+ .debug_str     0x00000000      0x555 ..\obj\stm32f1xx_hal_flash.o
  .comment       0x00000000       0x71 ..\obj\stm32f1xx_hal_flash.o
  .debug_frame   0x00000000      0x200 ..\obj\stm32f1xx_hal_flash.o
  .ARM.attributes
@@ -148,8 +146,8 @@ Discarded input sections
  .debug_abbrev  0x00000000      0x223 ..\obj\stm32f1xx_hal_pwr.o
  .debug_aranges
                 0x00000000       0x20 ..\obj\stm32f1xx_hal_pwr.o
- .debug_line    0x00000000      0x3e2 ..\obj\stm32f1xx_hal_pwr.o
- .debug_str     0x00000000      0x510 ..\obj\stm32f1xx_hal_pwr.o
+ .debug_line    0x00000000      0x3d6 ..\obj\stm32f1xx_hal_pwr.o
+ .debug_str     0x00000000      0x50a ..\obj\stm32f1xx_hal_pwr.o
  .comment       0x00000000       0x71 ..\obj\stm32f1xx_hal_pwr.o
  .debug_frame   0x00000000      0x290 ..\obj\stm32f1xx_hal_pwr.o
  .ARM.attributes
@@ -223,7 +221,7 @@ LOAD d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-
 LOAD d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m/crt0.o
                 0x20005000                _eram = 0x20005000
 
-.text           0x08000000     0xcdac
+.text           0x08000000     0xd5b0
  *(.isr_vector)
  .isr_vector    0x08000000      0x10c ..\obj\startup_stm32f103xb.o
                 0x08000000                g_pfnVectors
@@ -349,245 +347,247 @@ LOAD d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-
                 0x08004fe0                HAL_DBGMCU_DisableDBGStopMode
                 0x08004ffc                HAL_DBGMCU_EnableDBGStandbyMode
                 0x08005018                HAL_DBGMCU_DisableDBGStandbyMode
- .text          0x08005034       0x64 ..\obj\stm32f1xx_it.o
+ .text          0x08005034       0x68 ..\obj\stm32f1xx_it.o
                 0x08005034                SysTick_Handler
                 0x08005044                DMA1_Channel2_IRQHandler
                 0x08005054                DMA1_Channel3_IRQHandler
                 0x08005064                TIM3_IRQHandler
                 0x08005078                TIM4_IRQHandler
-                0x08005088                SPI1_IRQHandler
+                0x0800508c                SPI1_IRQHandler
  .text.Reset_Handler
-                0x08005098       0x48 ..\obj\startup_stm32f103xb.o
-                0x08005098                Reset_Handler
+                0x0800509c       0x48 ..\obj\startup_stm32f103xb.o
+                0x0800509c                Reset_Handler
  .text.Default_Handler
-                0x080050e0        0x2 ..\obj\startup_stm32f103xb.o
-                0x080050e0                RTC_Alarm_IRQHandler
-                0x080050e0                EXTI2_IRQHandler
-                0x080050e0                DebugMon_Handler
-                0x080050e0                TIM1_CC_IRQHandler
-                0x080050e0                HardFault_Handler
-                0x080050e0                PVD_IRQHandler
-                0x080050e0                PendSV_Handler
-                0x080050e0                NMI_Handler
-                0x080050e0                EXTI3_IRQHandler
-                0x080050e0                EXTI0_IRQHandler
-                0x080050e0                I2C2_EV_IRQHandler
-                0x080050e0                UsageFault_Handler
-                0x080050e0                ADC1_2_IRQHandler
-                0x080050e0                TAMPER_IRQHandler
-                0x080050e0                DMA1_Channel4_IRQHandler
-                0x080050e0                USART3_IRQHandler
-                0x080050e0                RTC_IRQHandler
-                0x080050e0                DMA1_Channel7_IRQHandler
-                0x080050e0                CAN1_RX1_IRQHandler
-                0x080050e0                I2C1_EV_IRQHandler
-                0x080050e0                DMA1_Channel6_IRQHandler
-                0x080050e0                RCC_IRQHandler
-                0x080050e0                TIM1_TRG_COM_IRQHandler
-                0x080050e0                DMA1_Channel1_IRQHandler
-                0x080050e0                Default_Handler
-                0x080050e0                EXTI15_10_IRQHandler
-                0x080050e0                EXTI9_5_IRQHandler
-                0x080050e0                SPI2_IRQHandler
-                0x080050e0                MemManage_Handler
-                0x080050e0                SVC_Handler
-                0x080050e0                DMA1_Channel5_IRQHandler
-                0x080050e0                EXTI4_IRQHandler
-                0x080050e0                USB_LP_CAN1_RX0_IRQHandler
-                0x080050e0                USB_HP_CAN1_TX_IRQHandler
-                0x080050e0                TIM1_UP_IRQHandler
-                0x080050e0                WWDG_IRQHandler
-                0x080050e0                TIM2_IRQHandler
-                0x080050e0                TIM1_BRK_IRQHandler
-                0x080050e0                EXTI1_IRQHandler
-                0x080050e0                USART2_IRQHandler
-                0x080050e0                I2C2_ER_IRQHandler
-                0x080050e0                CAN1_SCE_IRQHandler
-                0x080050e0                FLASH_IRQHandler
-                0x080050e0                BusFault_Handler
-                0x080050e0                USART1_IRQHandler
-                0x080050e0                I2C1_ER_IRQHandler
-                0x080050e0                USBWakeUp_IRQHandler
- *fill*         0x080050e2        0x2 
- .text          0x080050e4      0x450 ..\obj\infrared.o
-                0x080050e4                send_data
-                0x08005120                transmit_handler
- .text          0x08005534      0x3e4 ..\obj\main.o
-                0x08005534                main
-                0x08005580                SystemClock_Config
-                0x080058ec                notify_transmission_finished
- .text          0x08005918     0x154c ..\obj\stm32f1xx_hal_uart.o
-                0x08005918                HAL_UART_Init
-                0x080059ac                HAL_HalfDuplex_Init
-                0x08005a50                HAL_LIN_Init
-                0x08005b08                HAL_MultiProcessor_Init
-                0x08005bc8                HAL_UART_DeInit
-                0x08005c58                HAL_UART_Transmit
-                0x08005da8                HAL_UART_Receive
-                0x08005f18                HAL_UART_Transmit_IT
-                0x08005fd8                HAL_UART_Receive_IT
-                0x080060a8                HAL_UART_Transmit_DMA
-                0x080061a4                HAL_UART_Receive_DMA
-                0x0800628c                HAL_UART_DMAPause
-                0x08006328                HAL_UART_DMAResume
-                0x080063e8                HAL_UART_DMAStop
-                0x08006438                HAL_UART_IRQHandler
-                0x08006618                HAL_UART_TxCpltCallback
-                0x0800662c                HAL_UART_TxHalfCpltCallback
-                0x08006640                HAL_UART_RxCpltCallback
-                0x08006654                HAL_UART_RxHalfCpltCallback
-                0x08006668                HAL_UART_ErrorCallback
-                0x0800667c                HAL_LIN_SendBreak
-                0x080066d0                HAL_MultiProcessor_EnterMuteMode
-                0x08006724                HAL_MultiProcessor_ExitMuteMode
-                0x08006778                HAL_HalfDuplex_EnableTransmitter
-                0x080067d0                HAL_HalfDuplex_EnableReceiver
-                0x08006828                HAL_UART_GetState
-                0x08006844                HAL_UART_GetError
- .text          0x08006e64      0x458 ..\obj\stm32f1xx_hal_msp.o
-                0x08006e64                HAL_MspInit
-                0x08006eb4                HAL_CRC_MspInit
-                0x08006ef0                HAL_CRC_MspDeInit
-                0x08006f20                HAL_SPI_MspInit
-                0x08007090                HAL_SPI_MspDeInit
-                0x0800710c                HAL_TIM_Base_MspInit
-                0x080071ac                HAL_TIM_Base_MspDeInit
-                0x08007210                HAL_UART_MspInit
-                0x08007280                HAL_UART_MspDeInit
- .text          0x080072bc     0x3ce4 ..\obj\stm32f1xx_hal_tim.o
-                0x080072bc                HAL_TIM_Base_Init
-                0x08007314                HAL_TIM_Base_DeInit
-                0x0800739c                HAL_TIM_Base_Start
-                0x080073d4                HAL_TIM_Base_Stop
-                0x0800742c                HAL_TIM_Base_Start_IT
-                0x08007464                HAL_TIM_Base_Stop_IT
-                0x080074bc                HAL_TIM_Base_Start_DMA
-                0x0800755c                HAL_TIM_Base_Stop_DMA
-                0x080075bc                HAL_TIM_OC_Init
-                0x08007614                HAL_TIM_OC_DeInit
-                0x08007674                HAL_TIM_OC_MspInit
-                0x08007688                HAL_TIM_OC_MspDeInit
-                0x0800769c                HAL_TIM_OC_Start
-                0x080076ec                HAL_TIM_OC_Stop
-                0x0800777c                HAL_TIM_OC_Start_IT
-                0x08007858                HAL_TIM_OC_Stop_IT
-                0x08007974                HAL_TIM_OC_Start_DMA
-                0x08007b38                HAL_TIM_OC_Stop_DMA
-                0x08007c5c                HAL_TIM_PWM_Init
-                0x08007cb4                HAL_TIM_PWM_DeInit
-                0x08007d14                HAL_TIM_PWM_MspInit
-                0x08007d28                HAL_TIM_PWM_MspDeInit
-                0x08007d3c                HAL_TIM_PWM_Start
-                0x08007d8c                HAL_TIM_PWM_Stop
-                0x08007e24                HAL_TIM_PWM_Start_IT
-                0x08007f00                HAL_TIM_PWM_Stop_IT
-                0x0800801c                HAL_TIM_PWM_Start_DMA
-                0x080081e0                HAL_TIM_PWM_Stop_DMA
-                0x08008304                HAL_TIM_IC_Init
-                0x0800835c                HAL_TIM_IC_DeInit
-                0x080083bc                HAL_TIM_IC_MspInit
-                0x080083d0                HAL_TIM_IC_MspDeInit
-                0x080083e4                HAL_TIM_IC_Start
-                0x08008418                HAL_TIM_IC_Stop
-                0x0800846c                HAL_TIM_IC_Start_IT
-                0x0800852c                HAL_TIM_IC_Stop_IT
-                0x0800860c                HAL_TIM_IC_Start_DMA
-                0x080087ac                HAL_TIM_IC_Stop_DMA
-                0x08008894                HAL_TIM_OnePulse_Init
-                0x0800890c                HAL_TIM_OnePulse_DeInit
-                0x0800896c                HAL_TIM_OnePulse_MspInit
-                0x08008980                HAL_TIM_OnePulse_MspDeInit
-                0x08008994                HAL_TIM_OnePulse_Start
-                0x080089e4                HAL_TIM_OnePulse_Stop
-                0x08008a84                HAL_TIM_OnePulse_Start_IT
-                0x08008af4                HAL_TIM_OnePulse_Stop_IT
-                0x08008bb4                HAL_TIM_Encoder_Init
-                0x08008ce0                HAL_TIM_Encoder_DeInit
-                0x08008d40                HAL_TIM_Encoder_MspInit
-                0x08008d54                HAL_TIM_Encoder_MspDeInit
-                0x08008d68                HAL_TIM_Encoder_Start
-                0x08008dd8                HAL_TIM_Encoder_Stop
-                0x08008e68                HAL_TIM_Encoder_Start_IT
-                0x08008f18                HAL_TIM_Encoder_Stop_IT
-                0x08008fec                HAL_TIM_Encoder_Start_DMA
-                0x080091a4                HAL_TIM_Encoder_Stop_DMA
-                0x08009278                HAL_TIM_IRQHandler
-                0x08009488                HAL_TIM_OC_ConfigChannel
-                0x08009548                HAL_TIM_IC_ConfigChannel
-                0x08009680                HAL_TIM_PWM_ConfigChannel
-                0x0800980c                HAL_TIM_OnePulse_ConfigChannel
-                0x0800998c                HAL_TIM_DMABurst_WriteStart
-                0x08009b98                HAL_TIM_DMABurst_WriteStop
-                0x08009c48                HAL_TIM_DMABurst_ReadStart
-                0x08009e48                HAL_TIM_DMABurst_ReadStop
-                0x08009ef8                HAL_TIM_GenerateEvent
-                0x08009f48                HAL_TIM_ConfigOCrefClear
-                0x0800a0d0                HAL_TIM_ConfigClockSource
-                0x0800a294                HAL_TIM_ConfigTI1Input
-                0x0800a2d0                HAL_TIM_SlaveConfigSynchronization
-                0x0800a33c                HAL_TIM_SlaveConfigSynchronization_IT
-                0x0800a3a8                HAL_TIM_ReadCapturedValue
-                0x0800a44c                HAL_TIM_PeriodElapsedCallback
-                0x0800a460                HAL_TIM_OC_DelayElapsedCallback
-                0x0800a474                HAL_TIM_IC_CaptureCallback
-                0x0800a488                HAL_TIM_PWM_PulseFinishedCallback
-                0x0800a49c                HAL_TIM_TriggerCallback
-                0x0800a4b0                HAL_TIM_ErrorCallback
-                0x0800a4c4                HAL_TIM_Base_GetState
-                0x0800a4e0                HAL_TIM_OC_GetState
-                0x0800a4fc                HAL_TIM_PWM_GetState
-                0x0800a518                HAL_TIM_IC_GetState
-                0x0800a534                HAL_TIM_OnePulse_GetState
-                0x0800a550                HAL_TIM_Encoder_GetState
-                0x0800a56c                TIM_DMAError
-                0x0800a590                TIM_DMADelayPulseCplt
-                0x0800a600                TIM_DMACaptureCplt
-                0x0800a6b8                TIM_Base_SetConfig
-                0x0800a84c                TIM_OC2_SetConfig
-                0x0800abd0                TIM_TI1_SetConfig
-                0x0800af5c                TIM_CCxChannelCmd
- .text          0x0800afa0      0x1a8 ..\obj\stm32f1xx_hal_crc.o
-                0x0800afa0                HAL_CRC_Init
-                0x0800afd8                HAL_CRC_DeInit
-                0x0800b044                HAL_CRC_Accumulate
-                0x0800b0b0                HAL_CRC_Calculate
-                0x0800b12c                HAL_CRC_GetState
- .text          0x0800b148     0x1abc ..\obj\stm32f1xx_hal_rcc.o
-                0x0800b148                HAL_RCC_DeInit
-                0x0800b1b8                HAL_RCC_OscConfig
-                0x0800c1d4                HAL_RCC_ClockConfig
-                0x0800c7b4                HAL_RCC_MCOConfig
-                0x0800c830                HAL_RCC_EnableCSS
-                0x0800c864                HAL_RCC_DisableCSS
-                0x0800c898                HAL_RCC_GetSysClockFreq
-                0x0800c98c                HAL_RCC_GetHCLKFreq
-                0x0800c9dc                HAL_RCC_GetPCLK1Freq
-                0x0800ca20                HAL_RCC_GetPCLK2Freq
-                0x0800ca64                HAL_RCC_GetOscConfig
-                0x0800cb74                HAL_RCC_GetClockConfig
-                0x0800cbd4                HAL_RCC_NMI_IRQHandler
-                0x0800cbf8                HAL_RCC_CSSCallback
+                0x080050e4        0x2 ..\obj\startup_stm32f103xb.o
+                0x080050e4                RTC_Alarm_IRQHandler
+                0x080050e4                EXTI2_IRQHandler
+                0x080050e4                DebugMon_Handler
+                0x080050e4                TIM1_CC_IRQHandler
+                0x080050e4                HardFault_Handler
+                0x080050e4                PVD_IRQHandler
+                0x080050e4                PendSV_Handler
+                0x080050e4                NMI_Handler
+                0x080050e4                EXTI3_IRQHandler
+                0x080050e4                EXTI0_IRQHandler
+                0x080050e4                I2C2_EV_IRQHandler
+                0x080050e4                UsageFault_Handler
+                0x080050e4                ADC1_2_IRQHandler
+                0x080050e4                TAMPER_IRQHandler
+                0x080050e4                DMA1_Channel4_IRQHandler
+                0x080050e4                USART3_IRQHandler
+                0x080050e4                RTC_IRQHandler
+                0x080050e4                DMA1_Channel7_IRQHandler
+                0x080050e4                CAN1_RX1_IRQHandler
+                0x080050e4                I2C1_EV_IRQHandler
+                0x080050e4                DMA1_Channel6_IRQHandler
+                0x080050e4                RCC_IRQHandler
+                0x080050e4                TIM1_TRG_COM_IRQHandler
+                0x080050e4                DMA1_Channel1_IRQHandler
+                0x080050e4                Default_Handler
+                0x080050e4                EXTI15_10_IRQHandler
+                0x080050e4                EXTI9_5_IRQHandler
+                0x080050e4                SPI2_IRQHandler
+                0x080050e4                MemManage_Handler
+                0x080050e4                SVC_Handler
+                0x080050e4                DMA1_Channel5_IRQHandler
+                0x080050e4                EXTI4_IRQHandler
+                0x080050e4                USB_LP_CAN1_RX0_IRQHandler
+                0x080050e4                USB_HP_CAN1_TX_IRQHandler
+                0x080050e4                TIM1_UP_IRQHandler
+                0x080050e4                WWDG_IRQHandler
+                0x080050e4                TIM2_IRQHandler
+                0x080050e4                TIM1_BRK_IRQHandler
+                0x080050e4                EXTI1_IRQHandler
+                0x080050e4                USART2_IRQHandler
+                0x080050e4                I2C2_ER_IRQHandler
+                0x080050e4                CAN1_SCE_IRQHandler
+                0x080050e4                FLASH_IRQHandler
+                0x080050e4                BusFault_Handler
+                0x080050e4                USART1_IRQHandler
+                0x080050e4                I2C1_ER_IRQHandler
+                0x080050e4                USBWakeUp_IRQHandler
+ *fill*         0x080050e6        0x2 
+ .text          0x080050e8      0xa50 ..\obj\infrared.o
+                0x080050e8                irreceiver_timer_up_handler
+                0x08005168                irreceiver_timer_ic_handler
+ .text          0x08005b38      0x530 ..\obj\main.o
+                0x08005b38                main
+                0x08005b84                SystemClock_Config
+                0x08005f60                HAL_TIM_IC_PWM_Start_IT
+                0x08005fc0                HAL_TIM_IC_PWM_Stop_IT
+                0x08006040                send_data_uart
+ .text          0x08006068     0x154c ..\obj\stm32f1xx_hal_uart.o
+                0x08006068                HAL_UART_Init
+                0x080060fc                HAL_HalfDuplex_Init
+                0x080061a0                HAL_LIN_Init
+                0x08006258                HAL_MultiProcessor_Init
+                0x08006318                HAL_UART_DeInit
+                0x080063a8                HAL_UART_Transmit
+                0x080064f8                HAL_UART_Receive
+                0x08006668                HAL_UART_Transmit_IT
+                0x08006728                HAL_UART_Receive_IT
+                0x080067f8                HAL_UART_Transmit_DMA
+                0x080068f4                HAL_UART_Receive_DMA
+                0x080069dc                HAL_UART_DMAPause
+                0x08006a78                HAL_UART_DMAResume
+                0x08006b38                HAL_UART_DMAStop
+                0x08006b88                HAL_UART_IRQHandler
+                0x08006d68                HAL_UART_TxCpltCallback
+                0x08006d7c                HAL_UART_TxHalfCpltCallback
+                0x08006d90                HAL_UART_RxCpltCallback
+                0x08006da4                HAL_UART_RxHalfCpltCallback
+                0x08006db8                HAL_UART_ErrorCallback
+                0x08006dcc                HAL_LIN_SendBreak
+                0x08006e20                HAL_MultiProcessor_EnterMuteMode
+                0x08006e74                HAL_MultiProcessor_ExitMuteMode
+                0x08006ec8                HAL_HalfDuplex_EnableTransmitter
+                0x08006f20                HAL_HalfDuplex_EnableReceiver
+                0x08006f78                HAL_UART_GetState
+                0x08006f94                HAL_UART_GetError
+ .text          0x080075b4      0x4f4 ..\obj\stm32f1xx_hal_msp.o
+                0x080075b4                HAL_MspInit
+                0x08007604                HAL_CRC_MspInit
+                0x08007640                HAL_CRC_MspDeInit
+                0x08007670                HAL_SPI_MspInit
+                0x080077e0                HAL_SPI_MspDeInit
+                0x0800785c                HAL_TIM_Base_MspInit
+                0x080078f8                HAL_TIM_Base_MspDeInit
+                0x08007958                HAL_TIM_IC_MspInit
+                0x080079bc                HAL_TIM_IC_MspDeInit
+                0x080079fc                HAL_UART_MspInit
+                0x08007a6c                HAL_UART_MspDeInit
+ .text          0x08007aa8     0x3ce4 ..\obj\stm32f1xx_hal_tim.o
+                0x08007aa8                HAL_TIM_Base_Init
+                0x08007b00                HAL_TIM_Base_DeInit
+                0x08007b88                HAL_TIM_Base_Start
+                0x08007bc0                HAL_TIM_Base_Stop
+                0x08007c18                HAL_TIM_Base_Start_IT
+                0x08007c50                HAL_TIM_Base_Stop_IT
+                0x08007ca8                HAL_TIM_Base_Start_DMA
+                0x08007d48                HAL_TIM_Base_Stop_DMA
+                0x08007da8                HAL_TIM_OC_Init
+                0x08007e00                HAL_TIM_OC_DeInit
+                0x08007e60                HAL_TIM_OC_MspInit
+                0x08007e74                HAL_TIM_OC_MspDeInit
+                0x08007e88                HAL_TIM_OC_Start
+                0x08007ed8                HAL_TIM_OC_Stop
+                0x08007f68                HAL_TIM_OC_Start_IT
+                0x08008044                HAL_TIM_OC_Stop_IT
+                0x08008160                HAL_TIM_OC_Start_DMA
+                0x08008324                HAL_TIM_OC_Stop_DMA
+                0x08008448                HAL_TIM_PWM_Init
+                0x080084a0                HAL_TIM_PWM_DeInit
+                0x08008500                HAL_TIM_PWM_MspInit
+                0x08008514                HAL_TIM_PWM_MspDeInit
+                0x08008528                HAL_TIM_PWM_Start
+                0x08008578                HAL_TIM_PWM_Stop
+                0x08008610                HAL_TIM_PWM_Start_IT
+                0x080086ec                HAL_TIM_PWM_Stop_IT
+                0x08008808                HAL_TIM_PWM_Start_DMA
+                0x080089cc                HAL_TIM_PWM_Stop_DMA
+                0x08008af0                HAL_TIM_IC_Init
+                0x08008b48                HAL_TIM_IC_DeInit
+                0x08008bd0                HAL_TIM_IC_Start
+                0x08008c04                HAL_TIM_IC_Stop
+                0x08008c58                HAL_TIM_IC_Start_IT
+                0x08008d18                HAL_TIM_IC_Stop_IT
+                0x08008df8                HAL_TIM_IC_Start_DMA
+                0x08008f98                HAL_TIM_IC_Stop_DMA
+                0x08009080                HAL_TIM_OnePulse_Init
+                0x080090f8                HAL_TIM_OnePulse_DeInit
+                0x08009158                HAL_TIM_OnePulse_MspInit
+                0x0800916c                HAL_TIM_OnePulse_MspDeInit
+                0x08009180                HAL_TIM_OnePulse_Start
+                0x080091d0                HAL_TIM_OnePulse_Stop
+                0x08009270                HAL_TIM_OnePulse_Start_IT
+                0x080092e0                HAL_TIM_OnePulse_Stop_IT
+                0x080093a0                HAL_TIM_Encoder_Init
+                0x080094cc                HAL_TIM_Encoder_DeInit
+                0x0800952c                HAL_TIM_Encoder_MspInit
+                0x08009540                HAL_TIM_Encoder_MspDeInit
+                0x08009554                HAL_TIM_Encoder_Start
+                0x080095c4                HAL_TIM_Encoder_Stop
+                0x08009654                HAL_TIM_Encoder_Start_IT
+                0x08009704                HAL_TIM_Encoder_Stop_IT
+                0x080097d8                HAL_TIM_Encoder_Start_DMA
+                0x08009990                HAL_TIM_Encoder_Stop_DMA
+                0x08009a64                HAL_TIM_IRQHandler
+                0x08009c74                HAL_TIM_OC_ConfigChannel
+                0x08009d34                HAL_TIM_IC_ConfigChannel
+                0x08009e6c                HAL_TIM_PWM_ConfigChannel
+                0x08009ff8                HAL_TIM_OnePulse_ConfigChannel
+                0x0800a178                HAL_TIM_DMABurst_WriteStart
+                0x0800a384                HAL_TIM_DMABurst_WriteStop
+                0x0800a434                HAL_TIM_DMABurst_ReadStart
+                0x0800a634                HAL_TIM_DMABurst_ReadStop
+                0x0800a6e4                HAL_TIM_GenerateEvent
+                0x0800a734                HAL_TIM_ConfigOCrefClear
+                0x0800a8bc                HAL_TIM_ConfigClockSource
+                0x0800aa80                HAL_TIM_ConfigTI1Input
+                0x0800aabc                HAL_TIM_SlaveConfigSynchronization
+                0x0800ab28                HAL_TIM_SlaveConfigSynchronization_IT
+                0x0800ab94                HAL_TIM_ReadCapturedValue
+                0x0800ac38                HAL_TIM_PeriodElapsedCallback
+                0x0800ac4c                HAL_TIM_OC_DelayElapsedCallback
+                0x0800ac60                HAL_TIM_IC_CaptureCallback
+                0x0800ac74                HAL_TIM_PWM_PulseFinishedCallback
+                0x0800ac88                HAL_TIM_TriggerCallback
+                0x0800ac9c                HAL_TIM_ErrorCallback
+                0x0800acb0                HAL_TIM_Base_GetState
+                0x0800accc                HAL_TIM_OC_GetState
+                0x0800ace8                HAL_TIM_PWM_GetState
+                0x0800ad04                HAL_TIM_IC_GetState
+                0x0800ad20                HAL_TIM_OnePulse_GetState
+                0x0800ad3c                HAL_TIM_Encoder_GetState
+                0x0800ad58                TIM_DMAError
+                0x0800ad7c                TIM_DMADelayPulseCplt
+                0x0800adec                TIM_DMACaptureCplt
+                0x0800aea4                TIM_Base_SetConfig
+                0x0800b038                TIM_OC2_SetConfig
+                0x0800b3bc                TIM_TI1_SetConfig
+                0x0800b748                TIM_CCxChannelCmd
+ .text          0x0800b78c      0x1a8 ..\obj\stm32f1xx_hal_crc.o
+                0x0800b78c                HAL_CRC_Init
+                0x0800b7c4                HAL_CRC_DeInit
+                0x0800b830                HAL_CRC_Accumulate
+                0x0800b89c                HAL_CRC_Calculate
+                0x0800b918                HAL_CRC_GetState
+ .text          0x0800b934     0x1ac8 ..\obj\stm32f1xx_hal_rcc.o
+                0x0800b934                HAL_RCC_DeInit
+                0x0800b9a4                HAL_RCC_OscConfig
+                0x0800c9cc                HAL_RCC_ClockConfig
+                0x0800cfac                HAL_RCC_MCOConfig
+                0x0800d028                HAL_RCC_EnableCSS
+                0x0800d05c                HAL_RCC_DisableCSS
+                0x0800d090                HAL_RCC_GetSysClockFreq
+                0x0800d184                HAL_RCC_GetHCLKFreq
+                0x0800d1d4                HAL_RCC_GetPCLK1Freq
+                0x0800d218                HAL_RCC_GetPCLK2Freq
+                0x0800d25c                HAL_RCC_GetOscConfig
+                0x0800d36c                HAL_RCC_GetClockConfig
+                0x0800d3cc                HAL_RCC_NMI_IRQHandler
+                0x0800d3f0                HAL_RCC_CSSCallback
  .text.__libc_init_array
-                0x0800cc04       0x50 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-init.o)
-                0x0800cc04                __libc_init_array
+                0x0800d3fc       0x50 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-init.o)
+                0x0800d3fc                __libc_init_array
  .text.startup.register_fini
-                0x0800cc54       0x14 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__call_atexit.o)
- .text.atexit   0x0800cc68        0xc d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-atexit.o)
-                0x0800cc68                atexit
+                0x0800d44c       0x14 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__call_atexit.o)
+ .text.atexit   0x0800d460        0xc d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-atexit.o)
+                0x0800d460                atexit
  .text.__libc_fini_array
-                0x0800cc74       0x2c d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-fini.o)
-                0x0800cc74                __libc_fini_array
+                0x0800d46c       0x2c d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-fini.o)
+                0x0800d46c                __libc_fini_array
  .text.__register_exitproc
-                0x0800cca0       0xa4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__atexit.o)
-                0x0800cca0                __register_exitproc
+                0x0800d498       0xa4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__atexit.o)
+                0x0800d498                __register_exitproc
  *(.init)
- .init          0x0800cd44        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crti.o
-                0x0800cd44                _init
- .init          0x0800cd48        0x8 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtn.o
+ .init          0x0800d53c        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crti.o
+                0x0800d53c                _init
+ .init          0x0800d540        0x8 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtn.o
  *(.fini)
- .fini          0x0800cd50        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crti.o
-                0x0800cd50                _fini
- .fini          0x0800cd54        0x8 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtn.o
+ .fini          0x0800d548        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crti.o
+                0x0800d548                _fini
+ .fini          0x0800d54c        0x8 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtn.o
  *crtbegin.o(.ctors)
  *crtbegin?.o(.ctors)
  *(EXCLUDE_FILE(*crtend.o *crtend?.o) .ctors)
@@ -599,154 +599,169 @@ LOAD d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-
  *(SORT(.dtors.*))
  *(.dtors)
  *(.rodata*)
- .rodata        0x0800cd5c       0x10 ..\obj\system_stm32f1xx.o
-                0x0800cd5c                AHBPrescTable
- .rodata        0x0800cd6c       0x10 ..\obj\infrared.o
-                0x0800cd6c                pwm_timer_prescaler
-                0x0800cd6e                pwm_timer_period
-                0x0800cd70                pwm_pulse_width
-                0x0800cd72                _is_direct_logic
-                0x0800cd74                envelop_timer_prescaler
-                0x0800cd76                StartStopBitLength
-                0x0800cd78                DataBitLength
-                0x0800cd7a                DelayBetweenDataFramesTotal
- .rodata        0x0800cd7c        0x1 ..\obj\main.o
-                0x0800cd7c                _debug
- *fill*         0x0800cd7d        0x3 
- .rodata        0x0800cd80       0x22 ..\obj\stm32f1xx_hal_rcc.o
-                0x0800cd80                aAPBAHBPrescTable
- *fill*         0x0800cda2        0x2 
+ .rodata        0x0800d554       0x10 ..\obj\system_stm32f1xx.o
+                0x0800d554                AHBPrescTable
+ .rodata        0x0800d564       0x1c ..\obj\infrared.o
+                0x0800d564                envelop_timer_prescaler
+                0x0800d566                StartStopBitLength
+                0x0800d568                DataBitLength
+                0x0800d56a                DelayBetweenDataFramesTotal
+                0x0800d56c                HalfDataBitLength
+                0x0800d56e                HalfStartStopBitLength
+                0x0800d570                HalfStartStopHalfDataBitLength
+                0x0800d572                StartStopBitPeriod
+                0x0800d574                DelayCheckingPeriod
+                0x0800d576                max_delta_pwm_pulse
+                0x0800d578                max_delta_pwm_width
+                0x0800d57a                max_delta_cnt_delay
+                0x0800d57c                DelayBetweenDataFramesToCheck
+                0x0800d57e                DelayCounterMin
+ .rodata        0x0800d580        0x3 ..\obj\main.o
+                0x0800d580                GPIO_PIN_IR_IN
+                0x0800d582                _is_direct_logic
+ *fill*         0x0800d583        0x1 
+ .rodata        0x0800d584       0x22 ..\obj\stm32f1xx_hal_rcc.o
+                0x0800d584                aAPBAHBPrescTable
+ *fill*         0x0800d5a6        0x2 
  .rodata.str1.4
-                0x0800cda4        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-impure.o)
+                0x0800d5a8        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-impure.o)
                                   0x2 (size before relaxing)
  .rodata._global_impure_ptr
-                0x0800cda8        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-impure.o)
-                0x0800cda8                _global_impure_ptr
+                0x0800d5ac        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-impure.o)
+                0x0800d5ac                _global_impure_ptr
  *(.eh_fram e*)
 
-.eh_frame       0x0800cdac        0x0
- .eh_frame      0x0800cdac        0x0 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
+.eh_frame       0x0800d5b0        0x0
+ .eh_frame      0x0800d5b0        0x0 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
 
-.glue_7         0x0800cdac        0x0
+.glue_7         0x0800d5b0        0x0
  .glue_7        0x00000000        0x0 linker stubs
 
-.glue_7t        0x0800cdac        0x0
+.glue_7t        0x0800d5b0        0x0
  .glue_7t       0x00000000        0x0 linker stubs
 
-.vfp11_veneer   0x0800cdac        0x0
+.vfp11_veneer   0x0800d5b0        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x0800cdac        0x0
+.v4_bx          0x0800d5b0        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
-.iplt           0x0800cdac        0x0
+.iplt           0x0800d5b0        0x0
  .iplt          0x00000000        0x0 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
 
-.rel.dyn        0x0800cdac        0x0
+.rel.dyn        0x0800d5b0        0x0
  .rel.iplt      0x00000000        0x0 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x0800cdac                __exidx_start = .
+                0x0800d5b0                __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x0800cdac                __exidx_end = .
-                0x0800cdac                __etext = .
-                0x0800cdac                _sidata = __etext
+                0x0800d5b0                __exidx_end = .
+                0x0800d5b0                __etext = .
+                0x0800d5b0                _sidata = __etext
 
-.data           0x20000000      0x448 load address 0x0800cdac
+.data           0x20000000      0x450 load address 0x0800d5b0
                 0x20000000                __data_start__ = .
                 0x20000000                _sdata = __data_start__
  *(vtable)
  *(.data*)
  .data          0x20000000        0x4 ..\obj\system_stm32f1xx.o
                 0x20000000                SystemCoreClock
- .data          0x20000004        0x9 ..\obj\main.o
-                0x20000004                phtim_envelop
-                0x20000008                phtim_pwm
-                0x2000000c                responce
- *fill*         0x2000000d        0x3 
+ .data          0x20000004        0x1 ..\obj\infrared.o
+                0x20000004                StartStopSequenceReceiveState
+ *fill*         0x20000005        0x3 
+ .data          0x20000008        0xc ..\obj\main.o
+                0x20000008                ic_tim_p
+                0x2000000c                up_tim_p
+                0x20000010                GPIO_PORT_IR_IN
+ *fill*         0x20000014        0x4 
  .data.impure_data
-                0x20000010      0x428 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-impure.o)
-                0x20000438                . = ALIGN (0x4)
-                0x20000438                PROVIDE (__preinit_array_start, .)
+                0x20000018      0x428 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-impure.o)
+                0x20000440                . = ALIGN (0x4)
+                0x20000440                PROVIDE (__preinit_array_start, .)
  *(.preinit_array)
-                0x20000438                PROVIDE (__preinit_array_end, .)
-                0x20000438                . = ALIGN (0x4)
-                0x20000438                PROVIDE (__init_array_start, .)
+                0x20000440                PROVIDE (__preinit_array_end, .)
+                0x20000440                . = ALIGN (0x4)
+                0x20000440                PROVIDE (__init_array_start, .)
  *(SORT(.init_array.*))
  .init_array.00000
-                0x20000438        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__call_atexit.o)
+                0x20000440        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__call_atexit.o)
  *(.init_array)
- .init_array    0x2000043c        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
-                0x20000440                PROVIDE (__init_array_end, .)
-                0x20000440                . = ALIGN (0x4)
-                0x20000440                PROVIDE (__fini_array_start, .)
+ .init_array    0x20000444        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
+                0x20000448                PROVIDE (__init_array_end, .)
+                0x20000448                . = ALIGN (0x4)
+                0x20000448                PROVIDE (__fini_array_start, .)
  *(SORT(.fini_array.*))
  *(.fini_array)
- .fini_array    0x20000440        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
-                0x20000444                PROVIDE (__fini_array_end, .)
+ .fini_array    0x20000448        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
+                0x2000044c                PROVIDE (__fini_array_end, .)
  *(.jcr*)
- .jcr           0x20000444        0x0 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
- .jcr           0x20000444        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtend.o
-                0x20000448                . = ALIGN (0x4)
-                0x20000448                __data_end__ = .
-                0x20000448                _edata = __data_end__
+ .jcr           0x2000044c        0x0 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
+ .jcr           0x2000044c        0x4 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtend.o
+                0x20000450                . = ALIGN (0x4)
+                0x20000450                __data_end__ = .
+                0x20000450                _edata = __data_end__
 
-.igot.plt       0x20000448        0x0 load address 0x0800d1f4
+.igot.plt       0x20000450        0x0 load address 0x0800da00
  .igot.plt      0x00000000        0x0 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
 
-.bss            0x20000448      0x348 load address 0x0800d1f4
-                0x20000448                . = ALIGN (0x4)
-                0x20000448                __bss_start__ = .
-                0x20000448                _sbss = __bss_start__
+.bss            0x20000450     0x11e0 load address 0x0800da00
+                0x20000450                . = ALIGN (0x4)
+                0x20000450                __bss_start__ = .
+                0x20000450                _sbss = __bss_start__
  *(.bss*)
- .bss           0x20000448       0x1c d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
- .bss           0x20000464        0x1 ..\obj\stm32f1xx_hal_spi_ex.o
-                0x20000464                uCRCErrorWorkaroundCheck
- *fill*         0x20000465        0x3 
- .bss           0x20000468        0x4 ..\obj\stm32f1xx_hal.o
- .bss           0x2000046c      0x139 ..\obj\infrared.o
-                0x2000046c                TransmitterState
-                0x2000046d                DataFrameState
-                0x2000046e                StartStopSequenceTransmitState
-                0x2000046f                StartStopSequenceReceiveState
-                0x20000470                tx_total_bits
-                0x20000474                tx_current_bit_pos
-                0x20000475                tx_bit
-                0x20000478                level
-                0x200004dc                pwm_period
-                0x200005a4                arr_index
+ .bss           0x20000450       0x1c d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/armv7-m/crtbegin.o
+ .bss           0x2000046c        0x1 ..\obj\stm32f1xx_hal_spi_ex.o
+                0x2000046c                uCRCErrorWorkaroundCheck
+ *fill*         0x2000046d        0x3 
+ .bss           0x20000470        0x4 ..\obj\stm32f1xx_hal.o
+ .bss           0x20000474      0xfd8 ..\obj\infrared.o
+                0x20000474                data_frames
+                0x20000492                arr_index
+                0x20000493                ReceiverState
+                0x20000494                DataFrameState
+                0x20000495                LineLevelState
+                0x20000496                rx_data
+                0x20000498                rx_total_bits
+                0x2000049c                rx_current_bit_pos
+                0x2000049d                rx_bit
+                0x2000049e                _is_rising_edge
+                0x2000049f                _is_falling_edge
+                0x200004a0                _is_timer_update_event
+                0x200004a1                _is_interframe_delay_long_enough
+                0x200004a2                _ccr1
+                0x200004a4                _ccr2
+                0x200004a6                _delay_counter
+                0x200004a8                dbg
+                0x20001448                dbg_index
  *(COMMON)
- *fill*         0x200005a5        0x3 
- COMMON         0x200005a8        0x3 ..\obj\infrared.o
-                0x200005a8                tx_data_frame
- *fill*         0x200005ab        0x1 
- COMMON         0x200005ac      0x1e1 ..\obj\main.o
-                0x200005ac                hspi2
-                0x20000604                htim4
-                0x20000640                hcrc
-                0x20000648                htim3
-                0x20000684                huart1
-                0x200006c4                hspi1
-                0x2000071c                hdma_spi1_rx
-                0x20000754                hdma_spi1_tx
-                0x2000078c                status
-                0x20000790                . = ALIGN (0x4)
- *fill*         0x2000078d        0x3 
-                0x20000790                __bss_end__ = .
-                0x20000790                _ebss = __bss_end__
+ COMMON         0x2000144c        0x3 ..\obj\infrared.o
+                0x2000144c                rx_data_frame
+ *fill*         0x2000144f        0x1 
+ COMMON         0x20001450      0x1e0 ..\obj\main.o
+                0x20001450                hspi2
+                0x200014a8                htim4
+                0x200014e4                hcrc
+                0x200014ec                htim3
+                0x20001528                huart1
+                0x20001568                hspi1
+                0x200015c0                hdma_spi1_rx
+                0x200015f8                hdma_spi1_tx
+                0x20001630                . = ALIGN (0x4)
+                0x20001630                __bss_end__ = .
+                0x20001630                _ebss = __bss_end__
 
-.heap           0x20000790        0x0
-                0x20000790                __end__ = .
-                0x20000790                _end = __end__
-                0x20000790                end = __end__
+.heap           0x20001630        0x0
+                0x20001630                __end__ = .
+                0x20001630                _end = __end__
+                0x20001630                end = __end__
  *(.heap*)
-                0x20000790                __HeapLimit = .
+                0x20001630                __HeapLimit = .
 
-.co_stack       0x20000790        0x0
-                0x20000790                . = ALIGN (0x8)
+.co_stack       0x20001630        0x0
+                0x20001630                . = ALIGN (0x8)
  *(.co_stack .co_stack.*)
                 0x20005000                __StackTop = (ORIGIN (ram) + 0x5000)
                 0x20005000                __StackLimit = (__StackTop - SIZEOF (.co_stack))
@@ -860,7 +875,7 @@ OUTPUT(motionsensor.elf elf32-littlearm)
  .comment       0x00000000       0x71 ..\obj\stm32f1xx_hal_crc.o
  .comment       0x00000000       0x71 ..\obj\stm32f1xx_hal_rcc.o
 
-.debug_info     0x00000000     0xbcfd
+.debug_info     0x00000000     0xc020
  .debug_info    0x00000000      0x56d ..\obj\stm32f1xx_hal_dma.o
  .debug_info    0x0000056d      0x399 ..\obj\system_stm32f1xx.o
  .debug_info    0x00000906      0xa94 ..\obj\stm32f1xx_hal_cortex.o
@@ -870,16 +885,16 @@ OUTPUT(motionsensor.elf elf32-littlearm)
  .debug_info    0x00003647      0x574 ..\obj\stm32f1xx_hal_spi_ex.o
  .debug_info    0x00003bbb      0x5ce ..\obj\stm32f1xx_hal.o
  .debug_info    0x00004189      0x7da ..\obj\stm32f1xx_it.o
- .debug_info    0x00004963      0x128 ..\obj\startup_stm32f103xb.o
- .debug_info    0x00004a8b      0x87c ..\obj\infrared.o
- .debug_info    0x00005307     0x11ac ..\obj\main.o
- .debug_info    0x000064b3      0xe2c ..\obj\stm32f1xx_hal_uart.o
- .debug_info    0x000072df      0xf1d ..\obj\stm32f1xx_hal_msp.o
- .debug_info    0x000081fc     0x20e7 ..\obj\stm32f1xx_hal_tim.o
- .debug_info    0x0000a2e3      0x37a ..\obj\stm32f1xx_hal_crc.o
- .debug_info    0x0000a65d     0x16a0 ..\obj\stm32f1xx_hal_rcc.o
+ .debug_info    0x00004963      0x122 ..\obj\startup_stm32f103xb.o
+ .debug_info    0x00004a85      0xada ..\obj\infrared.o
+ .debug_info    0x0000555f     0x1203 ..\obj\main.o
+ .debug_info    0x00006762      0xe2c ..\obj\stm32f1xx_hal_uart.o
+ .debug_info    0x0000758e      0xf91 ..\obj\stm32f1xx_hal_msp.o
+ .debug_info    0x0000851f     0x20e7 ..\obj\stm32f1xx_hal_tim.o
+ .debug_info    0x0000a606      0x37a ..\obj\stm32f1xx_hal_crc.o
+ .debug_info    0x0000a980     0x16a0 ..\obj\stm32f1xx_hal_rcc.o
 
-.debug_abbrev   0x00000000     0x1d1e
+.debug_abbrev   0x00000000     0x1d8b
  .debug_abbrev  0x00000000      0x1b3 ..\obj\stm32f1xx_hal_dma.o
  .debug_abbrev  0x000001b3      0x120 ..\obj\system_stm32f1xx.o
  .debug_abbrev  0x000002d3      0x265 ..\obj\stm32f1xx_hal_cortex.o
@@ -890,13 +905,13 @@ OUTPUT(motionsensor.elf elf32-littlearm)
  .debug_abbrev  0x00000c27      0x1ed ..\obj\stm32f1xx_hal.o
  .debug_abbrev  0x00000e14      0x13f ..\obj\stm32f1xx_it.o
  .debug_abbrev  0x00000f53       0x12 ..\obj\startup_stm32f103xb.o
- .debug_abbrev  0x00000f65      0x1ba ..\obj\infrared.o
- .debug_abbrev  0x0000111f      0x210 ..\obj\main.o
- .debug_abbrev  0x0000132f      0x215 ..\obj\stm32f1xx_hal_uart.o
- .debug_abbrev  0x00001544      0x1c5 ..\obj\stm32f1xx_hal_msp.o
- .debug_abbrev  0x00001709      0x204 ..\obj\stm32f1xx_hal_tim.o
- .debug_abbrev  0x0000190d      0x16c ..\obj\stm32f1xx_hal_crc.o
- .debug_abbrev  0x00001a79      0x2a5 ..\obj\stm32f1xx_hal_rcc.o
+ .debug_abbrev  0x00000f65      0x1f1 ..\obj\infrared.o
+ .debug_abbrev  0x00001156      0x246 ..\obj\main.o
+ .debug_abbrev  0x0000139c      0x215 ..\obj\stm32f1xx_hal_uart.o
+ .debug_abbrev  0x000015b1      0x1c5 ..\obj\stm32f1xx_hal_msp.o
+ .debug_abbrev  0x00001776      0x204 ..\obj\stm32f1xx_hal_tim.o
+ .debug_abbrev  0x0000197a      0x16c ..\obj\stm32f1xx_hal_crc.o
+ .debug_abbrev  0x00001ae6      0x2a5 ..\obj\stm32f1xx_hal_rcc.o
 
 .debug_aranges  0x00000000      0x228
  .debug_aranges
@@ -934,60 +949,60 @@ OUTPUT(motionsensor.elf elf32-littlearm)
  .debug_aranges
                 0x00000208       0x20 ..\obj\stm32f1xx_hal_rcc.o
 
-.debug_line     0x00000000     0x5ee4
- .debug_line    0x00000000      0x84f ..\obj\stm32f1xx_hal_dma.o
- .debug_line    0x0000084f      0x2a9 ..\obj\system_stm32f1xx.o
- .debug_line    0x00000af8      0x381 ..\obj\stm32f1xx_hal_cortex.o
- .debug_line    0x00000e79      0x483 ..\obj\stm32f1xx_hal_gpio.o
- .debug_line    0x000012fc      0x929 ..\obj\stm32f1xx_hal_spi.o
- .debug_line    0x00001c25      0x6e3 ..\obj\stm32f1xx_hal_tim_ex.o
- .debug_line    0x00002308      0x329 ..\obj\stm32f1xx_hal_spi_ex.o
- .debug_line    0x00002631      0x362 ..\obj\stm32f1xx_hal.o
- .debug_line    0x00002993      0x314 ..\obj\stm32f1xx_it.o
- .debug_line    0x00002ca7       0xef ..\obj\startup_stm32f103xb.o
- .debug_line    0x00002d96      0x453 ..\obj\infrared.o
- .debug_line    0x000031e9      0x41a ..\obj\main.o
- .debug_line    0x00003603      0x77f ..\obj\stm32f1xx_hal_uart.o
- .debug_line    0x00003d82      0x3b8 ..\obj\stm32f1xx_hal_msp.o
- .debug_line    0x0000413a      0xce6 ..\obj\stm32f1xx_hal_tim.o
- .debug_line    0x00004e20      0x37a ..\obj\stm32f1xx_hal_crc.o
- .debug_line    0x0000519a      0xd4a ..\obj\stm32f1xx_hal_rcc.o
+.debug_line     0x00000000     0x5f37
+ .debug_line    0x00000000      0x843 ..\obj\stm32f1xx_hal_dma.o
+ .debug_line    0x00000843      0x2a0 ..\obj\system_stm32f1xx.o
+ .debug_line    0x00000ae3      0x378 ..\obj\stm32f1xx_hal_cortex.o
+ .debug_line    0x00000e5b      0x477 ..\obj\stm32f1xx_hal_gpio.o
+ .debug_line    0x000012d2      0x91d ..\obj\stm32f1xx_hal_spi.o
+ .debug_line    0x00001bef      0x6d7 ..\obj\stm32f1xx_hal_tim_ex.o
+ .debug_line    0x000022c6      0x31d ..\obj\stm32f1xx_hal_spi_ex.o
+ .debug_line    0x000025e3      0x356 ..\obj\stm32f1xx_hal.o
+ .debug_line    0x00002939      0x309 ..\obj\stm32f1xx_it.o
+ .debug_line    0x00002c42       0xec ..\obj\startup_stm32f103xb.o
+ .debug_line    0x00002d2e      0x517 ..\obj\infrared.o
+ .debug_line    0x00003245      0x43d ..\obj\main.o
+ .debug_line    0x00003682      0x773 ..\obj\stm32f1xx_hal_uart.o
+ .debug_line    0x00003df5      0x3bc ..\obj\stm32f1xx_hal_msp.o
+ .debug_line    0x000041b1      0xcda ..\obj\stm32f1xx_hal_tim.o
+ .debug_line    0x00004e8b      0x36e ..\obj\stm32f1xx_hal_crc.o
+ .debug_line    0x000051f9      0xd3e ..\obj\stm32f1xx_hal_rcc.o
 
-.debug_str      0x00000000     0x3b77
- .debug_str     0x00000000      0x4c6 ..\obj\stm32f1xx_hal_dma.o
-                                0x549 (size before relaxing)
- .debug_str     0x000004c6      0x171 ..\obj\system_stm32f1xx.o
-                                0x331 (size before relaxing)
- .debug_str     0x00000637      0x5ee ..\obj\stm32f1xx_hal_cortex.o
-                                0x8ff (size before relaxing)
- .debug_str     0x00000c25      0x214 ..\obj\stm32f1xx_hal_gpio.o
-                                0x469 (size before relaxing)
- .debug_str     0x00000e39      0x57c ..\obj\stm32f1xx_hal_spi.o
-                                0x98c (size before relaxing)
- .debug_str     0x000013b5      0x7d1 ..\obj\stm32f1xx_hal_tim_ex.o
-                                0xbb4 (size before relaxing)
- .debug_str     0x00001b86       0x97 ..\obj\stm32f1xx_hal_spi_ex.o
-                                0x641 (size before relaxing)
- .debug_str     0x00001c1d      0x234 ..\obj\stm32f1xx_hal.o
-                                0x748 (size before relaxing)
- .debug_str     0x00001e51       0xf7 ..\obj\stm32f1xx_it.o
-                                0x80c (size before relaxing)
- .debug_str     0x00001f48      0x39e ..\obj\infrared.o
-                                0x924 (size before relaxing)
- .debug_str     0x000022e6      0x4d6 ..\obj\main.o
-                               0x10d0 (size before relaxing)
- .debug_str     0x000027bc      0x3cf ..\obj\stm32f1xx_hal_uart.o
-                                0x98c (size before relaxing)
- .debug_str     0x00002b8b       0xb6 ..\obj\stm32f1xx_hal_msp.o
-                                0xda0 (size before relaxing)
- .debug_str     0x00002c41      0xc1a ..\obj\stm32f1xx_hal_tim.o
-                               0x131f (size before relaxing)
- .debug_str     0x0000385b       0xe2 ..\obj\stm32f1xx_hal_crc.o
-                                0x3f4 (size before relaxing)
- .debug_str     0x0000393d      0x23a ..\obj\stm32f1xx_hal_rcc.o
-                                0x62b (size before relaxing)
+.debug_str      0x00000000     0x3d9f
+ .debug_str     0x00000000      0x4c0 ..\obj\stm32f1xx_hal_dma.o
+                                0x543 (size before relaxing)
+ .debug_str     0x000004c0      0x16e ..\obj\system_stm32f1xx.o
+                                0x32b (size before relaxing)
+ .debug_str     0x0000062e      0x5eb ..\obj\stm32f1xx_hal_cortex.o
+                                0x8f9 (size before relaxing)
+ .debug_str     0x00000c19      0x211 ..\obj\stm32f1xx_hal_gpio.o
+                                0x463 (size before relaxing)
+ .debug_str     0x00000e2a      0x579 ..\obj\stm32f1xx_hal_spi.o
+                                0x986 (size before relaxing)
+ .debug_str     0x000013a3      0x7c7 ..\obj\stm32f1xx_hal_tim_ex.o
+                                0xbae (size before relaxing)
+ .debug_str     0x00001b6a       0x94 ..\obj\stm32f1xx_hal_spi_ex.o
+                                0x63b (size before relaxing)
+ .debug_str     0x00001bfe      0x231 ..\obj\stm32f1xx_hal.o
+                                0x742 (size before relaxing)
+ .debug_str     0x00001e2f       0xf4 ..\obj\stm32f1xx_it.o
+                                0x806 (size before relaxing)
+ .debug_str     0x00001f23      0x641 ..\obj\infrared.o
+                                0xbfd (size before relaxing)
+ .debug_str     0x00002564      0x4f9 ..\obj\main.o
+                               0x10be (size before relaxing)
+ .debug_str     0x00002a5d      0x3cc ..\obj\stm32f1xx_hal_uart.o
+                                0x986 (size before relaxing)
+ .debug_str     0x00002e29       0xe3 ..\obj\stm32f1xx_hal_msp.o
+                                0xdca (size before relaxing)
+ .debug_str     0x00002f0c      0xb7d ..\obj\stm32f1xx_hal_tim.o
+                               0x1319 (size before relaxing)
+ .debug_str     0x00003a89       0xdf ..\obj\stm32f1xx_hal_crc.o
+                                0x3ee (size before relaxing)
+ .debug_str     0x00003b68      0x237 ..\obj\stm32f1xx_hal_rcc.o
+                                0x625 (size before relaxing)
 
-.debug_frame    0x00000000     0x33fc
+.debug_frame    0x00000000     0x35c0
  .debug_frame   0x00000000      0x194 ..\obj\stm32f1xx_hal_dma.o
  .debug_frame   0x00000194       0x58 ..\obj\system_stm32f1xx.o
  .debug_frame   0x000001ec      0x428 ..\obj\stm32f1xx_hal_cortex.o
@@ -997,18 +1012,18 @@ OUTPUT(motionsensor.elf elf32-littlearm)
  .debug_frame   0x000012c0       0x5c ..\obj\stm32f1xx_hal_spi_ex.o
  .debug_frame   0x0000131c      0x278 ..\obj\stm32f1xx_hal.o
  .debug_frame   0x00001594       0xb8 ..\obj\stm32f1xx_it.o
- .debug_frame   0x0000164c       0xe4 ..\obj\infrared.o
- .debug_frame   0x00001730      0x174 ..\obj\main.o
- .debug_frame   0x000018a4      0x5e8 ..\obj\stm32f1xx_hal_uart.o
- .debug_frame   0x00001e8c      0x15c ..\obj\stm32f1xx_hal_msp.o
- .debug_frame   0x00001fe8      0xfd0 ..\obj\stm32f1xx_hal_tim.o
- .debug_frame   0x00002fb8      0x120 ..\obj\stm32f1xx_hal_crc.o
- .debug_frame   0x000030d8      0x220 ..\obj\stm32f1xx_hal_rcc.o
- .debug_frame   0x000032f8       0x2c d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-init.o)
- .debug_frame   0x00003324       0x50 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__call_atexit.o)
- .debug_frame   0x00003374       0x20 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-atexit.o)
- .debug_frame   0x00003394       0x34 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-fini.o)
- .debug_frame   0x000033c8       0x34 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__atexit.o)
+ .debug_frame   0x0000164c      0x218 ..\obj\infrared.o
+ .debug_frame   0x00001864      0x1bc ..\obj\main.o
+ .debug_frame   0x00001a20      0x5e8 ..\obj\stm32f1xx_hal_uart.o
+ .debug_frame   0x00002008      0x1a4 ..\obj\stm32f1xx_hal_msp.o
+ .debug_frame   0x000021ac      0xfd0 ..\obj\stm32f1xx_hal_tim.o
+ .debug_frame   0x0000317c      0x120 ..\obj\stm32f1xx_hal_crc.o
+ .debug_frame   0x0000329c      0x220 ..\obj\stm32f1xx_hal_rcc.o
+ .debug_frame   0x000034bc       0x2c d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-init.o)
+ .debug_frame   0x000034e8       0x50 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__call_atexit.o)
+ .debug_frame   0x00003538       0x20 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-atexit.o)
+ .debug_frame   0x00003558       0x34 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-fini.o)
+ .debug_frame   0x0000358c       0x34 d:/software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32/bin/../lib/gcc/arm-none-eabi/4.9.3/../../../../arm-none-eabi/lib/armv7-m\libg.a(lib_a-__atexit.o)
 
 .debug_ranges   0x00000000       0x20
  .debug_ranges  0x00000000       0x20 ..\obj\startup_stm32f103xb.o
