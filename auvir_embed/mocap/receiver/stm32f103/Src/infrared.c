@@ -16,6 +16,7 @@ DataFrame_t data_frames[RX_BUF_SIZE] = {0}; // TODO: verify initialization
 uint8_t arr_index = 0;
 
 DataFrame_t rx_data_frame;
+uint8_t data_frame_delta = 0;
 volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
 volatile uint8_t StartStopSequenceReceiveState = STAGE_PREAMBLE_START;
 volatile uint8_t DataFrameState = DATAFRAME_1_BEAMER_ID;
@@ -59,11 +60,11 @@ int dbg_index=0;
 
 #define DEBUG_READING_DATA_1    0
 #define DEBUG_READING_DATA_2    0
-#define DEBUG_DATA_VERIFIED_1   0
+#define DEBUG_DATA_VERIFIED_1   1
 #define DEBUG_DATA_VERIFIED_2   0
 #define DEBUG_DATA_END_1        0
 #define DEBUG_DATA_END_2        0
-#define DEBUG_DATA_RECEIVED_1   1
+#define DEBUG_DATA_RECEIVED_1   0
 #define DEBUG_DATA_RECEIVED_2   0
 
 
@@ -80,7 +81,8 @@ static inline void reset_receiver_state();
 static inline void send_dataready_signal();
 static inline void get_logical_level();
 
-// function to copy data frame to the main buffer, when data is received successfully
+// function to process data
+static inline void decode_bit(uint8_t *data_word);
 static inline void process_received_data();
 static inline void copy_data_frame_to_buffer(DataFrame_t* df);
 
@@ -105,15 +107,16 @@ static inline void debug_epilogue_end();
 
 ///====================== Functions ======================
 
-// 1) k-th bit of n: (n >> k) & 1
-// 2) set bit at the inversed position
-#define DECODE(data_bit) {                                          \
-    if(is_1_on_update_event())                                      \
-    {                                                               \
-        data_bit |= 1 << (rx_total_bits - rx_current_bit_pos - 1);  \
-    }                                                               \
-}                                                                   \
+#define DECODE_BIT_IN_WORD(word) ( word |= 1 << (rx_total_bits - rx_current_bit_pos - 1) )
 
+static inline void decode_bit(uint8_t *data_word) {
+    if(is_1_on_update_event())
+    {
+        // 1) k-th bit of n: (n >> k) & 1
+        // 2) set bit at the inversed position
+        DECODE_BIT_IN_WORD( *data_word );
+    }
+}
 inline void irreceiver_timer_up_handler()
 {
     debug_upd_event();
@@ -346,7 +349,7 @@ static inline void receive_handler()
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
-                            DECODE(rx_data_frame._1_beamer_id);
+                            decode_bit( &(rx_data_frame._1_beamer_id) );
                             rx_current_bit_pos++;
                         }
                         // move to next state and wait a delay between data fields
@@ -366,7 +369,7 @@ static inline void receive_handler()
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
-                            DECODE(rx_data_frame._2_angle_code);
+                            decode_bit( &(rx_data_frame._2_angle_code) );
                             rx_current_bit_pos++;
                         }
                         else
@@ -389,7 +392,7 @@ static inline void receive_handler()
                         // send current bit of current byte
                         if(rx_current_bit_pos < rx_total_bits)  // change to next state
                         {
-                            DECODE(rx_data_frame._3_angle_code_rev);
+                            decode_bit( &(rx_data_frame._3_angle_code_rev) );
                             rx_current_bit_pos++;
                         }
 
@@ -437,7 +440,6 @@ static inline void receive_handler()
                     // should not reset if not update event, since on the edge of data bit and preamble delay  (may be falling edge)
                     break;
                 }
-                    //high rising edge: STAGE_OFF1 -> STAGE_ON1
                 case STAGE_PREAMBLE_DELAY_1:
                 {
                     if(is_0_to_1_edge()) // rising edge -> delay finished, bit started
@@ -448,7 +450,14 @@ static inline void receive_handler()
                             break;
                         }
                     }
-                    reset_receiver_state();
+                    else
+                    {
+                        bool a = _is_uptimer_update_event;
+                    }
+                    // currently, we are in the edge of last data bit and preamble/epilogue delay.
+                    // Since data bit may be 1, it may be falling edge near data bit end, instead of rising edge near preamble/epilogue bit start
+                    // FIXME TODO: rearrange checks to avoid rising/falling collision
+                    //reset_receiver_state();
                     break;
                 }
                     // low falling edge: STAGE_ON2 -> STAGE_OFFF2
@@ -496,7 +505,8 @@ static inline void process_received_data()
 {
     /// we successfully received data, send corresponding event for listeners to read from the data buffer
     /// verify correctness
-    if( 0 == (rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev))
+	data_frame_delta = rx_data_frame._2_angle_code ^ (~rx_data_frame._3_angle_code_rev);
+    if( data_frame_delta == 0 )
     {
         debug_data_verified();
 
