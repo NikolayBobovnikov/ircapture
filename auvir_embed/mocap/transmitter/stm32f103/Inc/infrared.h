@@ -52,16 +52,9 @@ typedef struct
     uint8_t _2_angle_code;
     uint8_t _3_angle_code_rev;
 } DataFrame_t;
-<<<<<<< HEAD
-=======
 
->>>>>>> experimental
 
 void send_data();
 void transmit_handler();
 
-<<<<<<< HEAD
-=======
-
->>>>>>> experimental
 #endif //INFRARED_H
