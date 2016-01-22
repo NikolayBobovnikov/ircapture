@@ -59,7 +59,7 @@ int dbg_index=0;
 #define DEBUG_EPILOGUE_END_2    0
 
 #define DEBUG_READING_DATA_1    0
-#define DEBUG_READING_DATA_2    0
+#define DEBUG_READING_DATA_2    1
 #define DEBUG_DATA_VERIFIED_1   1
 #define DEBUG_DATA_VERIFIED_2   0
 #define DEBUG_DATA_END_1        0
