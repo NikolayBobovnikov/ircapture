@@ -40,7 +40,7 @@ void send_data()
     // fill tx_data_frame with data
 
     // sample data. TODO: use actual one
-    tx_data_frame._1_beamer_id = 0b11111111;
+    tx_data_frame._1_beamer_id = 0b10101010;
     tx_data_frame._2_angle_code = 0b10101010;
     tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
 
@@ -248,34 +248,10 @@ void transmit_handler()
                 }
                 case STAGE_PREAMBLE_DELAY_1:
                 {
-                    force_envelop_timer_output_off();
-                    phtim_envelop->Instance->ARR = PreambleDelayLength;
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_2;
-                    break;
-                }
-                case STAGE_PREAMBLE_BIT_2:
-                {
-                    force_envelop_timer_output_on();
-                    phtim_envelop->Instance->ARR = PreambleBitLength;
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_2;
-                    break;
-                }
-                // transitional state
-                // TODO: check if possible to move to beginning of next state (thus remove delay)
-                case STAGE_PREAMBLE_DELAY_2:
-                {
-                    force_envelop_timer_output_off();
-                    phtim_envelop->Instance->ARR = DelayBetweenDataFramesTotal;
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
-                    TransmitterState = TX_DELAY;
+                    reset_transmitter();
                     break;
                 }
             }
-            break;
-        }
-        case TX_DELAY:
-        {
-            reset_transmitter();
             break;
         }
     } // switch(TransmitterState)
@@ -283,9 +259,9 @@ void transmit_handler()
 
 static inline void reset_transmitter()
 {
+    force_envelop_timer_output_off();
     TransmitterState = TX_WAITING;
-    // TODO: add other steps if needed
-    phtim_envelop->Instance->ARR = PreambleBitLength;
+    phtim_envelop->Instance->ARR = DelayBetweenDataFramesTotal;
     StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
     DataFrameState = DATAFRAME_0_NODATA;
 }

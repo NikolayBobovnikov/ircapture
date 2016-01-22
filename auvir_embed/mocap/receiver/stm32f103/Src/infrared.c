@@ -59,11 +59,11 @@ int dbg_index=0;
 
 #define DEBUG_READING_DATA_1    0
 #define DEBUG_READING_DATA_2    0
-#define DEBUG_DATA_VERIFIED_1   1
+#define DEBUG_DATA_VERIFIED_1   0
 #define DEBUG_DATA_VERIFIED_2   0
 #define DEBUG_DATA_END_1        0
-#define DEBUG_DATA_END_2        1
-#define DEBUG_DATA_RECEIVED_1   0
+#define DEBUG_DATA_END_2        0
+#define DEBUG_DATA_RECEIVED_1   1
 #define DEBUG_DATA_RECEIVED_2   0
 
 
@@ -81,6 +81,7 @@ static inline void send_dataready_signal();
 static inline void get_logical_level();
 
 // function to copy data frame to the main buffer, when data is received successfully
+static inline void process_received_data();
 static inline void copy_data_frame_to_buffer(DataFrame_t* df);
 
 static inline bool is_correct_timming_interframe_delay();
@@ -420,120 +421,57 @@ static inline void receive_handler()
         {
             switch (StartStopSequenceReceiveState)
             {
-            //low: off confirmation
-            case STAGE_PREAMBLE_START:
-            {
-                // start verifying first delay
-                if(_is_uptimer_update_event)
+                //low: off confirmation
+                case STAGE_PREAMBLE_START:
                 {
-                    debug_epilogue_begin();
-                    ptim_input_capture->Instance->CNT=0;
-                    ptim_data_read->Instance->CNT = 0;
-                    ptim_data_read->Instance->ARR = max_period;
-                    StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_1;
+                    // start verifying first delay
+                    if(_is_uptimer_update_event)
+                    {
+                        debug_epilogue_begin();
+                        ptim_input_capture->Instance->CNT=0;
+                        ptim_data_read->Instance->CNT = 0;
+                        ptim_data_read->Instance->ARR = max_period;
+                        StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_1;
+                        break;
+                    }
+                    // should not reset if not update event, since on the edge of data bit and preamble delay  (may be falling edge)
                     break;
                 }
-                // should not reset if not update event, since on the edge of data bit and preamble delay  (may be falling edge)
-                break;
-            }
-                //high rising edge: STAGE_OFF1 -> STAGE_ON1
-            case STAGE_PREAMBLE_DELAY_1:
-            {
-                if(is_0_to_1_edge()) // rising edge -> delay finished, bit started
+                    //high rising edge: STAGE_OFF1 -> STAGE_ON1
+                case STAGE_PREAMBLE_DELAY_1:
                 {
-                    if(is_correct_timming_preamble_delay()) // check delay length in allowed interval
+                    if(is_0_to_1_edge()) // rising edge -> delay finished, bit started
                     {
-                        StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_1;
-                        break;
+                        if(is_correct_timming_preamble_delay()) // check delay length in allowed interval
+                        {
+                            StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_1;
+                            break;
+                        }
                     }
+                    reset_receiver_state();
+                    break;
                 }
-                reset_receiver_state();
-                break;
-            }
-                // low falling edge: STAGE_ON2 -> STAGE_OFFF2
-            case STAGE_PREAMBLE_BIT_1:
-            {
-                if(is_1_to_0_edge())// falling edge -> bit finished
+                    // low falling edge: STAGE_ON2 -> STAGE_OFFF2
+                case STAGE_PREAMBLE_BIT_1:
                 {
-                    if(is_correct_timming_preamble_bit())// check bit length in allowed interval
+                    if(is_1_to_0_edge())// falling edge -> bit finished
                     {
-                        StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_2;
-                        break;
+                        if(is_correct_timming_preamble_bit())// check bit length in allowed interval
+                        {
+                            process_received_data();
+
+                            debug_data_received();
+                        }
                     }
+                    reset_receiver_state();
+                    break;
                 }
-                reset_receiver_state();
-                break;
-            }
-                // high rising edge: STAGE_OFF1 -> STAGE_ON2
-            case STAGE_PREAMBLE_DELAY_2:
-            {
-                // rising edge input capture
-                if(is_0_to_1_edge())// rising edge -> delay finished, bit started
+                default:
                 {
-                    if(is_correct_timming_preamble_delay())// check delay length in allowed interval
-                    {
-                        StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_2;
-                        break;
-                    }
+                    reset_receiver_state();
+                    break;
                 }
-                reset_receiver_state(); //TODO: check if it needed
-                break;
-            }
-                //low falling edge: STAGE_ON1 -> STAGE_OFF1
-            case STAGE_PREAMBLE_BIT_2:
-            {
-                if(is_1_to_0_edge())// falling edge -> bit finished
-                {
-                    if(is_correct_timming_preamble_bit())// check bit length in allowed interval
-                    {
-                        debug_epilogue_end();
-
-                        ReceiverState = RX_STOP_BIT_DONE;
-                        StartStopSequenceReceiveState = STAGE_PREAMBLE_START;
-
-                        ptim_data_read->Instance->CNT = 0;
-                        ptim_data_read->Instance->ARR = HalfDataBitLength;
-
-                        break;
-                    }
-                }
-                reset_receiver_state();
-                break;
-            }
-            default:
-            {
-                reset_receiver_state();
-                break;
-            }
-            }
-            break;
-        }
-        case RX_STOP_BIT_DONE:
-        {
-            // immediately after stop sequence, line should be low
-            // low confirmation
-            if(is_0_on_update_event()) //TODO: check this
-            {
-                debug_data_received();
-
-                /// we successfully received data, send corresponding event for listeners to read from the data buffer
-                /// verify correctness
-                if( 0 == (rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev))
-                {
-                    debug_data_verified();
-
-                    copy_data_frame_to_buffer(&rx_data_frame);
-                    send_dataready_signal();
-                    dbg[dbg_index] = rx_data_frame._2_angle_code;
-                    dbg[dbg_index+1] = rx_data_frame._3_angle_code_rev;
-                    dbg_index = dbg_index + 2;
-                }
-                else
-                {
-                    //TODO
-                }
-            }
-            reset_receiver_state();
+            }// end of switch (StartStopSequenceReceiveState)
             break;
         }
         default:
@@ -553,6 +491,25 @@ static inline void reset_receiver_state()
     ptim_data_read->Instance->ARR = max_period;
     ptim_data_read->Instance->CNT = 0;
     //HAL_TIM_Base_Stop_IT(ptim_data_read);
+}
+static inline void process_received_data()
+{
+    /// we successfully received data, send corresponding event for listeners to read from the data buffer
+    /// verify correctness
+    if( 0 == (rx_data_frame._2_angle_code ^ ~rx_data_frame._3_angle_code_rev))
+    {
+        debug_data_verified();
+
+        copy_data_frame_to_buffer(&rx_data_frame);
+        send_dataready_signal();
+        dbg[dbg_index] = rx_data_frame._2_angle_code;
+        dbg[dbg_index+1] = rx_data_frame._3_angle_code_rev;
+        dbg_index = dbg_index + 2;
+    }
+    else
+    {
+        //TODO
+    }
 }
 static inline void copy_data_frame_to_buffer(DataFrame_t* df)
 {
