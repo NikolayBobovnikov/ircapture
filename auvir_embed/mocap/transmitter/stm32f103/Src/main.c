@@ -57,11 +57,21 @@ UART_HandleTypeDef huart1;
 //TODO: cleanup when done debugging
 const bool _debug = true;
 
-/// IR transmitter stuff
 TIM_HandleTypeDef * phtim_envelop = &htim3;
 TIM_HandleTypeDef * phtim_pwm = &htim4;
 
-uint8_t responce = 0;
+/// ======================= USART stuff =======================
+HAL_StatusTypeDef status;
+extern DataFrame_t tx_data_frame;
+
+enum UART_Commands {
+    UART_COMMAND_NOT_RECEIVED = 0,
+    UART_DEBUG_DATA_TRANSMIT,
+    UART_DEBUG_DATA_TRANSMIT_OK,
+    UART_ECHO
+};
+uint8_t command = UART_COMMAND_NOT_RECEIVED;
+uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -359,8 +369,7 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void notify_transmission_finished()
 {
-    uint8_t UART_DEBUG_DATA_TRANSMIT_OK = 0; //FIXME: create enum for UART signals
-    uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
+    responce = UART_DEBUG_DATA_TRANSMIT_OK;
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&responce, sizeof(responce), 1000);
     if(status != HAL_OK)
     {
