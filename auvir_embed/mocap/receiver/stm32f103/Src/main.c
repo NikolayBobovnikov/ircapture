@@ -60,11 +60,10 @@ TIM_HandleTypeDef* ic_tim_p = &htim4;
 TIM_HandleTypeDef* up_tim_p = &htim3;
 const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
 const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
-<<<<<<< HEAD
+
 TIM_HandleTypeDef* ptim_input_capture = &htim4;
 TIM_HandleTypeDef* ptim_data_read = &htim3;
-=======
->>>>>>> experimental
+
 const bool _is_direct_logic = false;
 /// ===========================================
 
@@ -375,21 +374,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-<<<<<<< HEAD
-=======
-
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
->>>>>>> experimental
 
   /*Configure GPIO pin : PA3 */
   GPIO_InitStruct.Pin = GPIO_PIN_3;
