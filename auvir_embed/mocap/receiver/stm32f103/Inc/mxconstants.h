@@ -37,21 +37,6 @@
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
-#define envelop_timer_prescaler (72 - 1)
-#define PreambleBitLength (750 - 1)
-#define PreambleDelayLength (750 - 1)
-#define DataBitLength (500 - 1)
-#define InterframeDelayLength (15000 - 1)
-#define HalfDataBitLength ((DataBitLength + 1) / 2 - 1)
-#define max_period (65535 - 1)
-#define max_delta_interframe_delay (InterframeDelayLength * 0.05)
-#define max_delta_preamble_bit (PreambleBitLength * 0.05)
-#define max_delta_preamble_delay (PreambleDelayLength * 0.05)
-#define pwm_timer_prescaler 0
-#define pwm_timer_period (1880 - 1)
-#define pwm_pulse_width (940 - 1)
-#define PreambleTotalLength (PreambleBitLength * 2 + PreambleDelayLength * 2)
-
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

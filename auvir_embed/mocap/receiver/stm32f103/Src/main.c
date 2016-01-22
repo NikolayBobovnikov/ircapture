@@ -38,7 +38,6 @@
 #include "infrared.h"
 
 // TODO: cleanup when done debugging
-#define DEBUG
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -79,6 +78,7 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+debug_init_gpio();
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
