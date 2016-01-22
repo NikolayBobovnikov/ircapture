@@ -60,27 +60,6 @@ const bool _debug = true;
 /// IR transmitter stuff
 TIM_HandleTypeDef * phtim_envelop = &htim3;
 TIM_HandleTypeDef * phtim_pwm = &htim4;
-<<<<<<< HEAD
-=======
-extern const uint16_t pwm_timer_prescaler;
-extern const uint16_t pwm_timer_period;
-extern const uint16_t pwm_pulse_width;
-extern const uint16_t envelop_timer_prescaler;
-extern const uint16_t DataBitLength;
-
-/// USART stuff
-HAL_StatusTypeDef status;
-extern DataFrame_t tx_data_frame;
-
-enum UART_Commands {
-    UART_COMMAND_NOT_RECEIVED = 0,
-    UART_DEBUG_DATA_TRANSMIT,
-    UART_DEBUG_DATA_TRANSMIT_OK,
-    UART_ECHO
-};
-uint8_t command = UART_COMMAND_NOT_RECEIVED;
-uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
->>>>>>> experimental
 
 /* USER CODE END PV */
 

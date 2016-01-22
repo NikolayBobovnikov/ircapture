@@ -8,10 +8,10 @@
 // but not too low - beware of jitter!
 // FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
 #define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
-#define PreambleBitLength           (750 - 1)    // 270 works not reliably; 280 works;  chosen more
-#define PreambleDelayLength         (750 - 1)    // 270 works not reliably; 280 works;  chosen more
-#define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-#define DelayBetweenDataFramesTotal (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
+#define PreambleBitLength           (600 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleDelayLength         (600 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define DataBitLength               (400 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+#define DelayBetweenDataFramesTotal (14000 - 1)  //12900 doesn't work; 13000 works; chosen more
 
 #define pwm_timer_prescaler     0
 #define pwm_timer_period        (1880 - 1)
