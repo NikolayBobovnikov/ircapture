@@ -17,17 +17,17 @@
 
 // FIXME: TODO: keep values below in sync with transmitter
 #define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
-#define PreambleTotalLength         (3000 - 1)
-#define PreambleBitLength           (750 - 1)    // 270 works not reliably; 280 works;  chosen more
-#define PreambleDelayLength         (750 - 1)    // 270 works not reliably; 280 works;  chosen more
-#define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-#define InterframeDelayLength       (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
+#define PreambleBitLength           (450 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleDelayLength         (450 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleTotalLength         (PreambleBitLength * 2 + PreambleDelayLength * 2)
+#define DataBitLength               (300 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+#define InterframeDelayLength       (14000 - 1)  //12900 doesn't work; 13000 works; chosen more
 #define HalfDataBitLength   		((DataBitLength + 1) / 2 - 1)   //(DataBitLength + 1) / 2 - 1; // TODO: check the value
 #define max_period         			(65535 - 1)
 
-#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.05) // 10%
-#define max_delta_preamble_bit      (int)(PreambleBitLength * 0.05) // 10%
-#define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.05) // 10%
+#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.03)
+#define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1)
+#define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1)
 
 ///====================== Type definitions ======================
 // TODO: learn more about typedefs and structs
