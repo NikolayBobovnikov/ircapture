@@ -1,10 +1,10 @@
-﻿/**
+/**
   ******************************************************************************
   * File Name          : main.c
   * Description        : Main program body
   ******************************************************************************
   *
-  * COPYRIGHT(c) 2015 STMicroelectronics
+  * COPYRIGHT(c) 2016 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -35,65 +35,38 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+#include "infrared.h"
+
 // TODO: cleanup when done debugging
-#define DEBUG
 /* USER CODE END Includes */
 
-/*
- * TODO list:
- * beamer hub: detect when new beamer is being connected, assign new ID and send it to the beamer
- * beamer hub: synchronize beamers with each other. send signals to each beamer when it is its turn to beam
- *
- * beamer: get ID, synchhronize time when initialize
- * beamer: start sending data on external signal
- *
- * receiver: signal when buffer with data frames is ready to be read from
- *
- * receiver hub: read from the buffer using spi&dma
- * receiver hub: send data to comp using usb / wifi / sockets
- * 4.
- * /
-
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
+CRC_HandleTypeDef hcrc;
 
 SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
-TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
+UART_HandleTypeDef huart1;
+
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-const uint16_t pwm_timer_prescaler = 0;
-const uint16_t pwm_timer_period = 950 - 1;
-const uint16_t pwm_pulse_width = 475;
-const uint16_t envelop_timer_prescaler = 72 - 1;
-
-const uint16_t DataBitLength = 2000 - 1;
-const uint16_t HalfDataBitLength = 1000 - 1;
-
-const uint16_t StartStopBitLength = 1000 - 1;
-const uint16_t HalfStartStopBitLength = 500 - 1;
-
-const uint16_t HalfStartStopHalfDataBitLength = 1500 - 1;
-
-const uint16_t DelayBetweenDataFramesTotal = 5000 - 1;
-const uint16_t StartStopBitPeriod = 2000 - 1;
-
-const uint16_t DelayCheckingPeriod = 10 - 1;
-
-const uint8_t max_delta_pwm = 50;
-const uint8_t max_delta_pwm_width = 50;
-const uint8_t max_delta_delay = 200;
-const uint8_t max_delta_cnt_delay = 10;
-// TODO: parametrize values below
-const uint16_t DelayBetweenDataFramesToCheck = 4500; // DelayBetweenDataFramesTotal - HalfStartStopBitLength;
-const uint16_t DelayCounterMin = 450 - 10; // (actual DelayBetweenDataFramesToCheck / actual DelayCheckingPeriod) - max_delta_cnt_delay;
-
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
+/// parameters for receiver ===================
+TIM_HandleTypeDef* ic_tim_p = &htim4;
+TIM_HandleTypeDef* up_tim_p = &htim3;
+const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
+const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
+<<<<<<< HEAD
+TIM_HandleTypeDef* ptim_input_capture = &htim4;
+TIM_HandleTypeDef* ptim_data_read = &htim3;
+=======
+>>>>>>> experimental
+const bool _is_direct_logic = false;
+/// ===========================================
 
 /* USER CODE END PV */
 
@@ -101,14 +74,18 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim);
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_I2C1_Init(void);
+static void MX_CRC_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_TIM2_Init(void);
+static void MX_SPI2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
+void send_data_uart(uint8_t * pdata, uint16_t size);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -131,16 +108,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_DMA_Init();
-  //MX_I2C1_Init();
-  //MX_SPI1_Init();
+  MX_DMA_Init();
+  MX_CRC_Init();
+  MX_SPI1_Init();
+  MX_SPI2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
+  MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim3);
-  //HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
-  HAL_TIM_IC_PWM_Start_IT(&htim4);
+  debug_init_gpio();
+  HAL_TIM_Base_Start_IT(ptim_data_read);
+  HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -148,9 +127,8 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-      //send_data();
-  /* USER CODE BEGIN 3 */
 
+  /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 
@@ -187,20 +165,12 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-/* I2C1 init function */
-void MX_I2C1_Init(void)
+/* CRC init function */
+void MX_CRC_Init(void)
 {
 
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
-  HAL_I2C_Init(&hi2c1);
+  hcrc.Instance = CRC;
+  HAL_CRC_Init(&hcrc);
 
 }
 
@@ -224,54 +194,23 @@ void MX_SPI1_Init(void)
 
 }
 
-/* TIM2 init function */
-void MX_TIM2_Init(void)
+/* SPI2 init function */
+void MX_SPI2_Init(void)
 {
 
-    TIM_ClockConfigTypeDef sClockSourceConfig;
-    //TIM_MasterConfigTypeDef sMasterConfig;
-    TIM_SlaveConfigTypeDef sSlaveConfig;
-    TIM_IC_InitTypeDef sConfigIC;
-
-    htim4.Instance = TIM2;
-    htim4.Init.Prescaler = 71;
-    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 65535;
-    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_Base_Init(&htim2);
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
-
-
-    HAL_TIM_IC_Init(&htim2);
-
-
-    /// TIM_TI1_SetConfig
-  //  ● Select the active input for TIMx_CCR1: write the CC1S bits to 01 in the TIMx_CCMR1 register (TI1 selected).
-      //SET_BIT(htim4.Instance->CCMR1, TIM_CCMR1_CC1S_0);
-
-  //  ● Select the active polarity for TI1FP1 (used both for capture in TIMx_CCR1 and counter clear):
-  //    write the CC1P bit to ‘0’ (active on rising edge).
-      //SET_BIT(htim4.Instance->CCMR1, TIM_CCER_CC1P)
-      sConfigIC.ICFilter = 0;
-      sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
-      sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-      HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1);
-
-  //  ● Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
-
-  //  ● Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
-
-      sConfigIC.ICFilter = 0;
-      sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;// TIM_ICPOLARITY_RISING? TODO
-      sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-      HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1);//TIM_CHANNEL_2? TODO
-  //  ● Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
-  //  ● Configure the slave mode controller in reset mode: write the SMS bits to 100 in the TIMx_SMCR register.
-      sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
-      sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-      HAL_TIM_SlaveConfigSynchronization(&htim2, &sSlaveConfig);
-  //  ● Enable the captures: write the CC1E and CC2E bits to ‘1’ in the TIMx_CCER register.
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_SLAVE;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi2.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi2);
 
 }
 
@@ -285,7 +224,7 @@ void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = envelop_timer_prescaler;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = DelayCheckingPeriod;
+  htim3.Init.Period = max_period;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim3);
 
@@ -310,7 +249,7 @@ void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = envelop_timer_prescaler;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
+  htim4.Init.Period = max_period;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_IC_Init(&htim4);
 
@@ -318,29 +257,55 @@ void MX_TIM4_Init(void)
   HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
 
   /// TIM_TI1_SetConfig
-//  ● Select the active input for TIMx_CCR1: write the CC1S bits to 01 in the TIMx_CCMR1 register (TI1 selected).
-    //SET_BIT(htim4.Instance->CCMR1, TIM_CCMR1_CC1S_0);
-
-//  ● Select the active polarity for TI1FP1 (used both for capture in TIMx_CCR1 and counter clear):
+//  ? Select the active input for TIMx_CCR1: write the CC1S bits to 01 in the TIMx_CCMR1 register (TI1 selected).
+//  ? Select the active polarity for TI1FP1 (used both for capture in TIMx_CCR1 and counter clear):
 //    write the CC1P bit to ‘0’ (active on rising edge).
-    //SET_BIT(htim4.Instance->CCMR1, TIM_CCER_CC1P)
     sConfigIC.ICFilter = 0;
-    sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    //TODO: cleanip?
+    if(_is_direct_logic)
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    }
+    else
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
+    }
+
     sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
     HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1);
 
-//  ● Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
-//  ● Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
+//  ? Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
+//  ? Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
     sConfigIC.ICFilter = 0;
-    sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;// TIM_ICPOLARITY_RISING? TODO
+    //TODO: cleanip?
+    if(_is_direct_logic)
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
+    }
+    else
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    }
+
     sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
     HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2);//TIM_CHANNEL_2? TODO
-//  ● Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
-//  ● Configure the slave mode controller in reset mode: write the SMS bits to 100 in the TIMx_SMCR register.
+//  ? Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
+//  ? Configure the slave mode controller in reset mode: write the SMS bits to 100 in the TIMx_SMCR register.
 
     sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
     sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-    sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    //sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    //TODO: cleanip?
+    if(_is_direct_logic)
+    {
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    }
+    else
+    {
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_FALLING;
+    }
+
+
     //TODO: why configuring reset breaks the thing?
     // why it does work without reset?
     //HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
@@ -351,50 +316,25 @@ void MX_TIM4_Init(void)
     HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
 
-//  ● Enable the captures: write the CC1E and CC2E bits to ‘1’ in the TIMx_CCER register.
+//  ? Enable the captures: write the CC1E and CC2E bits to ‘1’ in the TIMx_CCER register.
 
 
 }
 
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (TIM_HandleTypeDef *htim)
+/* USART1 init function */
+void MX_USART1_UART_Init(void)
 {
-  /* Check the parameters */
-  assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
-  assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
 
-  /* Enable the TIM Capture/Compare 1 interrupt */
-  __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC1);
-  /* Enable the TIM Capture/Compare 2 interrupt */
-  __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC2);
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  HAL_UART_Init(&huart1);
 
-  /* Enable the Input Capture channel */
-  TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-  TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_ENABLE);
-
-
-  /* Enable the Peripheral */
-  __HAL_TIM_ENABLE(htim);
-
-  /* Return function status */
-  return HAL_OK;
-}
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (TIM_HandleTypeDef *htim)
-{
-    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
-    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
-
-    __HAL_TIM_DISABLE_IT(htim, TIM_IT_CC1);
-    __HAL_TIM_DISABLE_IT(htim, TIM_IT_CC2);
-
-    /* Disable the Input Capture channel */
-    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_DISABLE);
-    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_DISABLE);
-
-    /* Disable the Peripheral */
-    __HAL_TIM_DISABLE(htim);
-
-    /* Return function status */
-    return HAL_OK;
 }
 
 /** 
@@ -422,14 +362,43 @@ void MX_DMA_Init(void)
 */
 void MX_GPIO_Init(void)
 {
-  // GPIO Ports Clock Enable
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  /* GPIO Ports Clock Enable */
   __GPIOD_CLK_ENABLE();
   __GPIOA_CLK_ENABLE();
   __GPIOB_CLK_ENABLE();
 
-  GPIO_InitTypeDef GPIO_InitStruct;
+  /*Configure GPIO pin : PA2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+<<<<<<< HEAD
+=======
 
-  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_7;
+  /*Configure GPIO pin : PA3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+>>>>>>> experimental
+
+  /*Configure GPIO pin : PA3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -437,7 +406,50 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
+  assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
 
+  /* Enable the TIM Capture/Compare 1 interrupt */
+  __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC1);
+  /* Enable the TIM Capture/Compare 2 interrupt */
+  __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC2);
+
+  /* Enable the Input Capture channel */
+  TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+  TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_ENABLE);
+
+
+  /* Enable the Peripheral */
+  __HAL_TIM_ENABLE(htim);
+
+  /* Return function status */
+  return HAL_OK;
+}
+HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim)
+{
+    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
+    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
+
+    __HAL_TIM_DISABLE_IT(htim, TIM_IT_CC1);
+    __HAL_TIM_DISABLE_IT(htim, TIM_IT_CC2);
+
+    /* Disable the Input Capture channel */
+    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_DISABLE);
+    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_DISABLE);
+
+    /* Disable the Peripheral */
+    __HAL_TIM_DISABLE(htim);
+
+    /* Return function status */
+    return HAL_OK;
+}
+void send_data_uart(uint8_t * pdata, uint16_t size)
+{
+    HAL_UART_Transmit(&huart1, pdata, size, 1000);
+}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT

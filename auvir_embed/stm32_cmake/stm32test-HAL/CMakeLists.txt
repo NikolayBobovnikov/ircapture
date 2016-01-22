@@ -9,7 +9,7 @@ SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 #=======================================================================================================
 
 PROJECT(stm32_hal)
-CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2.2)
 ENABLE_LANGUAGE(ASM)
 
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)

@@ -45,12 +45,14 @@ endforeach()
 list(REMOVE_DUPLICATES INCLUDE_DIRS)
 
 include_directories(${INCLUDE_DIRS})
-add_executable (${CMAKE_PROJECT_NAME}
-                ${PROJECT_SOURCES}
-                )
+add_executable (
+    ${CMAKE_PROJECT_NAME}
+    ${PROJECT_SOURCES}
+)
 
-target_link_libraries(  ${CMAKE_PROJECT_NAME}
-                        ${Boost_LIBRARIES}
-                     )
+target_link_libraries(
+    ${CMAKE_PROJECT_NAME}
+    ${Boost_LIBRARIES}
+)
 
 

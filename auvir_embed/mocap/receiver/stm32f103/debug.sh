@@ -13,8 +13,10 @@ cd ..
 ps axf | grep openocd | grep -v grep | awk '{print "kill -9 " $1}' | sh
 
 #start debugger
+#(openocd  -f ./openocd.cfg -c "init" -c "reset halt" -c "flash write_image erase motionsensor_receiver" -c "reset run")
+
 (openocd -f ./openocd.cfg &)
-#(st-util -1 &)
+#(st-util &)
 
 arm-none-eabi-gdb ./build/motionsensor_receiver -command=./gdb_start_script
 
