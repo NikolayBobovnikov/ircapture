@@ -22,7 +22,7 @@ sudo -S aptitude install -y --with-recommends git mercurial subversion
 sudo -S aptitude install -y --with-recommends autoconf automake make cmake build-essential doxygen ddd
 
 # verification tools
-sudo -S aptitude install -y --with-recommends valgrind cppcheck uncrustify astyle
+sudo -S aptitude install -y --with-recommends valgrind cppcheck uncrustify astyle clang-format-3.7
 
 # compilers and debuggers
 sudo -S aptitude install -y --with-recommends gcc-arm-none-eabi gdb-arm-none-eabi clang libclang-dev 
