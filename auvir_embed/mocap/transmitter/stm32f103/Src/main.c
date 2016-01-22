@@ -61,6 +61,7 @@ const bool _debug = true;
 TIM_HandleTypeDef * phtim_envelop = &htim3;
 TIM_HandleTypeDef * phtim_pwm = &htim4;
 
+uint8_t responce = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -358,7 +359,8 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void notify_transmission_finished()
 {
-    responce = UART_DEBUG_DATA_TRANSMIT_OK;
+    uint8_t UART_DEBUG_DATA_TRANSMIT_OK = 0; //FIXME: create enum for UART signals
+    uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)&responce, sizeof(responce), 1000);
     if(status != HAL_OK)
     {
