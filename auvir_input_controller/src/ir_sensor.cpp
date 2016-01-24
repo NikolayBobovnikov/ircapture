@@ -22,6 +22,7 @@ int ir_sensor_main()
 
     size_t command_size = sizeof(command);
     size_t data_size = sizeof(data);
+    size_t uart_msg_size = sizeof(usart_msg);
 
     size_t total_number_of_trials = 100;
     size_t current_trial_number = 0;
@@ -56,7 +57,7 @@ int ir_sensor_main()
         {
             // send command (should be done ragardless of the command type)
             command = UART_DEBUG_DATA_TRANSMIT;//UART_ECHO;
-            serial->write((char*)&command, command_size);
+            //serial->write((char*)&command, command_size);
 
             //break;// for debugging, TODO: remove
 
@@ -75,11 +76,17 @@ int ir_sensor_main()
 
                     // 2. send it to transmitter
                     //serial->write((char*)data_frame.get(), data_size);
+                    usart_msg._ir_hub_id = 1;
+                    usart_msg._ir_sensor_id = 2;
+                    usart_msg.data._1_beamer_id = data_frame->_1_beamer_id;
+                    usart_msg.data._2_angle_code = data_frame->_2_angle_code;
+                    usart_msg.data._3_angle_code_rev = data_frame->_3_angle_code_rev;
+                    serial->write((char*)&usart_msg, data_size);
 
                     current_trial_number++;
 
                     // 3. get responce (what has been received by IR sensor)
-                    serial->read((char*)&usart_msg, sizeof(usart_msg));
+                    //serial->read((char*)&usart_msg, sizeof(usart_msg));
                     /*
                     std::cout << "hub id: " << std::to_string(usart_msg._ir_hub_id) << " ; " <<
                                  "sensor id: " << std::to_string(usart_msg._ir_sensor_id) << " ; " <<

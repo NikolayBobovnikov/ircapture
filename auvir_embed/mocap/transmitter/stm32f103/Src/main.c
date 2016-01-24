@@ -80,6 +80,8 @@ typedef struct
     DataFrame_t data;
 } USART_msg_t;
 
+USART_msg_t uart_msg;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,7 +98,7 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 void notify_transmission_finished();
-
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -104,7 +106,6 @@ void ReceiveDataToSend()
 {
     command = UART_COMMAND_NOT_RECEIVED;
     status = HAL_UART_Receive(&huart1, &command, sizeof(command), 1000);
-
     if (status != HAL_OK) {
       // TODO: process error
       return;
@@ -161,10 +162,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1) {
 
-    init_data();
-
-    send_data();
+    //init_data();
+    //send_data();
     //ReceiveDataToSend();
+    HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
 
   /* USER CODE END WHILE */
 
@@ -382,15 +383,20 @@ void MX_GPIO_Init(void)
 void notify_transmission_finished() {
   responce = UART_DEBUG_DATA_TRANSMIT_OK;
 
-  USART_msg_t msg;
-  msg._ir_sensor_id = 1;
-  msg._ir_hub_id = 2;
-  msg.data = tx_data_frame;
+  uart_msg._ir_sensor_id = 1;
+  uart_msg._ir_hub_id = 2;
+  uart_msg.data = tx_data_frame;
 
-  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)&msg, sizeof(msg), 10);
+  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)&uart_msg, sizeof(uart_msg), 10);
   if (status != HAL_OK) {
     // TODO: process error
   }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    tx_data_frame = uart_msg.data;
+    send_data();
 }
 /* USER CODE END 4 */
 

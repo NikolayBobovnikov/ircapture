@@ -61,7 +61,7 @@ void init_data()
 void send_data()
 {
     // TODO: find suitable place for this
-    tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
+    //tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
 
     if(TX_WAITING == TransmitterState)
     {

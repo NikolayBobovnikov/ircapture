@@ -108,6 +108,8 @@ typedef struct
     DataFrame_t data;
 } USART_msg_t;
 
+USART_msg_t uart_msg;
+
 /* USER CODE END 0 */
 
 int main(void)
