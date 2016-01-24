@@ -162,10 +162,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1) {
 
-    //init_data();
-    //send_data();
+    init_data();
+    send_data();
     //ReceiveDataToSend();
-    HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
+    //HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
 
   /* USER CODE END WHILE */
 

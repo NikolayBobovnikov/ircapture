@@ -20,6 +20,9 @@ uint8_t TransmitterState = TX_WAITING;
 
 ///TODO: refactor constants below
 DataFrame_t tx_data_frame;
+volatile size_t tx_total_bits_beamer_id = 0;
+volatile size_t tx_total_bits_angle = 0;
+volatile size_t tx_total_bits_angle_rev = 0;
 volatile size_t tx_total_bits = 0;
 volatile uint8_t tx_current_bit_pos = 0;
 volatile uint8_t tx_bit = 0;
@@ -138,7 +141,7 @@ void transmit_handler()
                 case STAGE_PREAMBLE_BIT_1:
                 {
                     force_envelop_timer_output_on();
-                    phtim_envelop->Instance->ARR = PreambleBitLength;
+                    phtim_envelop->Instance->ARR = PreambleBitCorrected;
                     StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_1;
                     break;
                 }
@@ -146,7 +149,7 @@ void transmit_handler()
                 case STAGE_PREAMBLE_DELAY_1:
                 {
                     force_envelop_timer_output_off(); //TODO done anyway in timer interrupt handler?
-                    phtim_envelop->Instance->ARR = PreambleDelayLength;
+                    phtim_envelop->Instance->ARR = PreambleDelayCorrected;
                     StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_2;
                     break;
                 }
@@ -154,7 +157,7 @@ void transmit_handler()
                 case STAGE_PREAMBLE_BIT_2:
                 {
                     force_envelop_timer_output_on();
-                    phtim_envelop->Instance->ARR = PreambleBitLength;
+                    phtim_envelop->Instance->ARR = PreambleBitCorrected;
                     StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_2;
                     break;
                 }
@@ -162,7 +165,7 @@ void transmit_handler()
                 case STAGE_PREAMBLE_DELAY_2:
                 {
                     force_envelop_timer_output_off();
-                    phtim_envelop->Instance->ARR = PreambleDelayLength;
+                    phtim_envelop->Instance->ARR = PreambleDelayCorrected;
 
                     StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
                     TransmitterState = TX_DATA;
@@ -236,7 +239,7 @@ void transmit_handler()
 
                         /* Set the Autoreload value for start sequence bits*/
                         force_envelop_timer_output_off();
-                        phtim_envelop->Instance->ARR = PreambleDelayLength;
+                        phtim_envelop->Instance->ARR = EpilogueDelayCorrected;
 
                         // move on to next stage
                         TransmitterState = TX_EPILOGUE;
@@ -259,7 +262,7 @@ void transmit_handler()
                 case STAGE_PREAMBLE_BIT_1:
                 {
                     force_envelop_timer_output_on();
-                    phtim_envelop->Instance->ARR = PreambleBitLength;
+                    phtim_envelop->Instance->ARR = EpilogueBitCorrected;
                     StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_1;
                     break;
                 }
@@ -278,7 +281,7 @@ static inline void reset_transmitter()
 {
     force_envelop_timer_output_off();
     TransmitterState = TX_WAITING;
-    phtim_envelop->Instance->ARR = DelayBetweenDataFramesTotal;
+    phtim_envelop->Instance->ARR = InterframeDelayLength;
     StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
     DataFrameState = DATAFRAME_0_NODATA;
 }

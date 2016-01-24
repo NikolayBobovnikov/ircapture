@@ -8,11 +8,20 @@
 // but not too low - beware of jitter!
 // FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
 #define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
-#define PreambleBitLength           (450 - 1)    // 270 works not reliably; 280 works;  chosen more
-#define PreambleDelayLength         (450 - 1)    // 270 works not reliably; 280 works;  chosen more
-#define DataBitLength               (300 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
-#define DelayBetweenDataFramesTotal (14000 - 1)  //12900 doesn't work; 13000 works; chosen more
+#define PreambleBitLength           (400 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleDelayLength         (400 - 1)    // 270 works not reliably; 280 works;  chosen more.
+#define DataBitLength               (250 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+#define InterframeDelayLength       (14000 - 1)  //12900 doesn't work; 13000 works; chosen more
 
+// TODO: calculate mean of delay/bit length, deviation, and find optimal shift to minimize deviation
+#define PreambleDelayShift      (30)
+#define PreambleBitShift        (20)
+#define EpilogueDelayShift      (20)
+#define EpilogueBitShift        (10)
+#define PreambleDelayCorrected  (PreambleDelayLength + PreambleDelayShift - 1)
+#define PreambleBitCorrected    (PreambleBitLength - PreambleBitShift - 1)
+#define EpilogueDelayCorrected  (PreambleDelayLength + EpilogueDelayShift - 1)
+#define EpilogueBitCorrected    (PreambleBitLength - EpilogueBitShift - 1)
 #define pwm_timer_prescaler     0
 #define pwm_timer_period        (1880 - 1)
 #define pwm_pulse_width         (940 - 1)

@@ -56,15 +56,18 @@ int dbg_index=0;
 #define DEBUG_1_to_0_EDGE_1     0
 #define DEBUG_1_to_0_EDGE_2     0
 
+#define DEBUG_PREAMBLE_END_1    0
+#define DEBUG_PREAMBLE_END_2    0
+
 #define DEBUG_EPILOGUE_BEGIN_1  0
 #define DEBUG_EPILOGUE_BEGIN_2  0
 #define DEBUG_EPILOGUE_END_1    0
 #define DEBUG_EPILOGUE_END_2    0
 
-#define DEBUG_READING_DATA_1    0
+#define DEBUG_READING_DATA_1    1
 #define DEBUG_READING_DATA_2    0
-#define DEBUG_DATA_VERIFIED_1   1
-#define DEBUG_DATA_VERIFIED_2   0
+#define DEBUG_DATA_VERIFIED_1   0
+#define DEBUG_DATA_VERIFIED_2   1
 #define DEBUG_DATA_END_1        0
 #define DEBUG_DATA_END_2        0
 #define DEBUG_DATA_RECEIVED_1   0
@@ -108,6 +111,7 @@ static inline void debug_0_to_1_edge();
 static inline void debug_1_to_0_edge();
 static inline void debug_epilogue_begin();
 static inline void debug_epilogue_end();
+static inline void debug_preamble_end();
 
 ///====================== Functions ======================
 
@@ -321,6 +325,9 @@ static inline void receive_handler()
                         rx_data_frame._3_angle_code_rev = 0;
                         // reset positions
                         rx_current_bit_pos = 0;
+
+                        debug_preamble_end();
+
                         break;
                     }
                     // should not reset if not update event, since on the edge of preamble delay and data bit (may be rising edge)
@@ -718,6 +725,12 @@ static inline void  debug_epilogue_end() {
     if( DEBUG_EPILOGUE_END_1)
         dbg_pulse_1();
     if( DEBUG_EPILOGUE_END_2)
+        dbg_pulse_2();
+}
+static inline void  debug_preamble_end() {
+    if( DEBUG_PREAMBLE_END_1)
+        dbg_pulse_1();
+    if( DEBUG_PREAMBLE_END_2)
         dbg_pulse_2();
 }
 
