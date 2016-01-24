@@ -67,6 +67,7 @@ NVIC.SPI1_IRQn=true\:0\:0\:false
 NVIC.SysTick_IRQn=true\:0\:0\:false
 NVIC.TIM3_IRQn=true\:0\:0\:false
 NVIC.TIM4_IRQn=true\:0\:0\:false
+NVIC.USART1_IRQn=true\:0\:0\:false
 PA10.Mode=Asynchronous
 PA10.Signal=USART1_RX
 PA13.Mode=Serial_Wire
