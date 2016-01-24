@@ -41,11 +41,9 @@ static inline void force_envelop_timer_output_off();
 ///
 void send_data()
 {
-    // fill tx_data_frame with data
-
     // sample data. TODO: use actual one
-    tx_data_frame._1_beamer_id = 0b10101010;
-    tx_data_frame._2_angle_code = 0b10101010;
+    //tx_data_frame._1_beamer_id = 0b10101010;
+    //tx_data_frame._2_angle_code = 0b10101010;
     tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
 
     // just repetition of the same data for now.

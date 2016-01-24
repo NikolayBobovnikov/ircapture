@@ -12,14 +12,20 @@ boost::shared_ptr<DataFrame_t> create_data_frame(uint8_t id, uint8_t angle)
     return data_ptr;
 }
 
+
 int ir_sensor_main()
 {
     uint8_t command;
-    char response;
+    uint8_t response;
     DataFrame_t data;
+    USART_msg_t usart_msg;
 
     size_t command_size = sizeof(command);
     size_t data_size = sizeof(data);
+
+    size_t total_number_of_trials = 100;
+    size_t current_trial_number = 0;
+    size_t number_of_errors = 0;
 
     try {
 
@@ -51,6 +57,7 @@ int ir_sensor_main()
             // send command (should be done ragardless of the command type)
             command = UART_DEBUG_DATA_TRANSMIT;//UART_ECHO;
             serial->write((char*)&command, command_size);
+
             //break;// for debugging, TODO: remove
 
             // after sending command, do command specific actions
@@ -60,14 +67,38 @@ int ir_sensor_main()
                 {
                     // 1. generate random data
                     // TODO
-                    boost::shared_ptr<DataFrame_t> data_frame = create_data_frame(0b11111111,0b11111111);
+                    uint8_t beam_id = 1;
+                    uint8_t angle = 2;
+                    boost::shared_ptr<DataFrame_t> data_frame = create_data_frame(beam_id,angle);
+
                     // 2. send it to transmitter
                     serial->write((char*)data_frame.get(), data_size);
 
-                    // 3. get data from receiver
+                    current_trial_number++;
+
+                    // 3. get responce (what has been received by IR sensor)
+                    serial->read((char*)&usart_msg, sizeof(usart_msg));
+                    /*
+                    std::cout << "hub id: " << std::to_string(usart_msg._ir_hub_id) << " ; " <<
+                                 "sensor id: " << std::to_string(usart_msg._ir_sensor_id) << " ; " <<
+                                 "beamer id: " << std::to_string(usart_msg.data._1_beamer_id) << " ; " <<
+                                 "angle: " << std::to_string(usart_msg.data._2_angle_code) << " ; " <<
+                              std::endl;
+                              */
 
                     // 4. compare original data with received one
+                    if( beam_id != usart_msg.data._1_beamer_id || angle != usart_msg.data._2_angle_code){
+                        number_of_errors++;
+                    }
 
+                    // 5. report
+                    if(current_trial_number == total_number_of_trials){
+                        size_t persentage_of_errors = number_of_errors * 100 / total_number_of_trials;
+                        std::cout << "% of errors: " << std::to_string(persentage_of_errors) << std::endl;
+
+                        current_trial_number = 0;
+                        number_of_errors = 0;
+                    }
                     break;
                 }
                 default:
@@ -76,6 +107,7 @@ int ir_sensor_main()
                     break;
                 }
             }
+
         }
 
         // measure time

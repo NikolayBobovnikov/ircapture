@@ -98,7 +98,7 @@ void TimeoutSerial::read(char *data, size_t size)
         size-=toRead;
         if(size==0) return;//If read data was enough, just return
     }
-    
+
     setupParameters=ReadSetupParameters(data,size);
     performReadSetup(setupParameters);
 
@@ -106,10 +106,10 @@ void TimeoutSerial::read(char *data, size_t size)
     //request for no timeout is translated into a very long timeout
     if(timeout!=posix_time::seconds(0)) timer.expires_from_now(timeout);
     else timer.expires_from_now(posix_time::hours(100000));
-    
+
     timer.async_wait(boost::bind(&TimeoutSerial::timeoutExpired,this,
                 asio::placeholders::error));
-    
+
     result=resultInProgress;
     bytesTransferred=0;
     for(;;)
@@ -141,9 +141,9 @@ int TimeoutSerial::readByte()
       char data;
       read(&data,1);
       return int(data);
-	
+
     }
-  catch (std::exception e) 
+  catch (std::exception e)
     {
       return -1;
     }

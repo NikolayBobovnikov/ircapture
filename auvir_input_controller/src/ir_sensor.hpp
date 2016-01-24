@@ -34,6 +34,13 @@ typedef struct
     uint8_t _3_angle_code_rev;
 } DataFrame_t;
 
+typedef struct
+{
+    uint8_t _ir_hub_id;
+    uint8_t _ir_sensor_id;
+    DataFrame_t data;
+} USART_msg_t;
+
 boost::shared_ptr<DataFrame_t> create_data_frame(uint8_t id, uint8_t angle);
 int ir_sensor_main();
 

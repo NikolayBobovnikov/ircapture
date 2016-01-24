@@ -79,6 +79,14 @@ enum UART_Commands {
 };
 uint8_t command = UART_COMMAND_NOT_RECEIVED;
 uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
+
+typedef struct
+{
+    uint8_t _ir_hub_id;
+    uint8_t _ir_sensor_id;
+    DataFrame_t data;
+} USART_msg_t;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,7 +107,35 @@ void notify_transmission_finished();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+void ReceiveDataToSend()
+{
+    command = UART_COMMAND_NOT_RECEIVED;
+    status = HAL_UART_Receive(&huart1, &command, sizeof(command), 1000);
+
+    if (status != HAL_OK) {
+      // TODO: process error
+      return;
+    }
+
+    // if received command, dispatch it
+    switch (command) {
+      case UART_DEBUG_DATA_TRANSMIT: {
+        // receive data to transmit
+        status = HAL_UART_Receive(&huart1, (uint8_t *)&tx_data_frame, sizeof(tx_data_frame), 1000);
+        if (status != HAL_OK) {
+          // TODO: process error
+          return;
+        }
+
+        send_data();
+
+        notify_transmission_finished();
+      }
+    }
+}
 /* USER CODE END 0 */
+
+
 
 int main(void) {
   /* USER CODE BEGIN 1 */
@@ -134,36 +170,11 @@ int main(void) {
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    // send_data();
-
-    command = UART_COMMAND_NOT_RECEIVED;
-    status = HAL_UART_Receive(&huart1, &command, sizeof(command), 1000);
-
-    if (status != HAL_OK) {
-      // TODO: process error
-      break;
-    }
-
-    // if received command, dispatch it
-    switch (command) {
-      case UART_DEBUG_DATA_TRANSMIT: {
-        // receive data to transmit
-        status = HAL_UART_Receive(&huart1, (uint8_t *)&tx_data_frame,
-                                  sizeof(tx_data_frame), 1000);
-        if (status != HAL_OK) {
-          // TODO: process error
-          break;
-        }
-        // responce = HAL_UART_Transmit(&huart1, (uint8_t*)&responce,
-        // sizeof(responce), 1000);
-
-        // transmit data
-        send_data();
-
-        // notify that data has been sent (future callback - )
-        notify_transmission_finished();
-      }
-    }
+      /*
+    send_data();
+    notify_transmission_finished();
+*/
+    ReceiveDataToSend();
 
     /* USER CODE END WHILE */
 
@@ -345,8 +356,13 @@ void MX_GPIO_Init(void) {
 /* USER CODE BEGIN 4 */
 void notify_transmission_finished() {
   responce = UART_DEBUG_DATA_TRANSMIT_OK;
-  HAL_StatusTypeDef status =
-      HAL_UART_Transmit(&huart1, (uint8_t *)&responce, sizeof(responce), 1000);
+
+  USART_msg_t msg;
+  msg._ir_sensor_id = 1;
+  msg._ir_hub_id = 2;
+  msg.data = tx_data_frame;
+
+  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)&msg, sizeof(msg), 10);
   if (status != HAL_OK) {
     // TODO: process error
   }
