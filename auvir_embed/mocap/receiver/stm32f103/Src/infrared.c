@@ -591,9 +591,8 @@ static inline void get_logical_level()
 
 static inline bool is_correct_timming_interframe_delay()
 {
-    return (_ccr1 < InterframeDelayLength + max_delta_interframe_delay)
-            &&
-            (_ccr1 > InterframeDelayLength - max_delta_interframe_delay);
+    // check only lower bound of delay.
+    return (_ccr1 > InterframeDelayLength - max_delta_interframe_delay);
 }
 static inline bool is_correct_timming_preamble_bit()
 {

@@ -23,7 +23,7 @@
 #define HalfDataBitLength   		((DataBitLength + 1) / 2 - 1)   //(DataBitLength + 1) / 2 - 1; // TODO: check the value
 #define max_period         			(65535 - 1)
 
-#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.03)
+#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.1)
 #define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1)
 #define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1)
 
