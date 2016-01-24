@@ -67,12 +67,14 @@ int ir_sensor_main()
                 {
                     // 1. generate random data
                     // TODO
-                    uint8_t beam_id = 1;
-                    uint8_t angle = 2;
+                    //tx_data_frame._1_beamer_id = 0b10101010;
+                    //tx_data_frame._2_angle_code = 0b10101010;
+                    uint8_t beam_id = 0b10101010;
+                    uint8_t angle = 0b10101010;
                     boost::shared_ptr<DataFrame_t> data_frame = create_data_frame(beam_id,angle);
 
                     // 2. send it to transmitter
-                    serial->write((char*)data_frame.get(), data_size);
+                    //serial->write((char*)data_frame.get(), data_size);
 
                     current_trial_number++;
 

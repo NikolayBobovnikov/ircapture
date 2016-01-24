@@ -84,10 +84,30 @@ static void MX_USART1_UART_Init(void);
 /* Private function prototypes -----------------------------------------------*/
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
-void send_data_uart(uint8_t * pdata, uint16_t size);
+void send_data_uart();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+/// ======================= USART stuff =======================
+HAL_StatusTypeDef status;
+extern DataFrame_t rx_data_frame;
+
+enum UART_Commands {
+  UART_COMMAND_NOT_RECEIVED = 0,
+  UART_DEBUG_DATA_TRANSMIT,
+  UART_DEBUG_DATA_TRANSMIT_OK,
+  UART_ECHO
+};
+uint8_t command = UART_COMMAND_NOT_RECEIVED;
+uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
+
+typedef struct
+{
+    uint8_t _ir_hub_id;
+    uint8_t _ir_sensor_id;
+    DataFrame_t data;
+} USART_msg_t;
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -336,10 +356,10 @@ void MX_USART1_UART_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-void MX_DMA_Init(void) 
+void MX_DMA_Init(void)
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -352,9 +372,9 @@ void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -430,9 +450,17 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim)
     /* Return function status */
     return HAL_OK;
 }
-void send_data_uart(uint8_t * pdata, uint16_t size)
+void send_data_uart()
 {
-    HAL_UART_Transmit(&huart1, pdata, size, 1000);
+    USART_msg_t msg;
+    msg._ir_sensor_id = 1;
+    msg._ir_hub_id = 2;
+    msg.data = rx_data_frame;
+
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)&msg, sizeof(msg), 10);
+    if (status != HAL_OK) {
+      // TODO: process error
+    }
 }
 /* USER CODE END 4 */
 
@@ -458,10 +486,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -54,6 +54,7 @@ typedef struct
 } DataFrame_t;
 
 
+void init_data();
 void send_data();
 void transmit_handler();
 

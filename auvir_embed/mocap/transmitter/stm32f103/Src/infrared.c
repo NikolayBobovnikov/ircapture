@@ -39,15 +39,30 @@ static inline void force_envelop_timer_output_off();
 
 /// ============================== Function definitions ==============================
 ///
-void send_data()
+void init_data()
 {
     // sample data. TODO: use actual one
-    //tx_data_frame._1_beamer_id = 0b10101010;
-    //tx_data_frame._2_angle_code = 0b10101010;
+    tx_data_frame._1_beamer_id = 0b10101010;
+    tx_data_frame._2_angle_code = 0b10101010;
     tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
 
     // just repetition of the same data for now.
     // TODO: send updated time
+    if(TX_WAITING == TransmitterState)
+    {
+        TransmitterState = TX_PREAMBLE;
+    }
+    else
+    {
+        //TODO: handle this case
+        // data is still being transmitted. Need to finish previous transmission before starting next one
+    }
+}
+void send_data()
+{
+    // TODO: find suitable place for this
+    tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
+
     if(TX_WAITING == TransmitterState)
     {
         TransmitterState = TX_PREAMBLE;

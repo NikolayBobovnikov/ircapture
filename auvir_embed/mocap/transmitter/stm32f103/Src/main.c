@@ -129,7 +129,7 @@ void ReceiveDataToSend()
 
         send_data();
 
-        notify_transmission_finished();
+        //notify_transmission_finished(); TODO: need?
       }
     }
 }
@@ -170,11 +170,11 @@ int main(void) {
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-      /*
+
+    init_data();
+
     send_data();
-    notify_transmission_finished();
-*/
-    ReceiveDataToSend();
+    //ReceiveDataToSend();
 
     /* USER CODE END WHILE */
 

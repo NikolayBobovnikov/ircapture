@@ -88,6 +88,7 @@ static inline void get_logical_level();
 static inline void decode_bit(uint8_t *data_word);
 static inline void process_received_data();
 static inline void copy_data_frame_to_buffer(DataFrame_t* df);
+void send_data_uart();
 
 static inline bool is_correct_timming_interframe_delay();
 static inline bool is_correct_timming_preamble_bit();
@@ -508,13 +509,16 @@ static inline void process_received_data()
 {
     /// we successfully received data, send corresponding event for listeners to read from the data buffer
     /// verify correctness
-	data_frame_delta = rx_data_frame._2_angle_code ^ (~rx_data_frame._3_angle_code_rev);
+    data_frame_delta = rx_data_frame._2_angle_code ^ (~rx_data_frame._3_angle_code_rev);
     if( data_frame_delta == 0 )
     {
         debug_data_verified();
 
         copy_data_frame_to_buffer(&rx_data_frame);
         send_dataready_signal();
+
+        send_data_uart();
+
         dbg[dbg_index] = rx_data_frame._2_angle_code;
         dbg[dbg_index+1] = rx_data_frame._3_angle_code_rev;
         dbg_index = dbg_index + 2;

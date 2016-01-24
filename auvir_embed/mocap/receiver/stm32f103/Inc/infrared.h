@@ -6,8 +6,6 @@
 #include "stm32f1xx_it.h"
 
 #include <stdbool.h>
-// TODO: cleanup when done debugging
-#define DEBUG
 
 ///====================== parameters ======================
 
