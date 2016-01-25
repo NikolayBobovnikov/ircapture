@@ -39,9 +39,6 @@
 // TODO: read more about .h and .c file including during compiling. Check if this include is needed
 // #include "infrared.h"
 
-extern void irreceiver_timer_up_handler();
-extern void irreceiver_timer_ic_handler();
-
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -52,7 +49,7 @@ extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 
 /******************************************************************************/
-/*            Cortex-M3 Processor Interruption and Exception Handlers         */ 
+/*            Cortex-M3 Processor Interruption and Exception Handlers         */
 /******************************************************************************/
 
 /**
