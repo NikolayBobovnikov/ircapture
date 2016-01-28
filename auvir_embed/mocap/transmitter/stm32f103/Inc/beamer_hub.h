@@ -21,7 +21,7 @@ typedef enum{
     UART_MSG_RESPONCE_REGISTRATION_CLOSED
 } MSG_t;
 
-typedef struct UART_MESSAGE{
+typedef struct UART_FRAME_t{
     MSG_t message_type;
     WHOAMI_t who_am_i;
     uint8_t data_size;
