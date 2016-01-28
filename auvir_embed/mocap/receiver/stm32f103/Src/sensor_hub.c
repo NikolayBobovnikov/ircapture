@@ -44,7 +44,7 @@ void receive_uart_msg(){
     status = HAL_UART_Receive(&huart1, (uint8_t *)&p_uart_msg, sizeof(p_uart_msg), 1000);
 }
 
-void this_sensor_next(){
+bool this_sensor_next(){
 
     // if received message from last registered sensor, start from beginning
     if(p_uart_msg.id_sensor == last_id_in_array){
