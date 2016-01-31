@@ -36,6 +36,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "infrared.h"
+#include "sensor.h"
 #include "sensor_hub.h"
 
 // TODO: cleanup when done debugging

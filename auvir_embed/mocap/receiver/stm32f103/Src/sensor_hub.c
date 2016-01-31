@@ -2,14 +2,13 @@
 
 extern UART_HandleTypeDef huart1;
 
-uint8_t id_hub = 0;
-uint8_t id_sensor = 0;
+static uint8_t this_hub_id = 0;
 #define  max_number_of_sensors 128
-uint16_t registered_sensors[max_number_of_sensors] = {0};
+static uint16_t registered_sensors[max_number_of_sensors] = {0};
 
-uint8_t SensorHubState = STARTING;
-SENSOR_MSG_t p_uart_msg = {0};
-HAL_StatusTypeDef status = HAL_OK;
+static uint8_t SensorHubState = STARTING;
+static SENSOR_DATA_MSG_t p_uart_msg = {0};
+static HAL_StatusTypeDef status = HAL_OK;
 
 
 ///====================== Functions ======================
@@ -40,17 +39,4 @@ void main_loop(){
     }
 }
 
-void receive_uart_msg(){
-    status = HAL_UART_Receive(&huart1, (uint8_t *)&p_uart_msg, sizeof(p_uart_msg), 1000);
-}
 
-bool this_sensor_next(){
-
-    // if received message from last registered sensor, start from beginning
-    if(p_uart_msg.id_sensor == last_id_in_array){
-        return id_sensor == first_id_in_array;
-    }
-    else{
-        if(p_uart_msg.id_sensor == id_sensor - 1)
-    }
-}

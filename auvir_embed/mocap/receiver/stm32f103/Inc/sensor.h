@@ -7,24 +7,24 @@
 
 #include <stdbool.h>
 
+typedef enum {
+    MSG_TYP_NONE,
+    MSG_TYP_REQUEST_SENSOR_ID
+} MessageTypeDef;
+
 typedef struct SENSOR_DATA_MSG_t{
     uint8_t id_sensor;
     uint8_t id_hub;
     uint16_t angle_code;
 } SENSOR_DATA_MSG_t;
 
-// states
-enum{
-    NONE,
-    STARTING,
-    REQUESTING_HUB_ID,
-    WAITING_FOR_START_REGISTRATION,
-    REGISTRATION_OPEN,
-    REGISTRATION_CLOSED
-};
 
+void send_message();
+void process_received_message();
 
-void process_sensor_hub_states();
-
+void request_id();
+void send_data();
+void receive_uart_msg();
+bool this_sensor_next();
 
 #endif //SENSOR_HUB_H
