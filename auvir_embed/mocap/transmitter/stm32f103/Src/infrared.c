@@ -31,11 +31,33 @@ uint8_t level[100] = {0};
 uint16_t pwm_period[100] = {0};
 uint8_t arr_index = 0;
 
+typedef struct MCU_PIN{
+    GPIO_TypeDef * pin_port;
+    uint16_t pin_number;
+} MCU_PIN;
+
+#define NUMBER_OF_BEAMER_CHANNELS 8
+MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
+{ GPIOB, 0},
+{ GPIOB, 1},
+{ GPIOB, 2},
+{ GPIOB, 3},
+{ GPIOB, 4},
+{ GPIOB, 5},
+{ GPIOB, 6},
+{ GPIOB, 7}
+};
+uint8_t current_beamer_channel_index = 0;
+#define current_pin (beamer_channel_array[current_beamer_channel_index])
+
+
 
 /// ============================== Function declarations ==============================
 static inline void reset_transmitter();
 static inline void switch_to_data_transmission_state();
 static inline void p_w_modulate(uint8_t bit);
+static inline void set_beamer_channels();
+static inline void update_current_beamer_channel();
 static inline void force_envelop_timer_output_on();
 static inline void force_envelop_timer_output_off();
 
@@ -61,7 +83,7 @@ void init_data()
         // data is still being transmitted. Need to finish previous transmission before starting next one
     }
 }
-void send_data()
+void sensor_send_data()
 {
     // TODO: find suitable place for this
     //tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
@@ -289,8 +311,13 @@ static inline void switch_to_data_transmission_state()
 {
 
 }
+
 static inline void p_w_modulate(uint8_t bit)
 {
+    // Turn off all channels except current
+    set_beamer_channels();
+
+    // modulate logic 0 and 1
     if(bit == 1)
     {
         force_envelop_timer_output_on();
@@ -300,20 +327,42 @@ static inline void p_w_modulate(uint8_t bit)
         force_envelop_timer_output_off();
     }
 
+    update_current_beamer_channel();
 }
+static inline void set_beamer_channels()
+{
+    for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
+    {
+        HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port,
+                          beamer_channel_array[pin_index].pin_number,
+                          GPIO_PIN_RESET);
+    }
+    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number,GPIO_PIN_SET);
+}
+
+static inline void update_current_beamer_channel()
+{
+    if(current_beamer_channel_index < NUMBER_OF_BEAMER_CHANNELS - 1){
+        current_beamer_channel_index++;
+    }
+    else{
+        current_beamer_channel_index = 0;
+    }
+}
+
 static inline void force_envelop_timer_output_on()
 {
     if(_debug)
     {
         if(_is_direct_logic)
         {
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
         }
         else
         {
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
         }
     }
     if(_is_direct_logic)
@@ -324,8 +373,6 @@ static inline void force_envelop_timer_output_on()
     {
         HAL_TIM_PWM_Stop(phtim_pwm, TIM_CHANNEL_4);
     }
-
-
 
 }
 static inline void force_envelop_timer_output_off()
@@ -334,13 +381,13 @@ static inline void force_envelop_timer_output_off()
     {
         if(_is_direct_logic)
         {
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
         }
         else
         {
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
         }
     }
 
@@ -354,7 +401,8 @@ static inline void force_envelop_timer_output_off()
     }
 
 }
-void  debug_init_gpio() {
+void  debug_init_gpio()
+{
     if(_debug)
     {
         GPIO_InitTypeDef GPIO_InitStruct;
@@ -363,6 +411,24 @@ void  debug_init_gpio() {
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
+}
+
+void init_beamer_channels_gpio()
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
+    {
+        HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port,
+                          beamer_channel_array[pin_index].pin_number,
+                          GPIO_PIN_RESET);
+
+        GPIO_InitStruct.Pin = beamer_channel_array[pin_index].pin_number;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+
+        HAL_GPIO_Init(beamer_channel_array[pin_index].pin_port, &GPIO_InitStruct);
     }
 }

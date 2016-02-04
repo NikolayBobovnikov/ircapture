@@ -121,7 +121,7 @@ void ReceiveDataToSend()
           return;
         }
 
-        send_data();
+        sensor_send_data();
 
         //notify_transmission_finished(); TODO: need?
       }
@@ -155,6 +155,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   debug_init_gpio();
+  init_beamer_channels_gpio();
   HAL_TIM_Base_Start_IT(phtim_envelop);      // envelop
   HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);  // pwm
   /* USER CODE END 2 */
@@ -164,7 +165,7 @@ int main(void)
   while (1) {
 
     init_data();
-    send_data();
+    sensor_send_data();
     //ReceiveDataToSend();
     //HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
 
@@ -360,29 +361,6 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
   __GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin : PA2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -402,7 +380,7 @@ void notify_transmission_finished() {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     tx_data_frame = uart_msg.data;
-    send_data();
+    sensor_send_data();
 }
 /* USER CODE END 4 */
 
