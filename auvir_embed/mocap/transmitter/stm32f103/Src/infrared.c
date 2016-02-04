@@ -38,14 +38,14 @@ typedef struct MCU_PIN{
 
 #define NUMBER_OF_BEAMER_CHANNELS 8
 MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
-{ GPIOB, 0},
-{ GPIOB, 1},
-{ GPIOB, 2},
-{ GPIOB, 3},
-{ GPIOB, 4},
-{ GPIOB, 5},
-{ GPIOB, 6},
-{ GPIOB, 7}
+    { GPIOB, 0},
+    { GPIOB, 1},
+    { GPIOB, 3},
+    { GPIOB, 4},
+    { GPIOB, 5},
+    { GPIOB, 6},
+    { GPIOB, 7},
+    { GPIOB, 8}
 };
 uint8_t current_beamer_channel_index = 0;
 #define current_pin (beamer_channel_array[current_beamer_channel_index])
