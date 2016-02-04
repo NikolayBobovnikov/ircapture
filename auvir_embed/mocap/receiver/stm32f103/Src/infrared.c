@@ -49,11 +49,11 @@ int dbg_index=0;
 #define DEBUG_FRAME_DELAY_1     0
 #define DEBUG_FRAME_DELAY_2     0
 
-#define DEBUG_UPD_EVENT_1       0
+#define DEBUG_UPD_EVENT_1       1
 #define DEBUG_UPD_EVENT_2       0
 #define DEBUG_0_to_1_EDGE_1     0
-#define DEBUG_0_to_1_EDGE_2     0
-#define DEBUG_1_to_0_EDGE_1     0
+#define DEBUG_0_to_1_EDGE_2     1
+#define DEBUG_1_to_0_EDGE_1     1
 #define DEBUG_1_to_0_EDGE_2     0
 
 #define DEBUG_PREAMBLE_END_1    0

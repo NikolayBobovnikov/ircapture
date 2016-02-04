@@ -39,6 +39,8 @@
 // TODO: read more about .h and .c file including during compiling. Check if this include is needed
 // #include "infrared.h"
 
+void irreceiver_timer_up_handler();
+void irreceiver_timer_ic_handler();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
