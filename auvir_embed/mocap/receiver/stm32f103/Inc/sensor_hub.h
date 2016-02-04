@@ -24,7 +24,10 @@ enum{
 };
 
 
-void process_sensor_hub_states();
+void sensorhub_process_states();
+void sensorhub_receive_uart_msg();
+void sensorhub_send_msg();
+
 
 
 #endif //SENSOR_HUB_H

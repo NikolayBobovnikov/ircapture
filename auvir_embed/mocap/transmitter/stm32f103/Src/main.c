@@ -154,6 +154,7 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
+  debug_init_gpio();
   HAL_TIM_Base_Start_IT(phtim_envelop);      // envelop
   HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);  // pwm
   /* USER CODE END 2 */

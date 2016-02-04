@@ -13,7 +13,7 @@ static HAL_StatusTypeDef status = HAL_OK;
 
 ///====================== Functions ======================
 
-void process_sensor_hub_states()
+void sensorhub_process_states()
 {
     switch(SensorHubState){
         case STARTING:
@@ -33,10 +33,19 @@ void process_sensor_hub_states()
 
 void main_loop(){
 
-    receive_uart_msg();
-    if(this_sensor_next()){
-        send_msg();
-    }
+    sensorhub_receive_uart_msg();
+    sensorhub_send_msg();
+
 }
+
+void sensorhub_receive_uart_msg()
+{
+    //TODO
+}
+void sensorhub_send_msg()
+{
+    //TODO
+}
+
 
 

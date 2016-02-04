@@ -37,6 +37,7 @@
 
 /* USER CODE BEGIN 0 */
 #include <stdbool.h>
+#include "beamer_hub.h"
 void transmit_handler();
 /* USER CODE END 0 */
 

@@ -67,4 +67,6 @@ void init_data();
 void send_data();
 void transmit_handler();
 
+void  debug_init_gpio();
+
 #endif //INFRARED_H
