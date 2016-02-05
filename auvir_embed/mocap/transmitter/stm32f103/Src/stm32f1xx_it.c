@@ -39,6 +39,7 @@
 #include <stdbool.h>
 #include "beamer_hub.h"
 void transmit_handler();
+void process_beamer_hub_states();
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/

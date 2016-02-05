@@ -421,10 +421,6 @@ void init_beamer_channels_gpio()
 
     for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
     {
-        HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port,
-                          beamer_channel_array[pin_index].pin_number,
-                          GPIO_PIN_RESET);
-
         GPIO_InitStruct.Pin = beamer_channel_array[pin_index].pin_number;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;

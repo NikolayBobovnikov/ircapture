@@ -12,6 +12,8 @@
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
 <part id="0"/>
 <part id="1"/>
+<part id="2"/>
+<part id="3"/>
 </presentation>
 </folder>
 </info>
@@ -20,9 +22,17 @@
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/motionsensor_receiver/Src/stm32f1xx_it.c"/>
 <editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="1448" selectionTopPixel="0"/>
 </editor>
-<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.c" partName="infrared.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/infrared.c" title="infrared.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/infrared.c" workbook="DefaultEditorWorkbook">
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.c" partName="infrared.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/infrared.c" title="infrared.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/infrared.c" workbook="DefaultEditorWorkbook">
 <input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/motionsensor_receiver/Src/infrared.c"/>
 <editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="630"/>
+</editor>
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/main.c" title="main.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/main.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/motionsensor_receiver/Src/main.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="4818" selectionTopPixel="1140"/>
+</editor>
+<editor id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f1xx_hal_msp.c" partName="stm32f1xx_hal_msp.c" path="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/stm32f1xx_hal_msp.c" title="stm32f1xx_hal_msp.c" tooltip="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/stm32f1xx_hal_msp.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/motionsensor_receiver/Src/stm32f1xx_hal_msp.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="0" selectionTopPixel="0"/>
 </editor>
 </editors>
 <views>
@@ -65,7 +75,7 @@
 <element path="/motionsensor_receiver/Src"/>
 </expanded>
 <selection>
-<element path="/motionsensor_receiver/Src/infrared.c"/>
+<element path="/motionsensor_receiver/Src/main.c"/>
 </selection>
 </viewState>
 </view>
@@ -284,22 +294,9 @@
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor/Src/main.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_receiver/Src/stm32f1xx_it.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_receiver/Src/infrared.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_receiver/Src/main.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_receiver/Src/stm32f1xx_hal_msp.c"/>
 </editors>
-<item historyLabel="stm32f1xx_hal_tim.c" index="4">
-<position info="not_deleted" x="24012" y="18"/>
-</item>
-<item historyLabel="stm32f1xx_hal_tim.c" index="4">
-<position info="not_deleted" x="25878" y="20"/>
-</item>
-<item historyLabel="stm32f1xx_hal_tim.c" index="4">
-<position info="not_deleted" x="22289" y="19"/>
-</item>
-<item historyLabel="main.c" index="0">
-<position/>
-</item>
-<item historyLabel="startup_stm32f103xb.s" index="2">
-<position/>
-</item>
 <item historyLabel="infrared.c" index="1">
 <position info="not_deleted" x="23" y="0"/>
 </item>
@@ -432,7 +429,22 @@
 <item historyLabel="stm32f1xx_it.c" index="9">
 <position info="not_deleted" x="5460" y="0"/>
 </item>
-<item active="true" historyLabel="infrared.c" index="10">
+<item historyLabel="infrared.c" index="10">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="main.c" index="11">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="main.c" index="11">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="infrared.c" index="10">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="stm32f1xx_hal_msp.c" index="12">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item active="true" historyLabel="main.c" index="11">
 <position info="not_deleted" x="0" y="0"/>
 </item>
 </navigationHistory>
@@ -447,11 +459,14 @@
 <org.coocox.welcome.ui.WelcomePage/>
 </persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.c" tooltip="motionsensor_receiver/Src/infrared.c">
-<persistable path="/motionsensor_receiver/Src/infrared.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f1xx_hal_msp.c" tooltip="motionsensor_receiver/Src/stm32f1xx_hal_msp.c">
+<persistable path="/motionsensor_receiver/Src/stm32f1xx_hal_msp.c"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="motionsensor_receiver/Src/main.c">
 <persistable path="/motionsensor_receiver/Src/main.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f103xb.s" tooltip="motionsensor_receiver/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s">
+<persistable path="/motionsensor_receiver/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.h" tooltip="motionsensor_receiver/Inc/infrared.h">
 <persistable path="/motionsensor_receiver/Inc/infrared.h"/>
@@ -459,23 +474,11 @@
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="mxconstants.h" tooltip="motionsensor_receiver/Inc/mxconstants.h">
 <persistable path="/motionsensor_receiver/Inc/mxconstants.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f1xx_hal_msp.c" tooltip="motionsensor_receiver/Src/stm32f1xx_hal_msp.c">
-<persistable path="/motionsensor_receiver/Src/stm32f1xx_hal_msp.c"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="mxconstants.h" tooltip="motionsensor_transmitter/Inc/mxconstants.h">
+<persistable path="/motionsensor_transmitter/Inc/mxconstants.h"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f103xb.s" tooltip="motionsensor_receiver/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s">
-<persistable path="/motionsensor_receiver/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="syscalls.c" tooltip="motionsensor_receiver/Src/syscalls.c">
-<persistable path="/motionsensor_receiver/Src/syscalls.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="motionsensor_transmitter/Src/main.c">
-<persistable path="/motionsensor_transmitter/Src/main.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.c" tooltip="motionsensor_transmitter/Src/infrared.c">
-<persistable path="/motionsensor_transmitter/Src/infrared.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.h" tooltip="motionsensor_transmitter/Inc/infrared.h">
-<persistable path="/motionsensor_transmitter/Inc/infrared.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f1xx_it.c" tooltip="motionsensor_transmitter/Src/stm32f1xx_it.c">
+<persistable path="/motionsensor_transmitter/Src/stm32f1xx_it.c"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f103xb.s" tooltip="motionsensor_transmitter/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s">
 <persistable path="/motionsensor_transmitter/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s"/>
@@ -483,11 +486,20 @@
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="motionsensor_transmitter/Src/main.c">
 <persistable path="/motionsensor_transmitter/Src/main.c"/>
 </file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.h" tooltip="motionsensor_transmitter/Inc/infrared.h">
+<persistable path="/motionsensor_transmitter/Inc/infrared.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.c" tooltip="motionsensor_transmitter/Src/infrared.c">
+<persistable path="/motionsensor_transmitter/Src/infrared.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.c" tooltip="motionsensor_receiver/Src/infrared.c">
+<persistable path="/motionsensor_receiver/Src/infrared.c"/>
+</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f103xb.s" tooltip="motionsensor/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s">
 <persistable path="/motionsensor/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32f1xx.h" tooltip="motionsensor/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h">
-<persistable path="/motionsensor/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared.c" tooltip="motionsensor_receiver/Src/infrared.c">
+<persistable path="/motionsensor_receiver/Src/infrared.c"/>
 </file>
 </mruList>
 </workbench>
