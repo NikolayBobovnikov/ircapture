@@ -163,7 +163,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-
     init_data();
     sensor_send_data();
     //ReceiveDataToSend();

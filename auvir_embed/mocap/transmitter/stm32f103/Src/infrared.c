@@ -38,28 +38,32 @@ typedef struct MCU_PIN{
 
 #define NUMBER_OF_BEAMER_CHANNELS 8
 MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
-    { GPIOB, 0},
-    { GPIOB, 1},
-    { GPIOB, 3},
-    { GPIOB, 4},
-    { GPIOB, 5},
-    { GPIOB, 6},
-    { GPIOB, 7},
-    { GPIOB, 8}
+    { GPIOB, GPIO_PIN_0},
+    { GPIOB, GPIO_PIN_1},
+    { GPIOB, GPIO_PIN_3},
+    { GPIOB, GPIO_PIN_4},
+    { GPIOB, GPIO_PIN_5},
+    { GPIOB, GPIO_PIN_6},
+    { GPIOB, GPIO_PIN_7},
+    { GPIOB, GPIO_PIN_8}
 };
 uint8_t current_beamer_channel_index = 0;
+MCU_PIN previous_pin;
 #define current_pin (beamer_channel_array[current_beamer_channel_index])
 
 
 
-/// ============================== Function declarations ==============================
+
+/// ============================== Private function declarations ==============================
 static inline void reset_transmitter();
 static inline void switch_to_data_transmission_state();
 static inline void p_w_modulate(uint8_t bit);
-static inline void set_beamer_channels();
-static inline void update_current_beamer_channel();
+static inline void set_current_beamer_channel_on();
+static inline void set_all_beamer_channel_off();
+static inline void select_next_beamer_channel();
 static inline void force_envelop_timer_output_on();
 static inline void force_envelop_timer_output_off();
+static inline void stop_transmitting_data();
 
 
 /// ============================== Function definitions ==============================
@@ -83,6 +87,7 @@ void init_data()
         // data is still being transmitted. Need to finish previous transmission before starting next one
     }
 }
+
 void sensor_send_data()
 {
     // TODO: find suitable place for this
@@ -98,6 +103,7 @@ void sensor_send_data()
         // data is still being transmitted. Need to finish previous transmission before starting next one
     }
 }
+
 void transmit_handler()
 {
     /* Data packet format: [preamble] [data frame] [epilogue]
@@ -133,7 +139,7 @@ void transmit_handler()
     /// ensure carrier is not generating
     if(TX_DATA != TransmitterState)
     {
-        force_envelop_timer_output_off();  // stop carrier // TODO: check neseccity
+        stop_transmitting_data();  // stop carrier // TODO: check neseccity
     }
     /* Send data frame
      * 1. start sequence
@@ -298,6 +304,7 @@ void transmit_handler()
         }
     } // switch(TransmitterState)
 }
+
 /// private, used only in infrared module
 static inline void reset_transmitter()
 {
@@ -307,6 +314,7 @@ static inline void reset_transmitter()
     StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
     DataFrameState = DATAFRAME_0_NODATA;
 }
+
 static inline void switch_to_data_transmission_state()
 {
 
@@ -314,33 +322,44 @@ static inline void switch_to_data_transmission_state()
 
 static inline void p_w_modulate(uint8_t bit)
 {
-    // Turn off all channels except current
-    set_beamer_channels();
+    set_current_beamer_channel_on();
 
     // modulate logic 0 and 1
-    if(bit == 1)
-    {
+    if(bit == 1){
         force_envelop_timer_output_on();
     }
-    else // bit == 0
-    {
+    else{
         force_envelop_timer_output_off();
     }
 
-    update_current_beamer_channel();
+    select_next_beamer_channel();
 }
-static inline void set_beamer_channels()
+
+static inline void set_current_beamer_channel_on()
+{
+    if(current_beamer_channel_index == 0){
+        previous_pin = beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS - 1];
+    }
+    else{
+        previous_pin = beamer_channel_array[current_beamer_channel_index - 1];
+    }
+
+    // turn off pin which was turned on previous time
+    HAL_GPIO_WritePin(previous_pin.pin_port,previous_pin.pin_number, GPIO_PIN_RESET);
+
+    // turn on current pin
+    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
+}
+
+static inline void set_all_beamer_channel_off()
 {
     for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
     {
-        HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port,
-                          beamer_channel_array[pin_index].pin_number,
-                          GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port, beamer_channel_array[pin_index].pin_number, GPIO_PIN_RESET);
     }
-    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number,GPIO_PIN_SET);
 }
 
-static inline void update_current_beamer_channel()
+static inline void select_next_beamer_channel()
 {
     if(current_beamer_channel_index < NUMBER_OF_BEAMER_CHANNELS - 1){
         current_beamer_channel_index++;
@@ -375,6 +394,7 @@ static inline void force_envelop_timer_output_on()
     }
 
 }
+
 static inline void force_envelop_timer_output_off()
 {
     if(_debug)
@@ -401,6 +421,14 @@ static inline void force_envelop_timer_output_off()
     }
 
 }
+
+static inline void stop_transmitting_data()
+{
+    force_envelop_timer_output_off();
+    set_all_beamer_channel_off();
+    current_beamer_channel_index = 0;
+}
+
 void  debug_init_gpio()
 {
     if(_debug)
@@ -418,7 +446,6 @@ void  debug_init_gpio()
 void init_beamer_channels_gpio()
 {
     GPIO_InitTypeDef GPIO_InitStruct;
-
     for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
     {
         GPIO_InitStruct.Pin = beamer_channel_array[pin_index].pin_number;
@@ -427,4 +454,5 @@ void init_beamer_channels_gpio()
 
         HAL_GPIO_Init(beamer_channel_array[pin_index].pin_port, &GPIO_InitStruct);
     }
+
 }
