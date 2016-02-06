@@ -36,6 +36,10 @@ typedef struct MCU_PIN{
     uint16_t pin_number;
 } MCU_PIN;
 
+// use for transmission non-structured light data
+const MCU_PIN standard_data_pin = { GPIOB, GPIO_PIN_12};
+
+
 #define NUMBER_OF_BEAMER_CHANNELS 8
 MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
     { GPIOB, GPIO_PIN_0},
@@ -48,6 +52,7 @@ MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
     { GPIOB, GPIO_PIN_8}
 };
 uint8_t current_beamer_channel_index = 0;
+// use for transmission coded angle
 MCU_PIN previous_pin;
 #define current_pin (beamer_channel_array[current_beamer_channel_index])
 
@@ -246,12 +251,12 @@ void transmit_handler()
                     else
                     {
                         // change state to process next part of data
-                        DataFrameState = DATAFRAME_3_TIME;
+                        DataFrameState = DATAFRAME_3_ANGLE_REV;
                         tx_current_bit_pos = 0;
                     }
                     break;
                 }
-                case(DATAFRAME_3_TIME):
+                case(DATAFRAME_3_ANGLE_REV):
                 {
                     tx_total_bits = sizeof(tx_data_frame._3_angle_code_rev) * 8;
                     tx_bit = (tx_data_frame._3_angle_code_rev >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
@@ -337,26 +342,38 @@ static inline void p_w_modulate(uint8_t bit)
 
 static inline void set_current_beamer_channel_on()
 {
-    if(current_beamer_channel_index == 0){
-        previous_pin = beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS - 1];
+    if(DATAFRAME_2_ANGLE == DataFrameState ){ // TODO: add || DATAFRAME_3_ANGLE_REV == DataFrameState
+        if(current_beamer_channel_index == 0){
+            previous_pin = beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS - 1];
+        }
+        else{
+            previous_pin = beamer_channel_array[current_beamer_channel_index - 1];
+        }
+
+        // turn off pin which was turned on previous time
+        HAL_GPIO_WritePin(previous_pin.pin_port,previous_pin.pin_number, GPIO_PIN_RESET);
+
+        // turn on current pin
+        HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
     }
     else{
-        previous_pin = beamer_channel_array[current_beamer_channel_index - 1];
+        // TODO: turn off pins for coded angle transmission
+
+        // turn on current pin
+        HAL_GPIO_WritePin(standard_data_pin.pin_port,standard_data_pin.pin_number, GPIO_PIN_SET);
     }
 
-    // turn off pin which was turned on previous time
-    HAL_GPIO_WritePin(previous_pin.pin_port,previous_pin.pin_number, GPIO_PIN_RESET);
-
-    // turn on current pin
-    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
 }
 
 static inline void set_all_beamer_channel_off()
 {
+    /*
     for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
     {
         HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port, beamer_channel_array[pin_index].pin_number, GPIO_PIN_RESET);
     }
+    */
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8, GPIO_PIN_RESET);
 }
 
 static inline void select_next_beamer_channel()

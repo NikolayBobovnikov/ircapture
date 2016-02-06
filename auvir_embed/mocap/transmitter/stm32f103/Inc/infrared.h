@@ -41,7 +41,7 @@ enum DataFrameStates
     DATAFRAME_0_NODATA,
     DATAFRAME_1_BEAMER_ID,
     DATAFRAME_2_ANGLE,
-    DATAFRAME_3_TIME
+    DATAFRAME_3_ANGLE_REV
 };
 
 enum StartStopSequenceStates
