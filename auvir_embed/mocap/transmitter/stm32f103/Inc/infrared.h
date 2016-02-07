@@ -14,10 +14,10 @@
 #define InterframeDelayLength       (14000 - 1)  //12900 doesn't work; 13000 works; chosen more
 
 // TODO: calculate mean of delay/bit length, deviation, and find optimal shift to minimize deviation
-#define PreambleDelayShift      (30)
-#define PreambleBitShift        (20)
-#define EpilogueDelayShift      (20)
-#define EpilogueBitShift        (10)
+#define PreambleDelayShift      20//(30)
+#define PreambleBitShift        10//(20)
+#define EpilogueDelayShift      10//(20)
+#define EpilogueBitShift        0//(10)
 #define PreambleDelayCorrected  (PreambleDelayLength + PreambleDelayShift - 1)
 #define PreambleBitCorrected    (PreambleBitLength - PreambleBitShift - 1)
 #define EpilogueDelayCorrected  (PreambleDelayLength + EpilogueDelayShift - 1)
