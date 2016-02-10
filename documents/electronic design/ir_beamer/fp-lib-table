@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name STM32F103C8T6)(type Legacy)(uri "D:\\nbobovnikov\\home\\dev\\auvir\\documents\\electronic design\\footprints\\STM32F103C8T6.mod")(options "")(descr ""))
+  (lib (name TO-251_B)(type Legacy)(uri "D:\\nbobovnikov\\home\\dev\\auvir\\documents\\electronic design\\footprints\\TO-251_B.mod")(options "")(descr ""))
+)
