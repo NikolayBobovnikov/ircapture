@@ -29,6 +29,14 @@
 			<type>1</type>
 			<location>PARENT-2-PROJECT_LOC/Src/usbd_desc.c</location>
 		</link><link>
+			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_spi.c</name>
+			<type>1</type>
+			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c</location>
+		</link><link>
+			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_spi_ex.c</name>
+			<type>1</type>
+			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi_ex.c</location>
+		</link><link>
 			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_gpio_ex.c</name>
 			<type>1</type>
 			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c</location>
@@ -140,10 +148,6 @@
 			<name>Middlewares/USB_Device_Library/usbd_customhid.c</name>
 			<type>1</type>
 			<location>PARENT-2-PROJECT_LOC/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c</location>
-		</link><link>
-			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_uart.c</name>
-			<type>1</type>
-			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c</location>
 		</link>
 		
 	</linkedResources>
