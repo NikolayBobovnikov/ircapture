@@ -16,7 +16,7 @@ add_definitions(-std=c++11)
 # set project source directory
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 
-# boost
+#============================ boost
 #set (Boost_DEBUG ON)
 #set (Boost_NO_SYSTEM_PATHS ON)
 set (BOOST_ROOT "..\\..\\thirdparty\\boost\\boost_1_59_0" )
@@ -33,26 +33,66 @@ find_package(Boost COMPONENTS system regex filesystem thread REQUIRED)
 message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 include_directories(${Boost_INCLUDE_DIRS})
 
-# include source/include files recursively
-file(GLOB_RECURSE PROJECT_SOURCES "${SRC_DIR}/*.cpp")
-file(GLOB_RECURSE PROJECT_HEADERS "${SRC_DIR}/*.h" "${SRC_DIR}/*.hpp")
+#============================ libusb
 
-set (INCLUDE_DIRS "")
-foreach (_headerFile ${PROJECT_HEADERS})
-    get_filename_component(_dir ${_headerFile} PATH)
-    list (APPEND INCLUDE_DIRS ${_dir})
-endforeach()
-list(REMOVE_DUPLICATES INCLUDE_DIRS)
+#============================ hidapi
+set(HIDAPI_DIR ${CMAKE_SOURCE_DIR}/libraries/hidapi)
 
-include_directories(${INCLUDE_DIRS})
-add_executable (
-    ${CMAKE_PROJECT_NAME}
-    ${PROJECT_SOURCES}
+if(UNIX)
+    message(STATUS "using linux system!")
+    set(HIDAPI_OS_SPECIFIC_DIR ${HIDAPI_DIR}/linux)
+endif(UNIX)
+if(WIN32)
+    message(STATUS "using windows system!")
+    set(HIDAPI_OS_SPECIFIC_DIR ${HIDAPI_DIR}/windows)
+endif(WIN32)
+
+SET(LIB_DIRS
+    ${SRC_DIR}
+    ${HIDAPI_DIR}/hidapi ${HIDAPI_OS_SPECIFIC_DIR} ${HIDAPI_DIR}/hidtest
 )
+
+####### Recursive addition of library source and header files from all used libraries #######
+SET(ALL_LIB_SOURCES "")
+SET(ALL_LIB_HEADERS "")
+
+# include source/include files recursively
+foreach (_dir ${LIB_DIRS})
+    file(GLOB_RECURSE LIB_SOURCES "${_dir}/*.cpp" "${_dir}/*.c")
+    file(GLOB_RECURSE LIB_HEADERS "${_dir}/*.hpp" "${_dir}/*.h")
+    list(APPEND ALL_LIB_SOURCES ${LIB_SOURCES})
+    list(APPEND ALL_LIB_HEADERS ${LIB_HEADERS})
+endforeach()
+
+list(REMOVE_DUPLICATES ALL_LIB_HEADERS)
+list(REMOVE_DUPLICATES ALL_LIB_SOURCES)
+
+
+# include directory for every header file
+SET (INCLUDE_LIB_DIRS "")
+foreach (_headerFile ${ALL_LIB_HEADERS})
+    get_filename_component(_dir ${_headerFile} PATH)
+    list (APPEND INCLUDE_LIB_DIRS ${_dir})
+endforeach()
+list(REMOVE_DUPLICATES INCLUDE_LIB_DIRS)
+
+#############################################################################################
+
+include_directories(
+${INCLUDE_LIB_DIRS}
+)
+
+# Build everything into elf
+ADD_EXECUTABLE(
+    ${CMAKE_PROJECT_NAME}
+    ${ALL_LIB_SOURCES}
+    ${ALL_LIB_HEADERS}
+    )
 
 target_link_libraries(
     ${CMAKE_PROJECT_NAME}
     ${Boost_LIBRARIES}
+    /usr/lib/x86_64-linux-gnu/libudev.so
 )
 
 

@@ -27,8 +27,9 @@ sudo -S aptitude install -y --with-recommends valgrind cppcheck uncrustify astyl
 # compilers and debuggers
 sudo -S aptitude install -y --with-recommends gcc-arm-none-eabi gdb-arm-none-eabi clang libclang-dev 
 
-# embedded tools
-sudo -S aptitude install -y --with-recommends libusb-dev libusb-1.0-0-dev
+# embedded tools, prerequisites for hidapi
+sudo -S aptitude install -y --with-recommends libudev-dev libusb-dev libusb-1.0-0-dev libfox-1.6-dev
+
 # stlink
 cd ~/gitclones && git clone git://github.com/texane/stlink.git && cd stlink && ./autogen.sh && ./configure && make
 sudo checkinstall -y --pkgversion=1 
