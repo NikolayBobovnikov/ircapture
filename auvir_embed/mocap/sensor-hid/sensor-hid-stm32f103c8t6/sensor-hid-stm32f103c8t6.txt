@@ -1,6 +1,6 @@
 Configuration	sensor-hid-stm32f103c8t6
 STM32CubeMX 	4.11.0
-Date	02/09/2016
+Date	02/17/2016
 MCU	STM32F103C8Tx
 
 
