@@ -35,7 +35,8 @@
 #include "usb_device.h"
 
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -89,6 +90,8 @@ int main(void)
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN 2 */
+  const char * str_example = "Hello there!\0";
+  char buf[100] = {0};
 
   /* USER CODE END 2 */
 
@@ -96,6 +99,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+      memcpy(buf, str_example,strlen(str_example));
+      CDC_Transmit_FS((uint8_t*)buf, (uint16_t)strlen(str_example));
+      HAL_Delay(500);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -189,9 +195,9 @@ void MX_USART2_UART_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -231,10 +237,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
