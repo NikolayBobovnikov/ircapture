@@ -99,9 +99,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      memcpy(buf, str_example,strlen(str_example));
-      CDC_Transmit_FS((uint8_t*)buf, (uint16_t)strlen(str_example));
-      HAL_Delay(500);
+      //CDC_Transmit_FS((uint8_t*)str_example, (uint16_t)strlen(str_example));
+      //HAL_Delay(500);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */

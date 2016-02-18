@@ -554,7 +554,7 @@ static uint8_t  USBD_CDC_Init (USBD_HandleTypeDef *pdev,
 }
 
 /**
-  * @brief  USBD_CDC_Init
+  * @brief  USBD_CDC_DeInit
   *         DeInitialize the CDC layer
   * @param  pdev: device instance
   * @param  cfgidx: Configuration index
