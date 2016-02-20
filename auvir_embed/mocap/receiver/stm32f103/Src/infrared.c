@@ -36,6 +36,10 @@ volatile uint16_t _ccr1 = 0;
 volatile uint16_t _ccr2 = 0;
 volatile uint16_t _delay_counter = 0;
 
+const uint8_t led_off_threshold = 5;
+uint8_t led_off_counter = 0;
+GPIO_TypeDef * GPIO_LED_PORT = GPIOB;
+uint16_t GPIO_LED_PIN = GPIO_PIN_3;
 ///====================== Dubugging scaffolding ======================
 
 // TODO: cleanup after debugging
@@ -510,6 +514,14 @@ static inline void reset_receiver_state()
     ptim_input_capture->Instance->CNT = 0;
     ptim_data_read->Instance->ARR = max_period;
     ptim_data_read->Instance->CNT = 0;
+    {
+        led_off_counter++;
+        if(led_off_counter == led_off_threshold && HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_SET){
+            led_off_counter = led_off_threshold;
+            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
+        }
+    }
+
     //HAL_TIM_Base_Stop_IT(ptim_data_read);
 }
 static inline void process_received_data()
@@ -520,6 +532,11 @@ static inline void process_received_data()
     if( data_frame_delta == 0 )
     {
         debug_data_verified();
+
+        {
+            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
+            led_off_counter = 0;
+        }
 
         copy_data_frame_to_buffer(&rx_data_frame);
         send_dataready_signal();
@@ -655,12 +672,21 @@ static inline void dbg_pulse_2()
 #endif
 }
 
+void  init_gpio_led() {
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
 void  debug_init_gpio() {
     if(DEBUG)
     {
         GPIO_InitTypeDef GPIO_InitStruct;
 
-        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_3;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 

@@ -75,6 +75,7 @@ void irreceiver_timer_prob_handler(); // for update timer
 void irreceiver_timer_up_handler(); // for update timer
 void irreceiver_timer_ic_handler(); // for input capture timer
 void debug_init_gpio();
+void init_gpio_led();
 
 
 #endif //INFRARED_H

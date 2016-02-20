@@ -141,6 +141,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   debug_init_gpio();
+  init_gpio_led();
   HAL_TIM_Base_Start_IT(ptim_data_read);
   HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
   /* USER CODE END 2 */
