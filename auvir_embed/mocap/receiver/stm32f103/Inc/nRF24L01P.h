@@ -67,6 +67,7 @@
 #define NRF24L01_CE_PIN             GPIO_PIN_0
 #endif
 
+/// Exported functions
 unsigned char nRF24L01_Config(unsigned char freq,unsigned char power,unsigned char rate);
 void RX_Mode(void);
 void TX_Mode(void);
@@ -74,4 +75,3 @@ void nRF24L01_TxPacket(unsigned char * tx_buf);
 unsigned char nRF24L01_RxPacket(unsigned char* rx_buf);
 void nRF24L01_Set_TX_Address(unsigned char A,unsigned char B,unsigned char C,unsigned char D,unsigned char E);
 void nRF24L01_Set_RX_Address(unsigned char A,unsigned char B,unsigned char C,unsigned char D,unsigned char E);
-

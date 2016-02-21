@@ -30,7 +30,7 @@ unsigned char SPI_RD_Reg(unsigned char reg);
 //Define the layer3:application operation
 /****************************************
 
-All the functions is in "nRF24l01P.h"
+All the functions are in "nRF24l01P.h"
 
 ****************************************/
 
@@ -260,3 +260,4 @@ void nRF24L01_Delay_us(unsigned long n)
        while(i--);
   }
 }
+
