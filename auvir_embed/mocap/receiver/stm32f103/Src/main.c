@@ -38,6 +38,7 @@
 #include "infrared.h"
 #include "sensor.h"
 #include "sensor_hub.h"
+#include "nRF24L01P.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -153,6 +154,9 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+      uint8_t reg_RX_ADDR_P0 = SPI_RD_Reg(RX_ADDR_P0);
+      uint8_t reg_CONFIG = SPI_RD_Reg(CONFIG);
+
   }
   /* USER CODE END 3 */
 
@@ -213,7 +217,7 @@ void MX_SPI1_Init(void)
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-  hspi1.Init.CRCPolynomial = 10;
+  hspi1.Init.CRCPolynomial = 7; //10
   HAL_SPI_Init(&hspi1);
 
 }
@@ -466,6 +470,31 @@ void send_data_uart()
     if (status != HAL_OK) {
       // TODO: process error
     }
+}
+
+void nrf24l01_InitGPIO(void) {
+
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    //Configure CSN pin
+    GPIO_InitStruct.Pin = NRF24L01_CSN_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(NRF24L01_CSN_PORT, &GPIO_InitStruct);
+
+    //Configure CE pin
+    GPIO_InitStruct.Pin = NRF24L01_CE_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(NRF24L01_CE_PORT, &GPIO_InitStruct);
+
+    /* CSN high = disable SPI */
+    HAL_GPIO_WritePin(NRF24L01_CSN_PORT, NRF24L01_CSN_PIN, GPIO_PIN_SET);
+
+    /* CE low = disable TX/RX */
+    HAL_GPIO_WritePin(NRF24L01_CE_PORT, NRF24L01_CE_PIN, GPIO_PIN_RESET);
 }
 /* USER CODE END 4 */
 
