@@ -6,26 +6,22 @@
 //#define RX_ADR_WIDTH 5
 extern SPI_HandleTypeDef hspi1;
 
-unsigned char TxBuf[Buffer_Size] = {0};
-unsigned char RxBuf[Buffer_Size] = {0};
+uint8_t TxBuf[Buffer_Size] = {0};
+uint8_t RxBuf[Buffer_Size] = {0};
 
-unsigned char nRF24L01_Freq = 0;
-unsigned char nRF24L01_power_rate = 0;
+uint8_t nRF24L01_Freq = 0;
+uint8_t nRF24L01_power_rate = 0;
 
 //define the initial Address
-unsigned char  TX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
-unsigned char  RX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
+uint8_t  TX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
+uint8_t  RX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
 
 //Define the layer1:HW operation
-unsigned char nRF24L01_SPI_Send_Byte(unsigned char dat);
-void nRF24L01_SPI_NSS_L(void);
-void nRF24L01_SPI_NSS_H(void);
+uint8_t nRF24L01_SPI_Send_Byte(uint8_t dat);
+void nRF24L01_SPI_CSN_L(void);
+void nRF24L01_SPI_CSN_H(void);
 
-//Define the layer2:Reg operation
-unsigned char SPI_WR_Reg(unsigned char reg, unsigned char value);
-unsigned char SPI_Read_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len);
-unsigned char SPI_Write_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len);
-unsigned char SPI_RD_Reg(unsigned char reg);
+
 
 //Define the layer3:application operation
 /****************************************
@@ -39,11 +35,11 @@ void nRF24L01_Delay_us(unsigned long n);
 
 //Define the layer3 functions
 
-void nRF24L01_Set_TX_Address(	unsigned char A,
-                                unsigned char B,
-                                unsigned char C,
-                                unsigned char D,
-                                unsigned char E)
+void nRF24L01_Set_TX_Address(	uint8_t A,
+                                uint8_t B,
+                                uint8_t C,
+                                uint8_t D,
+                                uint8_t E)
 {
     TX_ADDRESS[0] = A;
     TX_ADDRESS[1] = B;
@@ -51,11 +47,11 @@ void nRF24L01_Set_TX_Address(	unsigned char A,
     TX_ADDRESS[3] = D;
     TX_ADDRESS[4] = E;
 }
-void nRF24L01_Set_RX_Address(	unsigned char A,
-                                unsigned char B,
-                                unsigned char C,
-                                unsigned char D,
-                                unsigned char E)
+void nRF24L01_Set_RX_Address(	uint8_t A,
+                                uint8_t B,
+                                uint8_t C,
+                                uint8_t D,
+                                uint8_t E)
 {
     RX_ADDRESS[0] = A;
     RX_ADDRESS[1] = B;
@@ -64,7 +60,7 @@ void nRF24L01_Set_RX_Address(	unsigned char A,
     RX_ADDRESS[4] = E;
 }
 
-unsigned char nRF24L01_Config(unsigned char freq, unsigned char power, unsigned char Rate)
+uint8_t nRF24L01_Config(uint8_t freq, uint8_t power, uint8_t Rate)
 {
     nRF24L01_Freq = 0;
     nRF24L01_power_rate = 0;
@@ -99,7 +95,7 @@ unsigned char nRF24L01_Config(unsigned char freq, unsigned char power, unsigned 
 }
 
 void RX_Mode(void)
-{unsigned char buf[5]={0};
+{uint8_t buf[5]={0};
 
 
     SPI_Read_Buf(TX_ADDR, buf, ADR_WIDTH);
@@ -134,7 +130,7 @@ void TX_Mode(void)
 
 }
 
-void nRF24L01_TxPacket(unsigned char * tx_buf)
+void nRF24L01_TxPacket(uint8_t * tx_buf)
 {
 
     SPI_Write_Buf(WRITE_nRF_REG + RX_ADDR_P0, TX_ADDRESS, ADR_WIDTH);
@@ -143,9 +139,9 @@ void nRF24L01_TxPacket(unsigned char * tx_buf)
 
 }
 
-unsigned char nRF24L01_RxPacket(unsigned char* rx_buf)
-{unsigned char flag=0;
- unsigned char status;
+uint8_t nRF24L01_RxPacket(uint8_t* rx_buf)
+{uint8_t flag=0;
+ uint8_t status;
 
     status=SPI_RD_Reg(NRFRegSTATUS);
 
@@ -160,66 +156,66 @@ unsigned char nRF24L01_RxPacket(unsigned char* rx_buf)
 }
 
 //Define the layer2 functions
-unsigned char SPI_RD_Reg(unsigned char reg)
+uint8_t SPI_RD_Reg(uint8_t reg)
 {
-    unsigned char reg_val;
+    uint8_t reg_val;
 
-    nRF24L01_SPI_NSS_L();                // CSN low, initialize SPI communication...
+    nRF24L01_SPI_CSN_L();                // CSN low, initialize SPI communication...
     nRF24L01_SPI_Send_Byte(reg);            // Select register to read from..
     reg_val = nRF24L01_SPI_Send_Byte(0);    // ..then read register value
-    nRF24L01_SPI_NSS_H();                // CSN high, terminate SPI communication
+    nRF24L01_SPI_CSN_H();                // CSN high, terminate SPI communication
 
     return(reg_val);        // return register value
 }
 
-unsigned char SPI_WR_Reg(unsigned char reg, unsigned char value)
+uint8_t SPI_WR_Reg(uint8_t reg, uint8_t value)
 {
-    unsigned char status;
+    uint8_t status;
 
-    nRF24L01_SPI_NSS_L();                  // CSN low, init SPI transaction
+    nRF24L01_SPI_CSN_L();                  // CSN low, init SPI transaction
     status = nRF24L01_SPI_Send_Byte(reg);// select register
     nRF24L01_SPI_Send_Byte(value);             // ..and write value to it..
-    nRF24L01_SPI_NSS_H();                   // CSN high again
+    nRF24L01_SPI_CSN_H();                   // CSN high again
 
-    return(status);            // return nRF24L01 status unsigned char
+    return(status);            // return nRF24L01 status uint8_t
 }
 
-unsigned char SPI_Read_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len)
+uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len)
 {
     unsigned int status,i;
 
-    nRF24L01_SPI_NSS_L();                    		// Set CSN low, init SPI tranaction
-    status = nRF24L01_SPI_Send_Byte(reg);       		// Select register to write to and read status unsigned char
+    nRF24L01_SPI_CSN_L();                    		// Set CSN low, init SPI tranaction
+    status = nRF24L01_SPI_Send_Byte(reg);       		// Select register to write to and read status uint8_t
 
   for(i=0;i<Len;i++)
   {
      pBuf[i] = nRF24L01_SPI_Send_Byte(0);
   }
 
-    nRF24L01_SPI_NSS_H();
+    nRF24L01_SPI_CSN_H();
 
-    return(status);                    // return nRF24L01 status unsigned char
+    return(status);                    // return nRF24L01 status uint8_t
 }
 
-unsigned char SPI_Write_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len)
+uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len)
 {
     unsigned int status,i;
 
-    nRF24L01_SPI_NSS_L();
+    nRF24L01_SPI_CSN_L();
     status = nRF24L01_SPI_Send_Byte(reg);
     for(i=0; i<Len; i++) //
     {
         nRF24L01_SPI_Send_Byte(*pBuf);
          pBuf ++;
     }
-    nRF24L01_SPI_NSS_H();
+    nRF24L01_SPI_CSN_H();
     return(status);
 }
 
 
 
 //Define the layer1 functions
-unsigned char nRF24L01_SPI_Send_Byte(unsigned char dat)
+uint8_t nRF24L01_SPI_Send_Byte(uint8_t dat)
 {
     /*
   // Loop while DR register in not emplty
@@ -240,12 +236,12 @@ unsigned char nRF24L01_SPI_Send_Byte(unsigned char dat)
   return result;
 }
 
-void nRF24L01_SPI_NSS_H(void)
+void nRF24L01_SPI_CSN_H(void)
 {
     HAL_GPIO_WritePin(NRF24L01_CSN_PORT,NRF24L01_CSN_PIN, GPIO_PIN_SET);
 }
 
-void nRF24L01_SPI_NSS_L(void)
+void nRF24L01_SPI_CSN_L(void)
 {
     HAL_GPIO_WritePin(NRF24L01_CSN_PORT,NRF24L01_CSN_PIN, GPIO_PIN_RESET);
 }

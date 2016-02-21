@@ -1,3 +1,5 @@
+/// Definitions for nrf24l01. TODO: move back to .c file
+
 //Define the commands for operate the nRF24L01P
 #define READ_nRF_REG    0x00  	// Command for read register
 #define WRITE_nRF_REG   0x20 	// Command for read register
@@ -58,13 +60,13 @@
 /* SPI chip enable pin */
 #ifndef NRF24L01_CSN_PIN
 #define NRF24L01_CSN_PORT           GPIOA
-#define NRF24L01_CSN_PIN            GPIO_PIN_1
+#define NRF24L01_CSN_PIN            GPIO_PIN_0
 #endif
 
 /* Chip enable for transmitting */
 #ifndef NRF24L01_CE_PIN
 #define NRF24L01_CE_PORT            GPIOA
-#define NRF24L01_CE_PIN             GPIO_PIN_0
+#define NRF24L01_CE_PIN             GPIO_PIN_1
 #endif
 
 /// Exported functions
@@ -75,3 +77,10 @@ void nRF24L01_TxPacket(unsigned char * tx_buf);
 unsigned char nRF24L01_RxPacket(unsigned char* rx_buf);
 void nRF24L01_Set_TX_Address(unsigned char A,unsigned char B,unsigned char C,unsigned char D,unsigned char E);
 void nRF24L01_Set_RX_Address(unsigned char A,unsigned char B,unsigned char C,unsigned char D,unsigned char E);
+
+/// Private functions. TODO: move back to .c file
+//Define the layer2:Reg operation
+unsigned char SPI_WR_Reg(unsigned char reg, unsigned char value);
+unsigned char SPI_Read_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len);
+unsigned char SPI_Write_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len);
+unsigned char SPI_RD_Reg(unsigned char reg);
