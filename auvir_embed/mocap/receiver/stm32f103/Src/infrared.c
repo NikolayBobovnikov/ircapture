@@ -36,6 +36,7 @@ volatile uint16_t _ccr1 = 0;
 volatile uint16_t _ccr2 = 0;
 volatile uint16_t _delay_counter = 0;
 
+
 const uint8_t led_off_threshold = 5;
 uint8_t led_off_counter = 0;
 GPIO_TypeDef * GPIO_LED_PORT = GPIOB;
@@ -514,11 +515,12 @@ static inline void reset_receiver_state()
     ptim_input_capture->Instance->CNT = 0;
     ptim_data_read->Instance->ARR = max_period;
     ptim_data_read->Instance->CNT = 0;
+
     {
         led_off_counter++;
-        if(led_off_counter == led_off_threshold && HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_SET){
-            led_off_counter = led_off_threshold;
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
+        if(led_off_counter > led_off_threshold){
+            led_off_counter = led_off_threshold + 1;
+            HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
         }
     }
 
@@ -534,7 +536,7 @@ static inline void process_received_data()
         debug_data_verified();
 
         {
-            HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
+            HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_SET);
             led_off_counter = 0;
         }
 
