@@ -161,7 +161,7 @@ uint8_t SPI_RD_Reg(uint8_t reg)
     uint8_t reg_val;
 
     nRF24L01_SPI_CSN_L();                // CSN low, initialize SPI communication...
-    nRF24L01_SPI_Send_Byte(reg);            // Select register to read from..
+    uint8_t s = nRF24L01_SPI_Send_Byte(reg);            // Select register to read from..
     reg_val = nRF24L01_SPI_Send_Byte(0);    // ..then read register value
     nRF24L01_SPI_CSN_H();                // CSN high, terminate SPI communication
 
@@ -217,22 +217,10 @@ uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len)
 //Define the layer1 functions
 uint8_t nRF24L01_SPI_Send_Byte(uint8_t dat)
 {
-    /*
-  // Loop while DR register in not emplty
-  while(__HAL_SPI_GET_FLAG(SPI1, SPI_FLAG_TXE) == RESET);
-
-
-  // Send byte through the SPI2 peripheral
-  HAL_SPI_Transmit_IT(hspi1, dat, 1);
-
-  // Wait to receive a byte
-  while(__HAL_SPI_GET_FLAG(SPI1, SPI_FLAG_RXNE) == RESET);
-
-  // Return the byte read from the SPI bus
-  return SPI_I2S_ReceiveData(SPI2);
-  */
-
   HAL_StatusTypeDef result = HAL_SPI_Transmit_IT(&hspi1, &dat, 1);
+  if(result != HAL_OK){
+      int a = 0;
+  }
   return result;
 }
 

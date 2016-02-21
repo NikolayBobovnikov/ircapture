@@ -70,17 +70,17 @@
 #endif
 
 /// Exported functions
-unsigned char nRF24L01_Config(unsigned char freq,unsigned char power,unsigned char rate);
+uint8_t nRF24L01_Config(uint8_t freq,uint8_t power,uint8_t rate);
 void RX_Mode(void);
 void TX_Mode(void);
-void nRF24L01_TxPacket(unsigned char * tx_buf);
-unsigned char nRF24L01_RxPacket(unsigned char* rx_buf);
-void nRF24L01_Set_TX_Address(unsigned char A,unsigned char B,unsigned char C,unsigned char D,unsigned char E);
-void nRF24L01_Set_RX_Address(unsigned char A,unsigned char B,unsigned char C,unsigned char D,unsigned char E);
+void nRF24L01_TxPacket(uint8_t * tx_buf);
+uint8_t nRF24L01_RxPacket(uint8_t* rx_buf);
+void nRF24L01_Set_TX_Address(uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
+void nRF24L01_Set_RX_Address(uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
 
 /// Private functions. TODO: move back to .c file
 //Define the layer2:Reg operation
-unsigned char SPI_WR_Reg(unsigned char reg, unsigned char value);
-unsigned char SPI_Read_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len);
-unsigned char SPI_Write_Buf(unsigned char reg, unsigned char *pBuf, unsigned char Len);
-unsigned char SPI_RD_Reg(unsigned char reg);
+uint8_t SPI_WR_Reg(uint8_t reg, uint8_t value);
+uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
+uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
+uint8_t SPI_RD_Reg(uint8_t reg);

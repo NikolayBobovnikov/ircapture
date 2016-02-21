@@ -154,8 +154,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-      uint8_t config_reg = SPI_RD_Reg(CONFIG);
       uint8_t pipe0_reg = SPI_RD_Reg(RX_ADDR_P0);
+      uint8_t config_reg = SPI_RD_Reg(CONFIG);
 
         int a = 0;
   }
