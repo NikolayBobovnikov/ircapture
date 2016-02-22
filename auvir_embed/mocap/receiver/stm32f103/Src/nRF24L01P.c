@@ -17,9 +17,8 @@ uint8_t  TX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
 uint8_t  RX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
 
 //Define the layer1:HW operation
-uint8_t nRF24L01_SPI_Send_Byte(uint8_t dat);
-void nRF24L01_SPI_CSN_L(void);
-void nRF24L01_SPI_CSN_H(void);
+void nrf24_start_spi_communication();
+void nrf24_stop_spi_communication();
 
 
 
@@ -32,32 +31,24 @@ All the functions are in "nRF24l01P.h"
 
 //Define the layer3 functions
 
-void nRF24L01_Set_TX_Address(	uint8_t A,
-                                uint8_t B,
-                                uint8_t C,
-                                uint8_t D,
-                                uint8_t E)
+void nrf24_set_tx_address(nrf24_addr *addr)
 {
-    TX_ADDRESS[0] = A;
-    TX_ADDRESS[1] = B;
-    TX_ADDRESS[2] = C;
-    TX_ADDRESS[3] = D;
-    TX_ADDRESS[4] = E;
+    TX_ADDRESS[0] = addr->byte_0;
+    TX_ADDRESS[1] = addr->byte_1;
+    TX_ADDRESS[2] = addr->byte_2;
+    TX_ADDRESS[3] = addr->byte_3;
+    TX_ADDRESS[4] = addr->byte_4;
 }
-void nRF24L01_Set_RX_Address(	uint8_t A,
-                                uint8_t B,
-                                uint8_t C,
-                                uint8_t D,
-                                uint8_t E)
+void nrf24_set_rx_address(	nrf24_addr *addr)
 {
-    RX_ADDRESS[0] = A;
-    RX_ADDRESS[1] = B;
-    RX_ADDRESS[2] = C;
-    RX_ADDRESS[3] = D;
-    RX_ADDRESS[4] = E;
+    RX_ADDRESS[0] = addr->byte_0;
+    RX_ADDRESS[1] = addr->byte_1;
+    RX_ADDRESS[2] = addr->byte_2;
+    RX_ADDRESS[3] = addr->byte_3;
+    RX_ADDRESS[4] = addr->byte_4;
 }
 
-uint8_t nRF24L01_Config(uint8_t freq, uint8_t power, uint8_t Rate)
+uint8_t nrf24_configure(uint8_t freq, uint8_t power, uint8_t Rate)
 {
     nRF24L01_Freq = 0;
     nRF24L01_power_rate = 0;
@@ -91,172 +82,157 @@ uint8_t nRF24L01_Config(uint8_t freq, uint8_t power, uint8_t Rate)
 
 }
 
-void RX_Mode(void)
+void nrf24_set_rx_mode(void)
 {
 	uint8_t buf[5]={0};
 
-    SPI_Read_Buf(READ_nRF_REG + TX_ADDR, buf, ADR_WIDTH);
+    nrf24_read_buf(TX_ADDR, buf, ADR_WIDTH);
 
-    SPI_Write_Buf(WRITE_nRF_REG + RX_ADDR_P0, RX_ADDRESS, ADR_WIDTH);
+    nrf24_write_buf(WRITE_nRF_REG + RX_ADDR_P0, RX_ADDRESS, ADR_WIDTH);
 
-    SPI_WR_Reg(WRITE_nRF_REG + EN_AA, 0);
-    SPI_WR_Reg(WRITE_nRF_REG + EN_RXADDR, 0x01);
-    SPI_WR_Reg(WRITE_nRF_REG + SETUP_RETR, 0x1a);
-    SPI_WR_Reg(WRITE_nRF_REG + RF_CH, nRF24L01_Freq);
-    SPI_WR_Reg(WRITE_nRF_REG + RX_PW_P0, RX_PLOAD_WIDTH);
-    SPI_WR_Reg(WRITE_nRF_REG + RF_SETUP, nRF24L01_power_rate);
+    nrf24_write_register(EN_AA, 0);
+    nrf24_write_register(EN_RXADDR, 0x01);
+    nrf24_write_register(SETUP_RETR, 0x1a);
+    nrf24_write_register(RF_CH, nRF24L01_Freq);
+    nrf24_write_register(RX_PW_P0, RX_PLOAD_WIDTH);
+    nrf24_write_register(RF_SETUP, nRF24L01_power_rate);
 
-    SPI_WR_Reg(WRITE_nRF_REG + CONFIG, 0x03);
+    nrf24_write_register(CONFIG, 0x03);
 
     HAL_Delay(200);
 }
 
-void TX_Mode(void)
+void nrf24_set_tx_mode(void)
 {
-
-
-    SPI_Write_Buf(WRITE_nRF_REG + TX_ADDR, TX_ADDRESS, ADR_WIDTH);
-    SPI_Write_Buf(WRITE_nRF_REG + RX_ADDR_P0, RX_ADDRESS, ADR_WIDTH);
-
-    SPI_WR_Reg(WRITE_nRF_REG + EN_AA, 0);
-    SPI_WR_Reg(WRITE_nRF_REG + EN_RXADDR, 0x01);
-    SPI_WR_Reg(WRITE_nRF_REG + SETUP_RETR, 0x1a);
-    SPI_WR_Reg(WRITE_nRF_REG + RF_CH,nRF24L01_Freq);
-    SPI_WR_Reg(WRITE_nRF_REG + RF_SETUP,  nRF24L01_power_rate);
-    SPI_WR_Reg(WRITE_nRF_REG + CONFIG, 0x02);
+    nrf24_write_buf(TX_ADDR, TX_ADDRESS, ADR_WIDTH);
+    nrf24_write_buf(RX_ADDR_P0, RX_ADDRESS, ADR_WIDTH);
+    nrf24_write_register(EN_AA, 0);
+    nrf24_write_register(EN_RXADDR, 0x01);
+    nrf24_write_register(SETUP_RETR, 0x1a);
+    nrf24_write_register(RF_CH,nRF24L01_Freq);
+    nrf24_write_register(RF_SETUP,  nRF24L01_power_rate);
+    nrf24_write_register(CONFIG, 0x02);
 
 }
 
-void nRF24L01_TxPacket(uint8_t * tx_buf)
+void nrf24_transmit_packet(uint8_t * tx_buf)
 {
 
-    SPI_Write_Buf(WRITE_nRF_REG + RX_ADDR_P0, TX_ADDRESS, ADR_WIDTH);
-    SPI_Write_Buf(WR_TX_PLOAD, tx_buf, TX_PLOAD_WIDTH);
+    nrf24_write_buf(RX_ADDR_P0, TX_ADDRESS, ADR_WIDTH);
+    nrf24_write_buf(WR_TX_PLOAD, tx_buf, TX_PLOAD_WIDTH);
 
 
 }
 
-uint8_t nRF24L01_RxPacket(uint8_t* rx_buf)
+uint8_t nrf24_receive_packet(uint8_t* rx_buf)
 {
     uint8_t flag=0;
     uint8_t status;
 
-    status=SPI_RD_Reg(NRFRegSTATUS);
+    status=nrf24_read_register(NRFRegSTATUS);
 
     if(status & 0x40)
     {
 
-         SPI_Read_Buf(READ_nRF_REG + RD_RX_PLOAD,rx_buf,TX_PLOAD_WIDTH);
+         nrf24_read_buf(RD_RX_PLOAD,rx_buf,TX_PLOAD_WIDTH);
          flag =1;
     }
-    SPI_WR_Reg(WRITE_nRF_REG+NRFRegSTATUS, status);
+    nrf24_write_register(NRFRegSTATUS, status);
     return flag;
 }
 
 //Define the layer2 functions
-uint8_t SPI_RD_Reg(uint8_t reg)
+uint8_t nrf24_read_register(uint8_t reg)
 {
     uint8_t reg_val;
-
+    uint8_t read_reg_command = READ_nRF_REG | reg;
     // CSN low, initialize SPI communication...
-    nRF24L01_SPI_CSN_L();
-
+    nrf24_start_spi_communication();
 
     // Select register to read from..
-    HAL_SPI_Transmit_IT(&hspi1, &reg, 1);
-
-    // Send 0 to command to read the register
-    //uint8_t zero = 0;
-    //HAL_SPI_Transmit_IT(&hspi1, &zero, 1);
+    HAL_SPI_Transmit_IT(&hspi1, &read_reg_command, 1);
 
     // Read the register
     HAL_SPI_Receive_IT(&hspi1, &reg_val, 1);
 
-
     // CSN high, terminate SPI communication
-    nRF24L01_SPI_CSN_H();
+    nrf24_stop_spi_communication();
 
     // return register value
     return(reg_val);
 }
 
-uint8_t SPI_WR_Reg(uint8_t reg, uint8_t value)
+uint8_t nrf24_write_register(uint8_t reg, uint8_t value)
 {
     uint8_t status;
+    uint8_t write_reg_command = WRITE_nRF_REG | reg;
     HAL_StatusTypeDef hal_status;
 
     // CSN low, init SPI transaction
-    nRF24L01_SPI_CSN_L();
+    nrf24_start_spi_communication();
 
     // select register
-    hal_status = HAL_SPI_Transmit_IT(&hspi1, &reg, 1);
+    hal_status = HAL_SPI_Transmit_IT(&hspi1, &write_reg_command, 1);
 
     // ..and write value to it..
     hal_status = HAL_SPI_Transmit_IT(&hspi1, &value, 1);
 
     // CSN high again
-    nRF24L01_SPI_CSN_H();
+    nrf24_stop_spi_communication();
 
     return(status);
 }
 
-uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len)
+uint8_t nrf24_read_buf(uint8_t reg, uint8_t *pBuf, uint8_t Len)
 {
-    uint8_t status,i;
-    uint8_t zero = 0;
+    uint8_t status;
     HAL_StatusTypeDef hal_status;
+    uint8_t read_reg_command = READ_nRF_REG | reg;
 
     // Set CSN low, init SPI tranaction
-    nRF24L01_SPI_CSN_L();
+    nrf24_start_spi_communication();
 
     // Select register to write to and read status uint8_t
-    hal_status = HAL_SPI_Transmit_IT(&hspi1, &reg, 1);
-    for(i=0;i<Len;i++)
+    hal_status = HAL_SPI_Transmit_IT(&hspi1, &read_reg_command, 1);
+    for(size_t i=0;i<Len;i++)
     {
         HAL_SPI_Receive_IT(&hspi1, &pBuf[i], 1);
     }
 
     // CSN high, terminate SPI communication
-    nRF24L01_SPI_CSN_H();
+    nrf24_stop_spi_communication();
 
     status = hal_status;    // TODO
     return(status);
 }
 
-uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len)
+uint8_t nrf24_write_buf(uint8_t reg, uint8_t *pBuf, uint8_t Len)
 {
     unsigned int status,i;
+    uint8_t write_reg_command = WRITE_nRF_REG | reg;
 
-    nRF24L01_SPI_CSN_L();
-    HAL_SPI_Transmit_IT(&hspi1, &reg, 1);
+    nrf24_start_spi_communication();
+    HAL_SPI_Transmit_IT(&hspi1, &write_reg_command, 1);
     for(i=0; i<Len; i++) //
     {
         HAL_SPI_Transmit_IT(&hspi1, &pBuf[i], 1);
     }
-    nRF24L01_SPI_CSN_H();
+    nrf24_stop_spi_communication();
     return(status);
 }
 
 
-//Define the layer1 functions
-uint8_t nRF24L01_SPI_Send_Byte(uint8_t dat)
-{
-  HAL_StatusTypeDef result = HAL_SPI_Transmit_IT(&hspi1, &dat, 1);
-  return result;
-}
-
-void nRF24L01_SPI_CSN_H(void)
+void nrf24_stop_spi_communication(void)
 {
     HAL_GPIO_WritePin(NRF24L01_CSN_PORT,NRF24L01_CSN_PIN, GPIO_PIN_SET);
 }
 
-void nRF24L01_SPI_CSN_L(void)
+void nrf24_start_spi_communication(void)
 {
     HAL_GPIO_WritePin(NRF24L01_CSN_PORT,NRF24L01_CSN_PIN, GPIO_PIN_RESET);
 }
 
-
-void init_nrf24l01()
+void nrf24_init_pins()
 {
     HAL_GPIO_WritePin(NRF24L01_CE_PORT,NRF24L01_CE_PIN, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(NRF24L01_CSN_PORT,NRF24L01_CSN_PIN, GPIO_PIN_SET);

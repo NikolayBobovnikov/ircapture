@@ -143,7 +143,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   debug_init_gpio();
   init_gpio_led();
-  init_nrf24l01();
+  nrf24_init_pins();
 
   HAL_TIM_Base_Start_IT(ptim_data_read);
   HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
@@ -156,35 +156,35 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-      uint8_t reg1CONFIG;
-      uint8_t reg1RF_CH;
-      uint8_t reg1RF_SETUP;
+      uint8_t reg1CONFIG = 0;
+      uint8_t reg1RF_CH = 0;
+      uint8_t reg1RF_SETUP = 0;
 
-      uint8_t reg2CONFIG;
-      uint8_t reg2RF_CH;
-      uint8_t reg2RF_SETUP;
+      uint8_t reg2CONFIG = 0;
+      uint8_t reg2RF_CH = 0;
+      uint8_t reg2RF_SETUP = 0;
 
-      uint8_t buf1[5];
-      uint8_t buf2[5];
-      uint8_t buf3[5];
+      uint8_t buf1[5] = {0};
+      uint8_t buf2[5] = {0};
+      uint8_t buf3[5] = {0};
 
-      nRF24L01_Config(14,Pm6dBm,R2mbps);
-      RX_Mode();
+      nrf24_configure(14,Pm6dBm,R2mbps);
+      nrf24_set_rx_mode();
 
-      reg1CONFIG   = SPI_RD_Reg(READ_nRF_REG + CONFIG);
-      reg1RF_CH    = SPI_RD_Reg(READ_nRF_REG + RF_CH);
-      reg1RF_SETUP = SPI_RD_Reg(READ_nRF_REG + RF_SETUP);
+      reg1CONFIG   = nrf24_read_register(CONFIG);
+      reg1RF_CH    = nrf24_read_register(RF_CH);
+      reg1RF_SETUP = nrf24_read_register(RF_SETUP);
 
-      SPI_Read_Buf(READ_nRF_REG + RX_ADDR_P0,buf1,5);
-      SPI_Read_Buf(READ_nRF_REG + RX_ADDR_P1,buf2,5);
-      SPI_Read_Buf(READ_nRF_REG + RX_ADDR_P2,buf3,5);
+      nrf24_read_buf(RX_ADDR_P0,buf1,5);
+      nrf24_read_buf(RX_ADDR_P1,buf2,5);
+      nrf24_read_buf(RX_ADDR_P2,buf3,5);
 
-      nRF24L01_Config(15,Pm6dBm,R2mbps);
-      RX_Mode();
+      nrf24_configure(15,P0dBm,R2mbps);
+      nrf24_set_rx_mode();
 
-      reg2CONFIG   = SPI_RD_Reg(READ_nRF_REG + CONFIG);
-      reg2RF_CH    = SPI_RD_Reg(READ_nRF_REG + RF_CH);
-      reg2RF_SETUP = SPI_RD_Reg(READ_nRF_REG + RF_SETUP);
+      reg2CONFIG   = nrf24_read_register(CONFIG);
+      reg2RF_CH    = nrf24_read_register(RF_CH);
+      reg2RF_SETUP = nrf24_read_register(RF_SETUP);
 
       int a = 0;
   }

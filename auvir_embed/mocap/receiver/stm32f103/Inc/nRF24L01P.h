@@ -39,6 +39,14 @@
 ///**************************************************************************************
 #define ADR_WIDTH 5
 
+typedef struct nrf24_addr{
+    uint8_t byte_0;
+    uint8_t byte_1;
+    uint8_t byte_2;
+    uint8_t byte_3;
+    uint8_t byte_4;
+} nrf24_addr;
+
 #define RX_PLOAD_WIDTH 20
 #define TX_PLOAD_WIDTH 20
 #define Buffer_Size 32
@@ -68,17 +76,19 @@
 #endif
 
 /// Exported functions
-uint8_t nRF24L01_Config(uint8_t freq,uint8_t power,uint8_t rate);
-void RX_Mode(void);
-void TX_Mode(void);
-void nRF24L01_TxPacket(uint8_t * tx_buf);
-uint8_t nRF24L01_RxPacket(uint8_t* rx_buf);
-void nRF24L01_Set_TX_Address(uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
-void nRF24L01_Set_RX_Address(uint8_t A,uint8_t B,uint8_t C,uint8_t D,uint8_t E);
+void nrf24_init_pins(void);
+uint8_t nrf24_configure(uint8_t freq,uint8_t power,uint8_t rate);
+void nrf24_set_rx_mode(void);
+void nrf24_set_tx_mode(void);
+void nrf24_transmit_packet(uint8_t * tx_buf);
+uint8_t nrf24_receive_packet(uint8_t* rx_buf);
+
+void nrf24_set_tx_address(nrf24_addr *addr);
+void nrf24_set_rx_address(nrf24_addr *addr);
 
 /// Private functions. TODO: move back to .c file
-//Define the layer2:Reg operation
-uint8_t SPI_WR_Reg(uint8_t reg, uint8_t value);
-uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
-uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
-uint8_t SPI_RD_Reg(uint8_t reg);
+uint8_t nrf24_read_register(uint8_t reg);
+uint8_t nrf24_write_register(uint8_t reg, uint8_t value);
+
+uint8_t nrf24_read_buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
+uint8_t nrf24_write_buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
