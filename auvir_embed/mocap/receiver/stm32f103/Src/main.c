@@ -143,6 +143,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   debug_init_gpio();
   init_gpio_led();
+  init_nrf24l01();
+
   HAL_TIM_Base_Start_IT(ptim_data_read);
   HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
   /* USER CODE END 2 */
@@ -154,10 +156,37 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-      uint8_t pipe0_reg = SPI_RD_Reg(RX_ADDR_P0);
-      uint8_t config_reg = SPI_RD_Reg(CONFIG);
+      uint8_t reg1CONFIG;
+      uint8_t reg1RF_CH;
+      uint8_t reg1RF_SETUP;
 
-        int a = 0;
+      uint8_t reg2CONFIG;
+      uint8_t reg2RF_CH;
+      uint8_t reg2RF_SETUP;
+
+      uint8_t buf1[5];
+      uint8_t buf2[5];
+      uint8_t buf3[5];
+
+      nRF24L01_Config(14,Pm6dBm,R2mbps);
+      RX_Mode();
+
+      reg1CONFIG   = SPI_RD_Reg(READ_nRF_REG + CONFIG);
+      reg1RF_CH    = SPI_RD_Reg(READ_nRF_REG + RF_CH);
+      reg1RF_SETUP = SPI_RD_Reg(READ_nRF_REG + RF_SETUP);
+
+      SPI_Read_Buf(READ_nRF_REG + RX_ADDR_P0,buf1,5);
+      SPI_Read_Buf(READ_nRF_REG + RX_ADDR_P1,buf2,5);
+      SPI_Read_Buf(READ_nRF_REG + RX_ADDR_P2,buf3,5);
+
+      nRF24L01_Config(15,Pm6dBm,R2mbps);
+      RX_Mode();
+
+      reg2CONFIG   = SPI_RD_Reg(READ_nRF_REG + CONFIG);
+      reg2RF_CH    = SPI_RD_Reg(READ_nRF_REG + RF_CH);
+      reg2RF_SETUP = SPI_RD_Reg(READ_nRF_REG + RF_SETUP);
+
+      int a = 0;
   }
   /* USER CODE END 3 */
 
@@ -214,7 +243,7 @@ void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
@@ -416,6 +445,21 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+
+
+  GPIO_InitStruct.Pin = NRF24L01_CSN_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(NRF24L01_CSN_PORT, &GPIO_InitStruct);
+
+
+  GPIO_InitStruct.Pin = NRF24L01_CE_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(NRF24L01_CE_PORT, &GPIO_InitStruct);
+
+
 
 }
 

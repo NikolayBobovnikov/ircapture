@@ -37,8 +37,6 @@
 #define FIFO_STATUS     0x17  // FIFO Status
 
 ///**************************************************************************************
-
-
 #define ADR_WIDTH 5
 
 #define RX_PLOAD_WIDTH 20
