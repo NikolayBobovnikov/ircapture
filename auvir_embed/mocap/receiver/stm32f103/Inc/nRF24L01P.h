@@ -200,7 +200,7 @@ void nrf24_powerDown();
 void nrf24_reset();
 
 // low level interface ... //
-uint8_t spi_transaction(uint8_t tx);
+uint8_t nrf24_spi_transaction(uint8_t tx);
 void nrf24_transmitSync(uint8_t* dataout,uint8_t len);
 void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
 

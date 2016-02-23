@@ -143,24 +143,22 @@ int main(void)
     /* USER CODE BEGIN 2 */
     debug_init_gpio();
     init_gpio_led();
-
+    nrf24_init();
     HAL_TIM_Base_Start_IT(ptim_data_read);
     HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-
     uint8_t rxaddr[ADR_WIDTH]={0};
     uint8_t txaddr[ADR_WIDTH]={0};
     uint8_t reg;
 
-    uint8_t addr[ADR_WIDTH]={0xB3,0xB4,0xB5,0xB6,0x05};
-    nrf24_init();
-    nrf24_config(1,32);
+    uint8_t addr[ADR_WIDTH]={0xE1,0xE2,0xE3,0xE4,0xE5};
     nrf24_set_rx_address(addr);
     nrf24_set_tx_address(addr);
-
+    nrf24_config(1,32);
+    //nrf24_set_rx_mode();
 
     nrf24_read_register_multi(RX_ADDR_P0,rxaddr,5);
     nrf24_read_register_multi(TX_ADDR,txaddr,5);

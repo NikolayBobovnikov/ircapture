@@ -229,8 +229,6 @@ void nrf24_init_pins()
 }
 */
 
-
-
 uint8_t payload_len;
 
 void nrf24_init()
@@ -287,8 +285,8 @@ void nrf24_set_rx_address(uint8_t * adr)
 void nrf24_set_tx_address(uint8_t* adr)
 {
     // RX_ADDR_P0 must be set to the sending addr for auto ack to work. //
-    nrf24_write_register_multi(RX_ADDR_P0,adr,nrf24_ADDR_LEN);
-    nrf24_write_register_multi(TX_ADDR,adr,nrf24_ADDR_LEN);
+   nrf24_write_register_multi(RX_ADDR_P0, adr, nrf24_ADDR_LEN);
+   nrf24_write_register_multi(TX_ADDR, adr, nrf24_ADDR_LEN);
 }
 
 uint8_t nrf24_get_payload_len()
@@ -300,8 +298,8 @@ uint8_t nrf24_get_rx_fifo_pending_data_length()
 {
     uint8_t status;
     nrf24_csn_set(LOW);
-    spi_transaction(R_RX_PL_WID);
-    status = spi_transaction(0x00);
+    nrf24_spi_transaction(R_RX_PL_WID);
+    status = nrf24_spi_transaction(0x00);
     nrf24_csn_set(HIGH);
     return status;
 }
@@ -341,7 +339,7 @@ void nrf24_receive(uint8_t* data)
     nrf24_csn_set(LOW);
 
     // Send cmd to read rx payload //
-    spi_transaction( R_RX_PAYLOAD );
+    nrf24_spi_transaction( R_RX_PAYLOAD );
 
     // Read payload //
     nrf24_transferSync(data,data,payload_len);
@@ -378,7 +376,7 @@ void nrf24_send(uint8_t* value)
     nrf24_csn_set(LOW);
 
     // Write cmd to flush transmit FIFO //
-    spi_transaction(FLUSH_TX);
+    nrf24_spi_transaction(FLUSH_TX);
 
     // Pull up chip select //
     nrf24_csn_set(HIGH);
@@ -388,7 +386,7 @@ void nrf24_send(uint8_t* value)
     nrf24_csn_set(LOW);
 
     // Write cmd to write payload //
-    spi_transaction(W_TX_PAYLOAD);
+    nrf24_spi_transaction(W_TX_PAYLOAD);
 
     // Write payload //
     nrf24_transmitSync(value,payload_len);
@@ -421,7 +419,7 @@ uint8_t nrf24_get_status_register()
 {
     uint8_t rv;
     nrf24_csn_set(LOW);
-    rv = spi_transaction(NOP);
+    rv = nrf24_spi_transaction(NOP);
     nrf24_csn_set(HIGH);
     return rv;
 }
@@ -453,7 +451,7 @@ uint8_t nrf24_last_messageStatus()
 void nrf24_powerUpRx()
 {
     nrf24_csn_set(LOW);
-    spi_transaction(FLUSH_RX);
+    nrf24_spi_transaction(FLUSH_RX);
     nrf24_csn_set(HIGH);
 
     nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
@@ -487,7 +485,7 @@ void nrf24_reset()
 
     //3)flush tx/rx buffer
     nrf24_csn_set(LOW);
-    spi_transaction(FLUSH_RX);
+    nrf24_spi_transaction(FLUSH_RX);
     nrf24_csn_set(HIGH);
 
     //4)write status register as 0x0e;
@@ -497,8 +495,8 @@ void nrf24_reset()
 void nrf24_write_register(uint8_t reg, uint8_t value)
 {
     nrf24_csn_set(LOW);
-    spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
-    spi_transaction(value);
+    nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
+    nrf24_spi_transaction(value);
     nrf24_csn_set(HIGH);
 }
 
@@ -506,7 +504,7 @@ void nrf24_write_register(uint8_t reg, uint8_t value)
 void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
 {
     nrf24_csn_set(LOW);
-    spi_transaction(R_REGISTER | (REGISTER_MASK & reg));
+    nrf24_spi_transaction(R_REGISTER | (REGISTER_MASK & reg));
     nrf24_transferSync(value,value,len);
     nrf24_csn_set(HIGH);
 }
@@ -514,8 +512,9 @@ void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
 // Write to a single register of nrf24 //
 void nrf24_write_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
 {
+
     nrf24_csn_set(LOW);
-    spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
+    nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
     nrf24_transmitSync(value,len);
     nrf24_csn_set(HIGH);
 }
@@ -538,12 +537,11 @@ void nrf24_csn_set(uint8_t state)
 
 // @param: byte to be sent
 // @returns: nrf24 STATUS register
-uint8_t spi_transaction(uint8_t tx)
+uint8_t nrf24_spi_transaction(uint8_t tx)
 {
     uint8_t rx = 0;
 
-    HAL_SPI_Transmit_IT(&hspi1, &tx, 1);
-    HAL_SPI_Receive_IT(&hspi1, &rx, 1);
+    HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
 
     return rx;
 }
@@ -555,7 +553,7 @@ void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
 
     for(i=0;i<len;i++)
     {
-        datain[i] = spi_transaction(dataout[i]);
+        datain[i] = nrf24_spi_transaction(dataout[i]);
     }
 
 }
@@ -564,10 +562,10 @@ void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
 void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 {
     uint8_t i;
-
+    uint8_t rx[5]={0};
     for(i=0;i<len;i++)
     {
-        spi_transaction(dataout[i]);
+        nrf24_spi_transaction(dataout[i]);
     }
 
 }
