@@ -47,6 +47,33 @@ typedef struct nrf24_addr{
     uint8_t byte_4;
 } nrf24_addr;
 
+typedef enum {
+    P0dBm1,
+    Pm6dBm1,
+    Pm12dBm1,
+    Pm18dBm1
+} NRF24_Power;
+
+typedef enum {
+    R2mbps,
+    R1mbps,
+    R250kbps
+} NRF24_Rate;
+
+typedef struct NRF24_InitTypeDef{
+    uint8_t frequency;
+    NRF24_Power power;
+    NRF24_Rate rate;
+    uint8_t auto_ack;
+    uint8_t crc_enabled;
+    uint8_t crc_encoding;
+    uint8_t address_width;
+    uint8_t num_retries;
+    uint8_t EN_RXADDR_PipeEnable;
+    uint8_t rf_setup_reg;
+} NRF24_InitTypeDef;
+
+
 #define RX_PLOAD_WIDTH 20
 #define TX_PLOAD_WIDTH 20
 #define Buffer_Size 32
@@ -77,7 +104,9 @@ typedef struct nrf24_addr{
 
 /// Exported functions
 void nrf24_init_pins(void);
-uint8_t nrf24_configure(uint8_t freq,uint8_t power,uint8_t rate);
+uint8_t nrf24_config(uint8_t freq, uint8_t power, uint8_t rate);
+void nrf24_init(NRF24_InitTypeDef* params);
+
 void nrf24_set_rx_mode(void);
 void nrf24_set_tx_mode(void);
 void nrf24_transmit_packet(uint8_t * tx_buf);
@@ -92,3 +121,7 @@ uint8_t nrf24_write_register(uint8_t reg, uint8_t value);
 
 uint8_t nrf24_read_buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
 uint8_t nrf24_write_buf(uint8_t reg, uint8_t *pBuf, uint8_t Len);
+
+void nrf24_start_spi_communication();
+void nrf24_stop_spi_communication();
+

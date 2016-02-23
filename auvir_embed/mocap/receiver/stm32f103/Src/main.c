@@ -156,35 +156,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-      uint8_t reg1CONFIG = 0;
-      uint8_t reg1RF_CH = 0;
-      uint8_t reg1RF_SETUP = 0;
-
-      uint8_t reg2CONFIG = 0;
-      uint8_t reg2RF_CH = 0;
-      uint8_t reg2RF_SETUP = 0;
-
-      uint8_t buf1[5] = {0};
-      uint8_t buf2[5] = {0};
-      uint8_t buf3[5] = {0};
-
-      nrf24_configure(14,Pm6dBm,R2mbps);
+      nrf24_config(15,P0dBm,R2mbps);
       nrf24_set_rx_mode();
-
-      reg1CONFIG   = nrf24_read_register(CONFIG);
-      reg1RF_CH    = nrf24_read_register(RF_CH);
-      reg1RF_SETUP = nrf24_read_register(RF_SETUP);
-
-      nrf24_read_buf(RX_ADDR_P0,buf1,5);
-      nrf24_read_buf(RX_ADDR_P1,buf2,5);
-      nrf24_read_buf(RX_ADDR_P2,buf3,5);
-
-      nrf24_configure(15,P0dBm,R2mbps);
-      nrf24_set_rx_mode();
-
-      reg2CONFIG   = nrf24_read_register(CONFIG);
-      reg2RF_CH    = nrf24_read_register(RF_CH);
-      reg2RF_SETUP = nrf24_read_register(RF_SETUP);
 
       int a = 0;
   }

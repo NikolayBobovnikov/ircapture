@@ -16,11 +16,6 @@ uint8_t nRF24L01_power_rate = 0;
 uint8_t  TX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
 uint8_t  RX_ADDRESS[ADR_WIDTH]= {0xE7,0xE7,0xE7,0xE7,0xE7};
 
-//Define the layer1:HW operation
-void nrf24_start_spi_communication();
-void nrf24_stop_spi_communication();
-
-
 
 //Define the layer3:application operation
 /****************************************
@@ -48,43 +43,59 @@ void nrf24_set_rx_address(	nrf24_addr *addr)
     RX_ADDRESS[4] = addr->byte_4;
 }
 
-uint8_t nrf24_configure(uint8_t freq, uint8_t power, uint8_t Rate)
+uint8_t nrf24_config(uint8_t freq, uint8_t power, uint8_t Rate)
 {
     nRF24L01_Freq = 0;
     nRF24L01_power_rate = 0;
 
-    if((freq>125)&&(freq<0))
-        return 0;
-    else
-        nRF24L01_Freq = freq;
+    if(freq > 125){
+        // max channel is 125
+        freq = 125;
+    }
+    nRF24L01_Freq = freq;
 
-    if (P0dBm == power)
-        nRF24L01_power_rate|=0x06;
-    else if (Pm6dBm == power)
-        nRF24L01_power_rate|=0x04;
-    else if (Pm12dBm == power)
-        nRF24L01_power_rate|=0x02;
-    else if (Pm18dBm == power)
-        nRF24L01_power_rate|=0x00;
-    else
-        return 0;
-
-    if (R2mbps == Rate)
-        {nRF24L01_power_rate|=0x08;}
-    else if (Rate == R1mbps)
-        {nRF24L01_power_rate|=0x00;}
-    else if (Rate == R250kbps)
-        nRF24L01_power_rate|=0x20;
-    else
-        return 0;
+    switch(power){
+        case P0dBm:{
+            nRF24L01_power_rate|=0x06;
+            break;
+        }
+        case Pm6dBm:{
+            nRF24L01_power_rate|=0x04;
+            break;
+        }
+        case Pm12dBm:{
+            nRF24L01_power_rate|=0x02;
+            break;
+        }
+        case Pm18dBm:{
+            nRF24L01_power_rate|=0x00;
+            break;
+        }
+        default:{
+            //P0dBm
+            nRF24L01_power_rate|=0x06;
+        }
+    }
 
     return 1;
 
 }
 
+void nrf24_init(NRF24_InitTypeDef *params)
+{
+    nrf24_init_pins();
+    HAL_GPIO_WritePin(NRF24L01_CE_PORT,NRF24L01_CE_PIN, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(NRF24L01_CSN_PORT,NRF24L01_CSN_PIN, GPIO_PIN_SET);
+
+    nrf24_config(params->frequency,params->power, params->rate);
+
+    nrf24_set_rx_mode();
+}
+
+
 void nrf24_set_rx_mode(void)
 {
-	uint8_t buf[5]={0};
+    uint8_t buf[5]={0};
 
     nrf24_read_buf(TX_ADDR, buf, ADR_WIDTH);
 
@@ -115,13 +126,12 @@ void nrf24_set_tx_mode(void)
 
 }
 
+
 void nrf24_transmit_packet(uint8_t * tx_buf)
 {
 
     nrf24_write_buf(RX_ADDR_P0, TX_ADDRESS, ADR_WIDTH);
     nrf24_write_buf(WR_TX_PLOAD, tx_buf, TX_PLOAD_WIDTH);
-
-
 }
 
 uint8_t nrf24_receive_packet(uint8_t* rx_buf)
@@ -237,3 +247,4 @@ void nrf24_init_pins()
     HAL_GPIO_WritePin(NRF24L01_CE_PORT,NRF24L01_CE_PIN, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(NRF24L01_CSN_PORT,NRF24L01_CSN_PIN, GPIO_PIN_SET);
 }
+
