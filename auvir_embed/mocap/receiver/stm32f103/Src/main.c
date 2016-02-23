@@ -143,7 +143,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
   debug_init_gpio();
   init_gpio_led();
-  nrf24_init_pins();
 
   HAL_TIM_Base_Start_IT(ptim_data_read);
   HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
@@ -151,14 +150,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  nrf24_init();
+
   while (1)
   {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-      nrf24_config(15,P0dBm,R2mbps);
-      nrf24_set_rx_mode();
-
       int a = 0;
   }
   /* USER CODE END 3 */
@@ -420,17 +418,16 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 
-
-  GPIO_InitStruct.Pin = NRF24L01_CSN_PIN;
+  GPIO_InitStruct.Pin = NRF24_CSN_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-  HAL_GPIO_Init(NRF24L01_CSN_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
 
 
-  GPIO_InitStruct.Pin = NRF24L01_CE_PIN;
+  GPIO_InitStruct.Pin = NRF24_CE_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-  HAL_GPIO_Init(NRF24L01_CE_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
 
 
 
@@ -495,24 +492,24 @@ void nrf24l01_InitGPIO(void) {
     GPIO_InitTypeDef GPIO_InitStruct;
 
     //Configure CSN pin
-    GPIO_InitStruct.Pin = NRF24L01_CSN_PIN;
+    GPIO_InitStruct.Pin = NRF24_CSN_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(NRF24L01_CSN_PORT, &GPIO_InitStruct);
+    HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
 
     //Configure CE pin
-    GPIO_InitStruct.Pin = NRF24L01_CE_PIN;
+    GPIO_InitStruct.Pin = NRF24_CE_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(NRF24L01_CE_PORT, &GPIO_InitStruct);
+    HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
 
     /* CSN high = disable SPI */
-    HAL_GPIO_WritePin(NRF24L01_CSN_PORT, NRF24L01_CSN_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(NRF24_CSN_PORT, NRF24_CSN_PIN, GPIO_PIN_SET);
 
     /* CE low = disable TX/RX */
-    HAL_GPIO_WritePin(NRF24L01_CE_PORT, NRF24L01_CE_PIN, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_PIN_RESET);
 }
 /* USER CODE END 4 */
 
