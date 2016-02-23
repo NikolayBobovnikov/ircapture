@@ -260,7 +260,7 @@ void nrf24_config(uint8_t channel, uint8_t pay_length)
     nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC);
 
     // Auto Acknowledgment
-    nrf24_write_register(EN_AA,(1<<ENAA_P0)|(1<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
+    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
 
     // Enable RX addresses
     nrf24_write_register(EN_RXADDR,(1<<ERX_P0)|(1<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
@@ -424,7 +424,7 @@ uint8_t nrf24_get_status_register()
     return rv;
 }
 
-uint8_t nrf24_last_messageStatus()
+TransmissionStatus nrf24_last_messageStatus()
 {
     uint8_t rv;
 
@@ -444,7 +444,7 @@ uint8_t nrf24_last_messageStatus()
     // Probably still sending ... //
     else
     {
-        return 0xFF;
+        return NRF24_MESSAGE_SENDING;
     }
 }
 

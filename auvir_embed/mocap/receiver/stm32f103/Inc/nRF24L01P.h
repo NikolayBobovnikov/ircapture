@@ -13,7 +13,7 @@
 #define RF_SETUP 0x06
 #define STATUS   0x07
 #define OBSERVE_TX  0x08
-#define CD    0x09
+#define CD    0x09 //RPD
 #define RX_ADDR_P0  0x0A
 #define RX_ADDR_P1  0x0B
 #define RX_ADDR_P2  0x0C
@@ -146,6 +146,12 @@ typedef struct NRF24_InitTypeDef{
  uint8_t rf_setup_reg;
 } NRF24_InitTypeDef;
 
+typedef enum{
+    NRF24_TRANSMISSON_OK,
+    NRF24_MESSAGE_LOST,
+    NRF24_MESSAGE_SENDING
+}TransmissionStatus;
+
 // SPI chip enable pin //
 #ifndef NRF24_CSN_PIN
 #define NRF24_CSN_PORT  GPIOA
@@ -155,7 +161,7 @@ typedef struct NRF24_InitTypeDef{
 // Chip enable for transmitting //
 #ifndef NRF24_CE_PIN
 #define NRF24_CE_PORT   GPIOA
-#define NRF24_CE_PIN GPIO_PIN_1
+#define NRF24_CE_PIN    GPIO_PIN_1
 #endif
 
 #define LOW GPIO_PIN_RESET
@@ -163,9 +169,6 @@ typedef struct NRF24_InitTypeDef{
 
 #define nrf24_ADDR_LEN 5
 #define nrf24_ENABLE_1_BYTE_CRC ((1<<EN_CRC)|(0<<CRCO))
-
-#define NRF24_TRANSMISSON_OK 0
-#define NRF24_MESSAGE_LOST   1
 
 // adjustment functions //
 void nrf24_init();
@@ -190,7 +193,7 @@ uint8_t nrf24_get_payload_len();
 uint8_t nrf24_get_rx_fifo_pending_data_length();
 
 // post transmission analysis //
-uint8_t nrf24_last_messageStatus();
+TransmissionStatus nrf24_last_messageStatus();
 uint8_t nrf24_get_last_msg_retransmission_count();
 
 // power management //

@@ -150,30 +150,55 @@ int main(void)
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    uint8_t rxaddr[ADR_WIDTH]={0};
-    uint8_t txaddr[ADR_WIDTH]={0};
-    uint8_t reg;
-
-    uint8_t addr[ADR_WIDTH]={0xE1,0xE2,0xE3,0xE4,0xE5};
+    uint8_t addr[ADR_WIDTH]={0xB3,0xB4,0xB5,0xB6,0x05};
     nrf24_set_rx_address(addr);
     nrf24_set_tx_address(addr);
     nrf24_config(1,32);
-    //nrf24_set_rx_mode();
 
-    nrf24_read_register_multi(RX_ADDR_P0,rxaddr,5);
-    nrf24_read_register_multi(TX_ADDR,txaddr,5);
-    nrf24_read_register_multi(STATUS,&reg,1);
-
-
+    uint8_t buf[32]={0};
     char strbuf[32]={0};
     const char* test_str = "HelloWireless!\0";
     memcpy(strbuf, test_str, strlen(test_str));
     int size = strlen(test_str);
+    nrf24_read_register_multi(TX_ADDR,addr,5);
+
+#define transmitter 0
+#define receiver 1
 
     while (1)
     {
+
+        #if transmitter
         nrf24_send(strbuf);
-        HAL_Delay(500);
+        HAL_Delay(10);
+        uint8_t reg = nrf24_get_status_register();
+        uint8_t retr = nrf24_get_last_msg_retransmission_count();
+        TransmissionStatus status = nrf24_last_messageStatus();
+        switch(status){
+            case NRF24_TRANSMISSON_OK:{
+                int a = 0;
+                break;
+            }
+            case NRF24_MESSAGE_LOST:{
+                int a = 0;
+                break;
+            }
+            case NRF24_MESSAGE_SENDING:{
+                int a = 0;
+                break;
+            }
+        }
+        #endif
+
+#if receiver
+
+        uint8_t cd = 0;
+        nrf24_read_register_multi(CD,&cd,1);
+        if(nrf24_is_data_ready()){
+            nrf24_receive(buf);
+        }
+#endif
+
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
         int a = 0;
@@ -439,13 +464,13 @@ void MX_GPIO_Init(void)
 
     GPIO_InitStruct.Pin = NRF24_CSN_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
 
 
     GPIO_InitStruct.Pin = NRF24_CE_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
 
 
