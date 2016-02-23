@@ -162,7 +162,7 @@ typedef struct NRF24_InitTypeDef{
 #define HIGH GPIO_PIN_SET
 
 #define nrf24_ADDR_LEN 5
-#define nrf24_CONFIG ((1<<EN_CRC)|(0<<CRCO))
+#define nrf24_ENABLE_1_BYTE_CRC ((1<<EN_CRC)|(0<<CRCO))
 
 #define NRF24_TRANSMISSON_OK 0
 #define NRF24_MESSAGE_LOST   1

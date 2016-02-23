@@ -233,14 +233,12 @@ void nrf24_init_pins()
 
 uint8_t payload_len;
 
-// init the hardware pins //
 void nrf24_init()
 {
     nrf24_ce_set(LOW);
     nrf24_csn_set(HIGH);
 }
 
-// configure the module //
 void nrf24_config(uint8_t channel, uint8_t pay_length)
 {
     // Use static payload length ... //
@@ -261,7 +259,7 @@ void nrf24_config(uint8_t channel, uint8_t pay_length)
     nrf24_write_register(RF_SETUP, (0<<RF_DR)|((0x03)<<RF_PWR));
 
     // CRC enable, 1 byte CRC length
-    nrf24_write_register(CONFIG,nrf24_CONFIG);
+    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC);
 
     // Auto Acknowledgment
     nrf24_write_register(EN_AA,(1<<ENAA_P0)|(1<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
@@ -374,7 +372,7 @@ void nrf24_send(uint8_t* value)
     // Set to transmitter mode , Power up if needed //
     nrf24_powerUpTx();
 
-    // Do we really need to flush TX fifo each time ? //
+    // Do we really need to flush TX fifo each time ? // TODO
 #if 1
     // Pull down chip select //
     nrf24_csn_set(LOW);
@@ -461,7 +459,7 @@ void nrf24_powerUpRx()
     nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
 
     nrf24_ce_set(LOW);
-    nrf24_write_register(CONFIG,nrf24_CONFIG|((1<<PWR_UP)|(1<<PRIM_RX)));
+    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC|((1<<PWR_UP)|(1<<PRIM_RX)));
     nrf24_ce_set(HIGH);
 
 }
@@ -469,13 +467,13 @@ void nrf24_powerUpRx()
 void nrf24_powerUpTx()
 {
     nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
-    nrf24_write_register(CONFIG,nrf24_CONFIG|((1<<PWR_UP)|(0<<PRIM_RX)));
+    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC|((1<<PWR_UP)|(0<<PRIM_RX)));
 }
 
 void nrf24_powerDown()
 {
     nrf24_ce_set(LOW);
-    nrf24_write_register(CONFIG,nrf24_CONFIG);
+    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC);
 }
 
 // Clocks only one byte into the given nrf24 register //
