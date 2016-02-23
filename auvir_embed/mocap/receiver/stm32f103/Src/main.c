@@ -150,11 +150,22 @@ int main(void)
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    nrf24_init();
-    uint8_t pipe[5]={0};
-    nrf24_read_register(RX_ADDR_P0,pipe,5);
 
+    uint8_t rxaddr[ADR_WIDTH]={0};
+    uint8_t txaddr[ADR_WIDTH]={0};
+    uint8_t reg;
+
+    uint8_t addr[ADR_WIDTH]={0xB3,0xB4,0xB5,0xB6,0x05};
+    nrf24_init();
     nrf24_config(1,32);
+    nrf24_set_rx_address(addr);
+    nrf24_set_tx_address(addr);
+
+
+    nrf24_read_register_multi(RX_ADDR_P0,rxaddr,5);
+    nrf24_read_register_multi(TX_ADDR,txaddr,5);
+    nrf24_read_register_multi(STATUS,&reg,1);
+
 
     char strbuf[32]={0};
     const char* test_str = "HelloWireless!\0";

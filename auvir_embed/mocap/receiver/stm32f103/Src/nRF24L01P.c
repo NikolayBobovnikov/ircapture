@@ -325,7 +325,7 @@ bool nrf24_is_rx_fifo_empty()
 {
     uint8_t fifoStatus;
 
-    nrf24_read_register(FIFO_STATUS, &fifoStatus,1);
+    nrf24_read_register_multi(FIFO_STATUS, &fifoStatus,1);
 
     //return (fifoStatus & (1 << RX_EMPTY)); // TODO: verify correctness
     if(fifoStatus & (1 << RX_EMPTY)){
@@ -357,7 +357,7 @@ void nrf24_receive(uint8_t* data)
 uint8_t nrf24_get_last_msg_retransmission_count()
 {
     uint8_t rv;
-    nrf24_read_register(OBSERVE_TX,&rv,1);
+    nrf24_read_register_multi(OBSERVE_TX,&rv,1);
     rv = rv & 0x0F;
     return rv;
 }
@@ -476,6 +476,23 @@ void nrf24_powerDown()
     nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC);
 }
 
+void nrf24_reset()
+{
+
+    //1)use power down mode (PWR_UP = 0)
+    nrf24_powerDown();
+
+    //2)clear data ready flag and data sent flag in status register
+    nrf24_write_register(RX_DR,0);
+
+    //3)flush tx/rx buffer
+    nrf24_csn_set(LOW);
+    spi_transaction(FLUSH_RX);
+    nrf24_csn_set(HIGH);
+
+    //4)write status register as 0x0e;
+    nrf24_write_register(STATUS,0x0E);
+}
 // Clocks only one byte into the given nrf24 register //
 void nrf24_write_register(uint8_t reg, uint8_t value)
 {
@@ -486,7 +503,7 @@ void nrf24_write_register(uint8_t reg, uint8_t value)
 }
 
 // Read single register from nrf24 //
-void nrf24_read_register(uint8_t reg, uint8_t* value, uint8_t len)
+void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
 {
     nrf24_csn_set(LOW);
     spi_transaction(R_REGISTER | (REGISTER_MASK & reg));

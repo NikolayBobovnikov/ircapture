@@ -197,15 +197,16 @@ uint8_t nrf24_get_last_msg_retransmission_count();
 void nrf24_powerUpRx();
 void nrf24_powerUpTx();
 void nrf24_powerDown();
+void nrf24_reset();
 
 // low level interface ... //
 uint8_t spi_transaction(uint8_t tx);
 void nrf24_transmitSync(uint8_t* dataout,uint8_t len);
 void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
-void nrf24_write_register(uint8_t reg, uint8_t value);
-void nrf24_read_register(uint8_t reg, uint8_t* value, uint8_t len);
-void nrf24_write_register_multi(uint8_t reg, uint8_t* value, uint8_t len);
 
+void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len);
+void nrf24_write_register_multi(uint8_t reg, uint8_t* value, uint8_t len);
+void nrf24_write_register(uint8_t reg, uint8_t value);
 
 
 // -------------------------------------------------------------------------- //
