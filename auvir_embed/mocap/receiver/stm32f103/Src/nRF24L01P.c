@@ -575,3 +575,15 @@ void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
     }
 
 }
+
+void nrf24_reset_status_bit(uint8_t bit)
+{
+    // TODO: do we need those delays below?
+    HAL_Delay(10);
+      nrf24_csn_set(LOW);
+      HAL_Delay(10);
+      nrf24_write_register(STATUS, 1 << bit);
+      HAL_Delay(10);
+      nrf24_csn_set(HIGH);
+      HAL_Delay(10);
+}

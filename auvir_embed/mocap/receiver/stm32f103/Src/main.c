@@ -155,6 +155,7 @@ int main(void)
     nrf24_set_tx_address(addr);
     nrf24_config(1,32);
 
+    uint8_t reg = 0;
     uint8_t buf[32]={0};
     char strbuf[32]={0};
     const char* test_str = "HelloWireless!\0";
@@ -171,7 +172,17 @@ int main(void)
         #if transmitter
         nrf24_send(strbuf);
         HAL_Delay(100);
-        uint8_t reg = nrf24_get_status_register();
+        reg = nrf24_get_status_register();
+        if(reg & (1 << TX_DS))
+        {
+            nrf24_reset_status_bit(TX_DS);
+        }
+        reg = nrf24_get_status_register();
+        if(reg & (1 << TX_DS))
+        {
+            nrf24_reset_status_bit(TX_DS);
+        }
+
         uint8_t retr = nrf24_get_last_msg_retransmission_count();
         TransmissionStatus status = nrf24_last_messageStatus();
         switch(status){
