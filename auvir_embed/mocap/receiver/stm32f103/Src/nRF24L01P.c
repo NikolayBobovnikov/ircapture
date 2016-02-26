@@ -396,6 +396,10 @@ void nrf24_send(uint8_t* value)
 
     // Start the transmission //
     nrf24_ce_set(HIGH);
+
+    HAL_Delay(15);
+
+    nrf24_ce_set(LOW);
 }
 
 bool nrf24_is_sending()
@@ -458,6 +462,8 @@ void nrf24_powerUpRx()
 
     nrf24_ce_set(LOW);
     nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC|((1<<PWR_UP)|(1<<PRIM_RX)));
+
+    // start listening
     nrf24_ce_set(HIGH);
 
 }

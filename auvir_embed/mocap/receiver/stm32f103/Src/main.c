@@ -162,15 +162,15 @@ int main(void)
     int size = strlen(test_str);
     nrf24_read_register_multi(TX_ADDR,addr,5);
 
-#define transmitter 0
-#define receiver 1
+#define transmitter 1
+#define receiver 0
 
     while (1)
     {
 
         #if transmitter
         nrf24_send(strbuf);
-        HAL_Delay(10);
+        HAL_Delay(100);
         uint8_t reg = nrf24_get_status_register();
         uint8_t retr = nrf24_get_last_msg_retransmission_count();
         TransmissionStatus status = nrf24_last_messageStatus();
