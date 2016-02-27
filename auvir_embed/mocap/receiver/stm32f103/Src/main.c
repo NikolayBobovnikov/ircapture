@@ -150,10 +150,6 @@ int main(void)
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    uint8_t addr[ADR_WIDTH]={0xB3,0xB4,0xB5,0xB6,0x05};
-    nrf24_set_rx_address(addr);
-    nrf24_set_tx_address(addr);
-    nrf24_config(1,32);
 
     uint8_t reg = 0;
     uint8_t configreg = 0;
@@ -162,9 +158,18 @@ int main(void)
     char strbuf[32]={0};
     const char* test_str = "HelloWireless!\0";
     const char test_ch = 'H';
-    memcpy(strbuf, test_str, strlen(test_str));
-    //memcpy(strbuf, &test_ch, 1);
+    //memcpy(strbuf, test_str, strlen(test_str));
+    memcpy(strbuf, &test_ch, 1);
     int size = strlen(test_str);
+
+
+    // configure
+    uint8_t addr[ADR_WIDTH]={0xB3,0xB4,0xB5,0xB6,0x05};
+    nrf24_set_rx_address(addr);
+    nrf24_set_tx_address(addr);
+    nrf24_config(1,1);
+
+
     nrf24_read_register_multi(TX_ADDR,addr,5);
 
     int b = 0;
@@ -177,17 +182,6 @@ int main(void)
         #if transmitter
         nrf24_send(strbuf);
         HAL_Delay(10);
-        reg = nrf24_get_status_register();
-        if(reg & (1 << TX_DS))
-        {
-            nrf24_reset_status_bit(TX_DS);
-        }
-        reg = nrf24_get_status_register();
-        if(reg & (1 << TX_DS))
-        {
-            nrf24_reset_status_bit(TX_DS);
-        }
-
         uint8_t retr = nrf24_get_last_msg_retransmission_count();
         TransmissionStatus status = nrf24_last_messageStatus();
         switch(status){

@@ -434,14 +434,16 @@ TransmissionStatus nrf24_last_messageStatus()
     rv = nrf24_get_status_register();
 
     // Transmission went OK //
-    if((rv & ((1 << TX_DS))))
+    if(is_register_bit_set(STATUS, TX_DS))
     {
+        nrf24_reset_register_bit(STATUS, TX_DS);
         return NRF24_TRANSMISSON_OK;
     }
     // Maximum retransmission count is reached //
     // Last message probably went missing ... //
-    else if((rv & ((1 << MAX_RT))))
+    else if(is_register_bit_set(STATUS, MAX_RT))
     {
+        nrf24_reset_register_bit(STATUS, MAX_RT);
         return NRF24_MESSAGE_LOST;
     }
     // Probably still sending ... //
@@ -575,14 +577,19 @@ void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 }
 
-void nrf24_reset_status_bit(uint8_t bit)
+void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit)
 {
-    // TODO: do we need those delays below?
-    HAL_Delay(10);
-      nrf24_csn_set(LOW);
-      HAL_Delay(10);
-      nrf24_write_register(STATUS, 1 << bit);
-      HAL_Delay(10);
-      nrf24_csn_set(HIGH);
-      HAL_Delay(10);
+    uint8_t reg = 0;
+    nrf24_read_register_multi(reg_name, &reg, 1);
+    nrf24_write_register(reg_name, reg | (1 << bit));
+}
+
+bool is_register_bit_set(uint8_t reg_name, uint8_t bit)
+{
+    uint8_t reg = 0;
+    nrf24_read_register_multi(reg_name, &reg, 1);
+    if(reg & (1 << bit)){
+        return true;
+    }
+    return false;
 }

@@ -207,7 +207,8 @@ TransmissionStatus nrf24_last_messageStatus();
 uint8_t nrf24_get_last_msg_retransmission_count();
 
 
-void nrf24_reset_status_bit(uint8_t bit);
+bool is_register_bit_set(uint8_t reg_name, uint8_t bit);
+void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit);
 
 // power management //
 void nrf24_powerUpRx();
