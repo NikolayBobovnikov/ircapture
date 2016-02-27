@@ -13,7 +13,7 @@
 #define RF_SETUP 0x06
 #define STATUS   0x07
 #define OBSERVE_TX  0x08
-#define CD    0x09 //RPD
+#define RPD    0x09 // aka CD, carrier detect
 #define RX_ADDR_P0  0x0A
 #define RX_ADDR_P1  0x0B
 #define RX_ADDR_P2  0x0C
@@ -32,7 +32,7 @@
 
 // Bit Mnemonics //
 
-// configuratio nregister //
+// CONFIG register //
 #define MASK_RX_DR  6
 #define MASK_TX_DS  5
 #define MASK_MAX_RT 4
@@ -65,9 +65,19 @@
 #define ARC   0 // 4 bits //
 
 // RF setup register //
-#define PLL_LOCK 4
-#define RF_DR    3
-#define RF_PWR   1 // 2 bits //
+#define PLL_LOCK    4
+#define RF_DR_LOW   5
+#define RF_DR_HIGH  3
+#define RF_PWR      1 // 2 bits //
+
+//RF_DR_HIGH Select between the high speed data rates. This bit
+//is don’t care if RF_DR_LOW is set.
+//[RF_DR_LOW, RF_DR_HIGH]:
+//‘00’ – 1Mbps
+//‘01’ – 2Mbps
+//‘10’ – 250kbps
+//‘11’ – Reserved
+
 
 // general status register //
 #define RX_DR    6
@@ -195,6 +205,9 @@ uint8_t nrf24_get_rx_fifo_pending_data_length();
 // post transmission analysis //
 TransmissionStatus nrf24_last_messageStatus();
 uint8_t nrf24_get_last_msg_retransmission_count();
+
+
+void nrf24_reset_status_bit(uint8_t bit);
 
 // power management //
 void nrf24_powerUpRx();

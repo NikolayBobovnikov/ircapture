@@ -156,13 +156,18 @@ int main(void)
     nrf24_config(1,32);
 
     uint8_t reg = 0;
+    uint8_t configreg = 0;
+    uint8_t rfsetupreg = 0;
     uint8_t buf[32]={0};
     char strbuf[32]={0};
     const char* test_str = "HelloWireless!\0";
+    const char test_ch = 'H';
     memcpy(strbuf, test_str, strlen(test_str));
+    //memcpy(strbuf, &test_ch, 1);
     int size = strlen(test_str);
     nrf24_read_register_multi(TX_ADDR,addr,5);
 
+    int b = 0;
 #define transmitter 1
 #define receiver 0
 
@@ -171,7 +176,7 @@ int main(void)
 
         #if transmitter
         nrf24_send(strbuf);
-        HAL_Delay(100);
+        HAL_Delay(10);
         reg = nrf24_get_status_register();
         if(reg & (1 << TX_DS))
         {
@@ -204,7 +209,7 @@ int main(void)
 #if receiver
 
         uint8_t cd = 0;
-        nrf24_read_register_multi(CD,&cd,1);
+        nrf24_read_register_multi(RPD,&cd,1);
         if(nrf24_is_data_ready()){
             nrf24_receive(buf);
         }

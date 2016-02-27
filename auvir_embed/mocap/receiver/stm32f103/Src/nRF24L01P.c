@@ -254,7 +254,7 @@ void nrf24_config(uint8_t channel, uint8_t pay_length)
     nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
 
     // 1 Mbps, TX gain: 0dbm
-    nrf24_write_register(RF_SETUP, (0<<RF_DR)|((0x03)<<RF_PWR));
+    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
 
     // CRC enable, 1 byte CRC length
     nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC);
@@ -397,8 +397,7 @@ void nrf24_send(uint8_t* value)
     // Start the transmission //
     nrf24_ce_set(HIGH);
 
-    HAL_Delay(15);
-
+    HAL_Delay(15); //should be microseconds
     nrf24_ce_set(LOW);
 }
 
