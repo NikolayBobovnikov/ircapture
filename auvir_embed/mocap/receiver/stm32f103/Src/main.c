@@ -158,56 +158,97 @@ int main(void)
     char strbuf[32]={0};
     const char* test_str = "HelloWireless!\0";
     const char test_ch = 'H';
-    //memcpy(strbuf, test_str, strlen(test_str));
-    memcpy(strbuf, &test_ch, 1);
+    memcpy(strbuf, test_str, strlen(test_str));
+    //memcpy(strbuf, &test_ch, 1);
     int size = strlen(test_str);
 
 
-    // configure
-    uint8_t addr[ADR_WIDTH]={0xB3,0xB4,0xB5,0xB6,0x05};
-    nrf24_set_rx_address(addr);
-    nrf24_set_tx_address(addr);
-    nrf24_config(1,1);
+    uint8_t txaddr[ADR_WIDTH]={0};
+    uint8_t rxaddr0[ADR_WIDTH]={0};
+    uint8_t rxaddr1[ADR_WIDTH]={0};
+
+    // use identical bytes
+    uint8_t addr[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xAB};
+
+    uint8_t addr_tx[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xAB};
+    uint8_t addr_p0[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xA0};
+    uint8_t addr_p1[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xB1};
+    uint8_t addr_p2[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xC2};
+    uint8_t addr_p3[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xD3};
+    uint8_t addr_p4[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xE4};
+    uint8_t addr_p5[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xF5};
+
+    uint8_t* pipe_addresses[5] = {0};
+    pipe_addresses[0] = addr_p0;
+    pipe_addresses[1] = addr_p1;
+    pipe_addresses[2] = addr_p2;
+    pipe_addresses[3] = addr_p3;
+    pipe_addresses[4] = addr_p4;
+    pipe_addresses[5] = addr_p5;
 
 
-    nrf24_read_register_multi(TX_ADDR,addr,5);
+    bool is_transmitter = false;
+    bool is_receiver = !is_transmitter;
+    {
+        //nrf24_set_rx_address(addr);
+        //nrf24_set_tx_address(addr);
+        if(is_receiver){
+            nrf24_write_register_multi(RX_ADDR_P0,addr_p0,nrf24_ADDR_LEN);
+            nrf24_write_register_multi(RX_ADDR_P1,addr_p1,nrf24_ADDR_LEN);
+            nrf24_write_register_multi(RX_ADDR_P2,addr_p2,nrf24_ADDR_LEN);
+            nrf24_write_register_multi(RX_ADDR_P3,addr_p3,nrf24_ADDR_LEN);
+            nrf24_write_register_multi(RX_ADDR_P4,addr_p4,nrf24_ADDR_LEN);
+            nrf24_write_register_multi(RX_ADDR_P5,addr_p5,nrf24_ADDR_LEN);
+        }
+        if(is_transmitter){
+        nrf24_write_register_multi(TX_ADDR, addr, nrf24_ADDR_LEN);
+        }
+    }
+    nrf24_config(15,32);
 
-    int b = 0;
-#define transmitter 1
-#define receiver 0
+    nrf24_read_register_multi(TX_ADDR,txaddr,ADR_WIDTH);
+    nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,ADR_WIDTH);
+    nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,ADR_WIDTH);
 
+    TransmissionStatus status;
     while (1)
     {
 
-        #if transmitter
-        nrf24_send(strbuf);
-        HAL_Delay(10);
-        uint8_t retr = nrf24_get_last_msg_retransmission_count();
-        TransmissionStatus status = nrf24_last_messageStatus();
-        switch(status){
-            case NRF24_TRANSMISSON_OK:{
-                int a = 0;
-                break;
-            }
-            case NRF24_MESSAGE_LOST:{
-                int a = 0;
-                break;
-            }
-            case NRF24_MESSAGE_SENDING:{
-                int a = 0;
-                break;
-            }
-        }
-        #endif
+        if(is_transmitter){
 
-#if receiver
+            for (uint8_t pipe_num = 0; pipe_num < 6; pipe_num++){
 
-        uint8_t cd = 0;
-        nrf24_read_register_multi(RPD,&cd,1);
-        if(nrf24_is_data_ready()){
-            nrf24_receive(buf);
+                nrf24_ce_set(LOW);
+                nrf24_write_register_multi(RX_ADDR_P1,pipe_addresses[pipe_num],nrf24_ADDR_LEN);
+
+                for(int tries = 0; tries < 100; tries++){
+                    nrf24_send(strbuf);
+                    HAL_Delay(10);
+                    status = nrf24_last_messageStatus();
+
+                    switch(status){
+                        case NRF24_TRANSMISSON_OK:{
+                            int a = 0;
+                            break;
+                        }
+                        case NRF24_MESSAGE_LOST:{
+                            int a = 0;
+                            break;
+                        }
+                        case NRF24_MESSAGE_SENDING:{
+                            int a = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+
+        } else if (is_receiver){
+
+            while(!nrf24_is_data_ready())
+            {}
+            bool ready = nrf24_is_data_ready();
         }
-#endif
 
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */

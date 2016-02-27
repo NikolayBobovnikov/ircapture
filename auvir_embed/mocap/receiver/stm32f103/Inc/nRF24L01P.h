@@ -178,7 +178,7 @@ typedef enum{
 #define HIGH GPIO_PIN_SET
 
 #define nrf24_ADDR_LEN 5
-#define nrf24_ENABLE_1_BYTE_CRC ((1<<EN_CRC)|(0<<CRCO))
+#define nrf24_ENABLE_1_BYTE_CRC ((0<<EN_CRC)|(0<<CRCO))
 
 // adjustment functions //
 void nrf24_init();
