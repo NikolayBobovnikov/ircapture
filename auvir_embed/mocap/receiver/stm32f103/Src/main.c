@@ -117,7 +117,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-char mode = 't'; // 't'
+char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -185,16 +185,17 @@ int main(void)
     bool is_receiver = !is_transmitter;
 
 
-
+    /*
     if(is_receiver){
         nrf24_config_rx(addr, rf_channel, payload_len);
     }
     if(is_transmitter){
         nrf24_config_tx(addr, rf_channel,payload_len);
     }
+    */
 
 
-   //setup();
+    setup();
 
     uint8_t status_reg = nrf24_get_status_register();
     HAL_Delay(1);
@@ -213,7 +214,7 @@ int main(void)
     {
         loop();
 
-
+#if 0
         if(is_transmitter){
             nrf24_send(strbuf);
             HAL_Delay(10);
@@ -245,7 +246,7 @@ int main(void)
             status = nrf24_get_status_register();
             bool ready = nrf24_is_data_ready();
         }
-
+#endif
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }

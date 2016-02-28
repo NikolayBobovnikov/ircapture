@@ -87,8 +87,12 @@ void RXX()
 
 void TXX()
 {
-    for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
-        tx_buf[i] = k++;
+
+    //for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
+      //  tx_buf[i] = k++;
+    const char* test_str = "HelloWireless!\0";
+    memcpy(tx_buf, test_str, strlen(test_str));
+
 
     uint8_t status = SPI_Read(STATUS);
 
