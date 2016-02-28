@@ -163,20 +163,14 @@ int main(void)
     int size = strlen(test_str);
 
 
-    uint8_t txaddr[ADR_WIDTH]={0};
-    uint8_t rxaddr0[ADR_WIDTH]={0};
-    uint8_t rxaddr1[ADR_WIDTH]={0};
 
     // use identical bytes
-    uint8_t addr[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xAB};
-
-    uint8_t addr_tx[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xAB};
-    uint8_t addr_p0[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xA0};
-    uint8_t addr_p1[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xB1};
-    uint8_t addr_p2[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xC2};
-    uint8_t addr_p3[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xD3};
-    uint8_t addr_p4[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xE4};
-    uint8_t addr_p5[ADR_WIDTH]={0xAB,0xAB,0xAB,0xAB,0xF5};
+    uint8_t addr_p0[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xA0};
+    uint8_t addr_p1[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xAB};
+    uint8_t addr_p2[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xC2};
+    uint8_t addr_p3[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xD3};
+    uint8_t addr_p4[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xE4};
+    uint8_t addr_p5[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xF5};
 
     uint8_t* pipe_addresses[5] = {0};
     pipe_addresses[0] = addr_p0;
@@ -201,58 +195,62 @@ int main(void)
             nrf24_write_register_multi(RX_ADDR_P5,addr_p5,nrf24_ADDR_LEN);
         }
         if(is_transmitter){
-        nrf24_write_register_multi(TX_ADDR, addr, nrf24_ADDR_LEN);
+            nrf24_write_register_multi(TX_ADDR, addr_p0, nrf24_ADDR_LEN);
         }
     }
-    nrf24_config(15,32);
+    uint8_t rf_channel = 0;
+    uint8_t payload = 32;
 
-    nrf24_read_register_multi(TX_ADDR,txaddr,ADR_WIDTH);
-    nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,ADR_WIDTH);
-    nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,ADR_WIDTH);
+    //nrf24_config(rf_channel,payload);
+    if(is_receiver){
+        nrf24_config_rx(addr_p1, rf_channel,payload);
+    }
+    if(is_transmitter){
+        nrf24_config_tx(addr_p1, rf_channel,payload);
+    }
+
+    uint8_t txaddr[nrf24_ADDR_LEN]={0};
+    uint8_t rxaddr0[nrf24_ADDR_LEN]={0};
+    uint8_t rxaddr1[nrf24_ADDR_LEN]={0};
+    nrf24_read_register_multi(TX_ADDR,txaddr,nrf24_ADDR_LEN);
+    nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,nrf24_ADDR_LEN);
+    nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,nrf24_ADDR_LEN);
 
     TransmissionStatus status;
     while (1)
     {
 
         if(is_transmitter){
-
-            for (uint8_t pipe_num = 0; pipe_num < 6; pipe_num++){
-
-                nrf24_ce_set(LOW);
-                nrf24_write_register_multi(RX_ADDR_P1,pipe_addresses[pipe_num],nrf24_ADDR_LEN);
-
-                for(int tries = 0; tries < 100; tries++){
-                    nrf24_send(strbuf);
-                    HAL_Delay(10);
-                    status = nrf24_last_messageStatus();
-
-                    switch(status){
-                        case NRF24_TRANSMISSON_OK:{
-                            int a = 0;
-                            break;
-                        }
-                        case NRF24_MESSAGE_LOST:{
-                            int a = 0;
-                            break;
-                        }
-                        case NRF24_MESSAGE_SENDING:{
-                            int a = 0;
-                            break;
-                        }
-                    }
+            nrf24_send(strbuf);
+            HAL_Delay(10);
+            status = nrf24_last_messageStatus();
+            uint8_t retr = nrf24_get_last_msg_retransmission_count();
+            switch(status){
+                case NRF24_TRANSMISSON_OK:{
+                    int a = 0;
+                    break;
+                }
+                case NRF24_MESSAGE_LOST:{
+                    int a = 0;
+                    break;
+                }
+                case NRF24_MESSAGE_SENDING:{
+                    int a = 0;
+                    break;
                 }
             }
 
         } else if (is_receiver){
 
-            while(!nrf24_is_data_ready())
-            {}
+            uint8_t status = nrf24_get_status_register();
             bool ready = nrf24_is_data_ready();
+            if(nrf24_is_data_ready()){
+                nrf24_receive(buf);
+            }
         }
 
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
-        int a = 0;
     }
     /* USER CODE END 3 */
 
@@ -516,12 +514,14 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Pin = NRF24_CSN_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
 
 
     GPIO_InitStruct.Pin = NRF24_CE_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
 
 

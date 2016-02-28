@@ -106,21 +106,22 @@
 #define DPL_P5   5
 
 // Instruction Mnemonics //
-#define R_REGISTER 0x00 // last 4 bits will indicate reg. address //
-#define W_REGISTER 0x20 // last 4 bits will indicate reg. address //
-#define REGISTER_MASK 0x1F
-#define R_RX_PAYLOAD  0x61
-#define W_TX_PAYLOAD  0xA0
-#define FLUSH_TX   0xE1
-#define FLUSH_RX   0xE2
-#define REUSE_TX_PL   0xE3
-#define ACTIVATE   0x50
-#define R_RX_PL_WID   0x60
-#define NOP     0xFF
+#define R_REGISTER      0x00 // last 4 bits will indicate reg. address //
+#define W_REGISTER      0x20 // last 4 bits will indicate reg. address //
+#define REGISTER_MASK   0x1F
+#define R_RX_PAYLOAD    0x61
+#define W_TX_PAYLOAD    0xA0
+#define FLUSH_TX        0xE1
+#define FLUSH_RX        0xE2
+#define REUSE_TX_PL     0xE3
+#define ACTIVATE        0x50
+#define R_RX_PL_WID     0x60
+#define NOP             0xFF
 
 
 ///==========================================================================
-#define ADR_WIDTH 5
+#define nrf24_ADDR_LEN 5
+
 
 typedef struct nrf24_addr{
  uint8_t byte_0;
@@ -177,14 +178,13 @@ typedef enum{
 #define LOW GPIO_PIN_RESET
 #define HIGH GPIO_PIN_SET
 
-#define nrf24_ADDR_LEN 5
-#define nrf24_ENABLE_1_BYTE_CRC ((0<<EN_CRC)|(0<<CRCO))
-
 // adjustment functions //
 void nrf24_init();
 void nrf24_set_rx_address(uint8_t* adr);
 void nrf24_set_tx_address(uint8_t* adr);
 void nrf24_config(uint8_t channel, uint8_t pay_length);
+void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length);
+void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length);
 
 // state check functions
 uint8_t nrf24_get_status_register();

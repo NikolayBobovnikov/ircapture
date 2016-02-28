@@ -247,23 +247,23 @@ void nrf24_config(uint8_t channel, uint8_t pay_length)
 
     // Set length of incoming payload
     nrf24_write_register(RX_PW_P0, payload_len); // Auto-ACK pipe ...
-    nrf24_write_register(RX_PW_P1, payload_len); // Data payload pipe
-    nrf24_write_register(RX_PW_P2, payload_len); // Pipe not used
-    nrf24_write_register(RX_PW_P3, payload_len); // Pipe not used
-    nrf24_write_register(RX_PW_P4, payload_len); // Pipe not used
-    nrf24_write_register(RX_PW_P5, payload_len); // Pipe not used
+    nrf24_write_register(RX_PW_P1, 0x00); // Data payload pipe
+    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
 
     // 1 Mbps, TX gain: 0dbm
     nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
 
     // CRC, number of bytes CRC length
-    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC);
+    nrf24_write_register(CONFIG,((1<<EN_CRC)|(0<<CRCO)));
 
     // Auto Acknowledgment
     nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
 
     // Enable RX addresses
-    nrf24_write_register(EN_RXADDR,(1<<ERX_P0)|(1<<ERX_P1)|(1<<ERX_P2)|(1<<ERX_P3)|(1<<ERX_P4)|(1<<ERX_P5));
+    nrf24_write_register(EN_RXADDR,(1<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
 
     // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
     nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
@@ -275,10 +275,93 @@ void nrf24_config(uint8_t channel, uint8_t pay_length)
     nrf24_powerUpRx();
 }
 
+void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
+{
+    // setup addresses for pipe
+    nrf24_write_register_multi(RX_ADDR_P1, pipe_addr, nrf24_ADDR_LEN);
+
+    // Use static payload length ... //
+    payload_len = pay_length;
+
+    // Set RF channel
+    nrf24_write_register(RF_CH,channel);
+
+    // Set length of incoming payload
+    nrf24_write_register(RX_PW_P0, 0x00); // Auto-ACK pipe ...
+    nrf24_write_register(RX_PW_P1, payload_len); // Data payload pipe
+    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
+
+    // 1 Mbps, TX gain: 0dbm
+    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
+
+    //                          (CRC enabled,  1 byte)
+    nrf24_write_register(CONFIG,(0<<EN_CRC) | (0<<CRCO));
+
+    // Auto Acknowledgment
+    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
+
+    // Enable RX addresses
+    nrf24_write_register(EN_RXADDR,(0<<ERX_P0)|(1<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
+
+    // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
+    nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
+
+    // Dynamic length configurations: No dynamic length
+    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
+
+    // Start listening
+    nrf24_powerUpRx();
+}
+
+void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
+{
+    // setup addresses for pipes
+    //nrf24_write_register_multi(RX_ADDR_P0, pipe_addr, nrf24_ADDR_LEN);
+    nrf24_write_register_multi(TX_ADDR, pipe_addr, nrf24_ADDR_LEN);
+
+    // Use static payload length ... //
+    payload_len = pay_length;
+
+    // Set RF channel
+    nrf24_write_register(RF_CH,channel);
+
+    // Set length of incoming payload
+    nrf24_write_register(RX_PW_P0, 0x00); // Auto-ACK pipe ...
+    nrf24_write_register(RX_PW_P1, 0x00); // Data payload pipe
+    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
+
+    // 1 Mbps, TX gain: 0dbm
+    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
+
+    //                          (CRC enabled,  1 byte)
+    nrf24_write_register(CONFIG,(0<<EN_CRC) | (0<<CRCO));
+
+    // Auto Acknowledgment
+    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
+
+    // Enable RX addresses
+    nrf24_write_register(EN_RXADDR,(0<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
+
+    // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
+    nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
+
+    // Dynamic length configurations: No dynamic length
+    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
+
+    // Start listening
+    nrf24_powerUpTx();
+}
+
 void nrf24_set_rx_address(uint8_t * adr)
 {
     //nrf24_ce_set(LOW);
-    nrf24_write_register_multi(RX_ADDR_P1,adr,nrf24_ADDR_LEN);
+    nrf24_write_register_multi(RX_ADDR_P0,adr,nrf24_ADDR_LEN);
     //nrf24_ce_set(HIGH);
 }
 
@@ -462,7 +545,7 @@ void nrf24_powerUpRx()
     nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
 
     nrf24_ce_set(LOW);
-    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC|((1<<PWR_UP)|(1<<PRIM_RX)));
+    nrf24_write_register(CONFIG,(1<<PWR_UP)|(1<<PRIM_RX));
 
     // start listening
     nrf24_ce_set(HIGH);
@@ -472,13 +555,13 @@ void nrf24_powerUpRx()
 void nrf24_powerUpTx()
 {
     nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
-    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC|((1<<PWR_UP)|(0<<PRIM_RX)));
+    nrf24_write_register(CONFIG,(1<<PWR_UP)|(0<<PRIM_RX));
 }
 
 void nrf24_powerDown()
 {
     nrf24_ce_set(LOW);
-    nrf24_write_register(CONFIG,nrf24_ENABLE_1_BYTE_CRC);
+    nrf24_write_register(CONFIG,0<<PWR_UP);
 }
 
 void nrf24_reset()
@@ -505,8 +588,6 @@ void nrf24_write_register(uint8_t reg, uint8_t value)
     nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
     nrf24_spi_transaction(value);
     nrf24_csn_set(HIGH);
-    HAL_Delay(1);//TODO: remove and check
-
 }
 
 // Read single register from nrf24 //
@@ -516,8 +597,6 @@ void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
     nrf24_spi_transaction(R_REGISTER | (REGISTER_MASK & reg));
     nrf24_transferSync(value,value,len);
     nrf24_csn_set(HIGH);
-    HAL_Delay(1);//TODO: remove and check
-
 }
 
 // Write to a single register of nrf24 //
@@ -528,9 +607,6 @@ void nrf24_write_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
     nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
     nrf24_transmitSync(value,len);
     nrf24_csn_set(HIGH);
-
-    HAL_Delay(1);//TODO: remove and check
-
 }
 
 
