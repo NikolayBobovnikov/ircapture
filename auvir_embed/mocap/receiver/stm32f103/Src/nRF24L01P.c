@@ -2,7 +2,7 @@
 #include "nRF24L01P.h"
 
 extern SPI_HandleTypeDef hspi1;
-
+extern void nrf24_setup_gpio();
 
 /*
 void nrf24_set_tx_address(nrf24_addr *addr)
@@ -233,6 +233,8 @@ uint8_t payload_len;
 
 void nrf24_init()
 {
+    nrf24_setup_gpio();
+
     nrf24_ce_set(LOW);
     nrf24_csn_set(HIGH);
 }
@@ -298,7 +300,7 @@ void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
     nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
 
     //                          (CRC enabled,  1 byte)
-    nrf24_write_register(CONFIG,(0<<EN_CRC) | (0<<CRCO));
+    nrf24_write_register(CONFIG,(1<<EN_CRC) | (0<<CRCO));
 
     // Auto Acknowledgment
     nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
@@ -340,7 +342,7 @@ void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
     nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
 
     //                          (CRC enabled,  1 byte)
-    nrf24_write_register(CONFIG,(0<<EN_CRC) | (0<<CRCO));
+    nrf24_write_register(CONFIG,(1<<EN_CRC) | (0<<CRCO));
 
     // Auto Acknowledgment
     nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
@@ -568,10 +570,11 @@ void nrf24_reset()
 {
 
     //1)use power down mode (PWR_UP = 0)
-    nrf24_powerDown();
+    nrf24_ce_set(LOW);
+    nrf24_write_register(CONFIG,0<<PWR_UP);
 
     //2)clear data ready flag and data sent flag in status register
-    nrf24_write_register(RX_DR,0);
+    nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
 
     //3)flush tx/rx buffer
     nrf24_csn_set(LOW);

@@ -39,6 +39,7 @@
 #include "sensor.h"
 #include "sensor_hub.h"
 #include "nRF24L01P.h"
+#include "se8r01.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -88,6 +89,9 @@ static void MX_USART1_UART_Init(void);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
+
+void nrf24_setup_gpio();
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -113,6 +117,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
+char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -143,6 +148,7 @@ int main(void)
     /* USER CODE BEGIN 2 */
     debug_init_gpio();
     init_gpio_led();
+
     nrf24_init();
     HAL_TIM_Base_Start_IT(ptim_data_read);
     HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
@@ -151,81 +157,69 @@ int main(void)
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
 
-    uint8_t reg = 0;
-    uint8_t configreg = 0;
-    uint8_t rfsetupreg = 0;
+    uint8_t status = 0;
     uint8_t buf[32]={0};
     char strbuf[32]={0};
     const char* test_str = "HelloWireless!\0";
-    const char test_ch = 'H';
     memcpy(strbuf, test_str, strlen(test_str));
-    //memcpy(strbuf, &test_ch, 1);
     int size = strlen(test_str);
 
+    //==================== testing
+    uint8_t tx = NOP;
+    uint8_t rx = 0;
+    nrf24_csn_set(LOW);
+    HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
+    //rx = nrf24_spi_transaction(tx);
+    nrf24_csn_set(HIGH);
+    HAL_Delay(1);
+
+    //==================== testing
 
 
     // use identical bytes
-    uint8_t addr_p0[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xA0};
-    uint8_t addr_p1[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xAB};
-    uint8_t addr_p2[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xC2};
-    uint8_t addr_p3[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xD3};
-    uint8_t addr_p4[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xE4};
-    uint8_t addr_p5[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xF5};
-
-    uint8_t* pipe_addresses[5] = {0};
-    pipe_addresses[0] = addr_p0;
-    pipe_addresses[1] = addr_p1;
-    pipe_addresses[2] = addr_p2;
-    pipe_addresses[3] = addr_p3;
-    pipe_addresses[4] = addr_p4;
-    pipe_addresses[5] = addr_p5;
-
-
-    bool is_transmitter = false;
-    bool is_receiver = !is_transmitter;
-    {
-        //nrf24_set_rx_address(addr);
-        //nrf24_set_tx_address(addr);
-        if(is_receiver){
-            nrf24_write_register_multi(RX_ADDR_P0,addr_p0,nrf24_ADDR_LEN);
-            nrf24_write_register_multi(RX_ADDR_P1,addr_p1,nrf24_ADDR_LEN);
-            nrf24_write_register_multi(RX_ADDR_P2,addr_p2,nrf24_ADDR_LEN);
-            nrf24_write_register_multi(RX_ADDR_P3,addr_p3,nrf24_ADDR_LEN);
-            nrf24_write_register_multi(RX_ADDR_P4,addr_p4,nrf24_ADDR_LEN);
-            nrf24_write_register_multi(RX_ADDR_P5,addr_p5,nrf24_ADDR_LEN);
-        }
-        if(is_transmitter){
-            nrf24_write_register_multi(TX_ADDR, addr_p0, nrf24_ADDR_LEN);
-        }
-    }
+    uint8_t addr[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xAB};
     uint8_t rf_channel = 0;
-    uint8_t payload = 32;
+    uint8_t payload_len = 32;
 
-    //nrf24_config(rf_channel,payload);
+    bool is_transmitter = (mode =='t');
+    bool is_receiver = !is_transmitter;
+
+
+
     if(is_receiver){
-        nrf24_config_rx(addr_p1, rf_channel,payload);
+        nrf24_config_rx(addr, rf_channel, payload_len);
     }
     if(is_transmitter){
-        nrf24_config_tx(addr_p1, rf_channel,payload);
+        nrf24_config_tx(addr, rf_channel,payload_len);
     }
+
+
+   //setup();
+
+    uint8_t status_reg = nrf24_get_status_register();
+    HAL_Delay(1);
 
     uint8_t txaddr[nrf24_ADDR_LEN]={0};
     uint8_t rxaddr0[nrf24_ADDR_LEN]={0};
     uint8_t rxaddr1[nrf24_ADDR_LEN]={0};
+
     nrf24_read_register_multi(TX_ADDR,txaddr,nrf24_ADDR_LEN);
     nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,nrf24_ADDR_LEN);
     nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,nrf24_ADDR_LEN);
 
-    TransmissionStatus status;
+
+    TransmissionStatus tx_status;
     while (1)
     {
+        loop();
+
 
         if(is_transmitter){
             nrf24_send(strbuf);
             HAL_Delay(10);
-            status = nrf24_last_messageStatus();
+            tx_status = nrf24_last_messageStatus();
             uint8_t retr = nrf24_get_last_msg_retransmission_count();
-            switch(status){
+            switch(tx_status){
                 case NRF24_TRANSMISSON_OK:{
                     int a = 0;
                     break;
@@ -240,13 +234,16 @@ int main(void)
                 }
             }
 
-        } else if (is_receiver){
+        }
+        else if (is_receiver){
 
-            uint8_t status = nrf24_get_status_register();
-            bool ready = nrf24_is_data_ready();
-            if(nrf24_is_data_ready()){
-                nrf24_receive(buf);
+            while(!nrf24_is_data_ready())
+            {
+                //nop
             }
+            nrf24_receive(buf);
+            status = nrf24_get_status_register();
+            bool ready = nrf24_is_data_ready();
         }
 
         /* USER CODE END WHILE */
@@ -504,28 +501,6 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PA4 */
-    GPIO_InitStruct.Pin = GPIO_PIN_4;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-
-    GPIO_InitStruct.Pin = NRF24_CSN_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
-
-
-    GPIO_InitStruct.Pin = NRF24_CE_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
-
-
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -582,22 +557,28 @@ void send_data_uart()
     }
 }
 
-void nrf24l01_InitGPIO(void) {
-
+void nrf24_setup_gpio(void) {
     GPIO_InitTypeDef GPIO_InitStruct;
+
+    //Configure CSN pin
+    GPIO_InitStruct.Pin = NRF24_IRQ_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(NRF24_IRQ_PORT, &GPIO_InitStruct);
 
     //Configure CSN pin
     GPIO_InitStruct.Pin = NRF24_CSN_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
 
     //Configure CE pin
     GPIO_InitStruct.Pin = NRF24_CE_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
 
     /* CSN high = disable SPI */
