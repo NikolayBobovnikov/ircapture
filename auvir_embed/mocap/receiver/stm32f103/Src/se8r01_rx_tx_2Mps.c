@@ -243,6 +243,7 @@ void se8r01_calibration()
 
 void se8r01_setup()
 {
+    //iRF_BANK0_SETUP_VALUE <= [0]=0x28 [1]=0x32 [2]=0x80 [3]=0x90 [4]=0x00
     gtemp[0]=0x28;
     gtemp[1]=0x32;//RF_CH
     gtemp[2]=0x80;
@@ -254,12 +255,14 @@ void se8r01_setup()
 
     se8r01_switch_bank(iBANK1);
 
+    //iRF_BANK1_PLL_CTL0 <= [0]=0x40 [1]=0x01 [2]=0x30 [3]=0xE2
     gtemp[0]=0x40;
     gtemp[1]=0x01;
     gtemp[2]=0x30;
     gtemp[3]=0xE2;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_PLL_CTL0, gtemp, 4);
 
+    //iRF_BANK1_CAL_CTL <= [0]=0x29 [1]=0x89 [2]=0x55 [3]=0x40 [4]=0x50
     gtemp[0]=0x29;
     gtemp[1]=0x89;
     gtemp[2]=0x55;
@@ -267,33 +270,39 @@ void se8r01_setup()
     gtemp[4]=0x50;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_CAL_CTL, gtemp, 5);
 
+    //iRF_BANK1_FDEV <= [0]=0x29
     gtemp[0]=0x29;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_FDEV, gtemp, 1);
 
+    //iRF_BANK1_RX_CTRL <= [0]=0x55 [1]=0xC2 [2]=0x09 [3]=0xAC
     gtemp[0]=0x55;
     gtemp[1]=0xC2;
     gtemp[2]=0x09;
     gtemp[3]=0xAC;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_RX_CTRL, gtemp, 4);
 
+    //iRF_BANK1_FAGC_CTRL_1 <= [0]=0x00 [1]=0x14 [2]=0x08 [3]=0x29
     gtemp[0]=0x00;
     gtemp[1]=0x14;
     gtemp[2]=0x08;
     gtemp[3]=0x29;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_FAGC_CTRL_1, gtemp, 4);
 
+    //iRF_BANK1_AGC_GAIN <= [0]=0x02 [1]=0xC1 [2]=0xCB [3]=0x1C
     gtemp[0]=0x02;
     gtemp[1]=0xC1;
     gtemp[2]=0xCB;
     gtemp[3]=0x1C;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_AGC_GAIN, gtemp, 4);
 
+    //iRF_BANK1_RF_IVGEN <= [0]=0x97 [1]=0x64 [2]=0x00 [3]=0x01
     gtemp[0]=0x97;
     gtemp[1]=0x64;
     gtemp[2]=0x00;
     gtemp[3]=0x01;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_RF_IVGEN, gtemp, 4);
 
+    // iRF_BANK1_TEST_PKDET <= [0]=0x2A [1]=0x04 [2]=0x00 [3]=0x7D
     gtemp[0]=0x2A;
     gtemp[1]=0x04;
     gtemp[2]=0x00;

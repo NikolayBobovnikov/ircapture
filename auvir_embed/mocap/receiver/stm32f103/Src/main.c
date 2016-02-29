@@ -52,6 +52,7 @@ SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
@@ -86,6 +87,7 @@ static void MX_DMA_Init(void);
 static void MX_CRC_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
@@ -147,6 +149,7 @@ int main(void)
     MX_CRC_Init();
     MX_SPI1_Init();
     MX_SPI2_Init();
+    MX_TIM2_Init();
     MX_TIM3_Init();
     MX_TIM4_Init();
     MX_USART1_UART_Init();
@@ -168,6 +171,10 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
+    while(1){
+        delay_us(10);
+        HAL_GPIO_TogglePin(NRF24_CSN_PORT,NRF24_CSN_PIN);
+    }
     setup();
 
     /*
@@ -197,9 +204,9 @@ int main(void)
         //loop();
 #if 1
         if(is_transmitter){
-        	    const char* test_str = "HelloWireless!\0";
-        	    memcpy(tx_buf, test_str, strlen(test_str));
-        	    int size = strlen(test_str);
+                const char* test_str = "HelloWireless!\0";
+                memcpy(tx_buf, test_str, strlen(test_str));
+                int size = strlen(test_str);
 
             nrf24_send(tx_buf);
             HAL_Delay(10);
@@ -223,12 +230,12 @@ int main(void)
 
         }
         else if (is_receiver){
-        	GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
-        	status = nrf24_get_status_register();
+            GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+            status = nrf24_get_status_register();
             bool ready = nrf24_is_data_ready();
             if(ready)
             {
-            	nrf24_receive(rx_buf);
+                nrf24_receive(rx_buf);
             }
 
 
@@ -317,6 +324,29 @@ void MX_SPI2_Init(void)
     hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
     hspi2.Init.CRCPolynomial = 10;
     HAL_SPI_Init(&hspi2);
+
+}
+
+/* TIM2 init function */
+void MX_TIM2_Init(void)
+{
+
+    TIM_ClockConfigTypeDef sClockSourceConfig;
+    TIM_MasterConfigTypeDef sMasterConfig;
+
+    htim2.Instance = TIM2;
+    htim2.Init.Prescaler = 0;
+    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim2.Init.Period = 720 - 1;
+    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    HAL_TIM_Base_Init(&htim2);
+
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 
 }
 
@@ -577,11 +607,17 @@ void nrf24_setup_gpio(void) {
 
 void delay_us(uint8_t delay)
 {
-	 volatile uint32_t nCount;
-	 nCount = (uint32_t) HAL_RCC_GetSysClockFreq()/10000000;
-	 for (; nCount!=0; nCount--);
+    /*
+     volatile uint32_t nCount;
+     nCount = (uint32_t) (HAL_RCC_GetSysClockFreq()/100000000) * delay * 0.3;
+     for (; nCount!=0; nCount--);
+     */
+    htim2.Instance->CNT = 0;
+    HAL_TIM_Base_Start_IT(&htim2);
+    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET)
+    {
 
-	 int a = 0;
+    }
 }
 
 void init_delay()
