@@ -39,7 +39,7 @@ void setup()
     }
     else {
         SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3E);
-        nrf24_ce_set(HIGH);
+        nrf24_ce_set(LOW);
     }
 
 

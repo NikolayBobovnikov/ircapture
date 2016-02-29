@@ -168,16 +168,16 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
-    //setup();
+    setup();
 
+    /*
     if(is_receiver){
         nrf24_config_rx(TX_ADDRESS, 0, TX_PLOAD_WIDTH);
     }
     if(is_transmitter){
         nrf24_config_tx(TX_ADDRESS, 0, TX_PLOAD_WIDTH);
     }
-
-
+    */
 
     uint8_t status_reg = nrf24_get_status_register();
     HAL_Delay(1);
