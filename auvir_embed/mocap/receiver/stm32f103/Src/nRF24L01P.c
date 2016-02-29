@@ -280,7 +280,7 @@ void nrf24_config(uint8_t channel, uint8_t pay_length)
 void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
 {
     // setup addresses for pipe
-    nrf24_write_register_multi(RX_ADDR_P1, pipe_addr, nrf24_ADDR_LEN);
+    nrf24_write_register_multi(RX_ADDR_P1, pipe_addr, TX_ADR_WIDTH);
 
     // Use static payload length ... //
     payload_len = pay_length;
@@ -322,7 +322,7 @@ void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
 {
     // setup addresses for pipes
     //nrf24_write_register_multi(RX_ADDR_P0, pipe_addr, nrf24_ADDR_LEN);
-    nrf24_write_register_multi(TX_ADDR, pipe_addr, nrf24_ADDR_LEN);
+    nrf24_write_register_multi(TX_ADDR, pipe_addr, TX_ADR_WIDTH);
 
     // Use static payload length ... //
     payload_len = pay_length;
@@ -363,15 +363,15 @@ void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
 void nrf24_set_rx_address(uint8_t * adr)
 {
     //nrf24_ce_set(LOW);
-    nrf24_write_register_multi(RX_ADDR_P0,adr,nrf24_ADDR_LEN);
+    nrf24_write_register_multi(RX_ADDR_P0,adr,TX_ADR_WIDTH);
     //nrf24_ce_set(HIGH);
 }
 
 void nrf24_set_tx_address(uint8_t* adr)
 {
     // RX_ADDR_P0 must be set to the sending addr for auto ack to work. //
-   nrf24_write_register_multi(RX_ADDR_P0, adr, nrf24_ADDR_LEN);
-   nrf24_write_register_multi(TX_ADDR, adr, nrf24_ADDR_LEN);
+   nrf24_write_register_multi(RX_ADDR_P0, adr, TX_ADR_WIDTH);
+   nrf24_write_register_multi(TX_ADDR, adr, TX_ADR_WIDTH);
 }
 
 uint8_t nrf24_get_payload_len()

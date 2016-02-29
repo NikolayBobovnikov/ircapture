@@ -123,7 +123,8 @@
 
 
 ///==========================================================================
-#define nrf24_ADDR_LEN 5
+#define TX_ADR_WIDTH    5   // 5 uint8_ts TX(RX) address width
+#define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
 
 
 typedef struct nrf24_addr{

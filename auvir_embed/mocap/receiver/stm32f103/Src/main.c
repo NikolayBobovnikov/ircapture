@@ -73,6 +73,9 @@ const bool _is_direct_logic = false;
 
 uint32_t ticks_per_1_us = 0;
 uint32_t total_ticks = 0;
+uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x34,0x43,0x10,0x10,0xCD};
+uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
+uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 
 /* USER CODE END PV */
 
@@ -149,6 +152,7 @@ int main(void)
     MX_USART1_UART_Init();
 
     /* USER CODE BEGIN 2 */
+    init_delay();
     debug_init_gpio();
     init_gpio_led();
 
@@ -160,54 +164,47 @@ int main(void)
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
 
-    uint8_t status = 0;
-    uint8_t buf[32]={0};
-    char strbuf[32]={0};
-    const char* test_str = "HelloWireless!\0";
-    memcpy(strbuf, test_str, strlen(test_str));
-    int size = strlen(test_str);
-
     // use identical bytes
-    uint8_t addr[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xAB};
-    uint8_t rf_channel = 0;
-    uint8_t payload_len = 32;
-
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
+    //setup();
 
-    /*
     if(is_receiver){
-        nrf24_config_rx(addr, rf_channel, payload_len);
+        nrf24_config_rx(TX_ADDRESS, 0, TX_PLOAD_WIDTH);
     }
     if(is_transmitter){
-        nrf24_config_tx(addr, rf_channel,payload_len);
+        nrf24_config_tx(TX_ADDRESS, 0, TX_PLOAD_WIDTH);
     }
-    */
-    setup();
+
+
 
     uint8_t status_reg = nrf24_get_status_register();
     HAL_Delay(1);
 
-    uint8_t txaddr[nrf24_ADDR_LEN]={0};
-    uint8_t rxaddr0[nrf24_ADDR_LEN]={0};
-    uint8_t rxaddr1[nrf24_ADDR_LEN]={0};
+    uint8_t txaddr[TX_ADR_WIDTH]={0};
+    uint8_t rxaddr0[TX_ADR_WIDTH]={0};
+    uint8_t rxaddr1[TX_ADR_WIDTH]={0};
 
-    nrf24_read_register_multi(TX_ADDR,txaddr,nrf24_ADDR_LEN);
-    nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,nrf24_ADDR_LEN);
-    nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,nrf24_ADDR_LEN);
+    nrf24_read_register_multi(TX_ADDR,txaddr,TX_ADR_WIDTH);
+    nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,TX_ADR_WIDTH);
+    nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,TX_ADR_WIDTH);
 
 
     TransmissionStatus tx_status;
     while (1)
     {
-        loop();
-
-#if 0
+        //loop();
+#if 1
         if(is_transmitter){
-            nrf24_send(strbuf);
+        	    const char* test_str = "HelloWireless!\0";
+        	    memcpy(tx_buf, test_str, strlen(test_str));
+        	    int size = strlen(test_str);
+
+            nrf24_send(tx_buf);
             HAL_Delay(10);
             tx_status = nrf24_last_messageStatus();
+            GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
             uint8_t retr = nrf24_get_last_msg_retransmission_count();
             switch(tx_status){
                 case NRF24_TRANSMISSON_OK:{
@@ -226,14 +223,15 @@ int main(void)
 
         }
         else if (is_receiver){
-
-            while(!nrf24_is_data_ready())
-            {
-                //nop
-            }
-            nrf24_receive(buf);
-            status = nrf24_get_status_register();
+        	GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+        	status = nrf24_get_status_register();
             bool ready = nrf24_is_data_ready();
+            if(ready)
+            {
+            	nrf24_receive(rx_buf);
+            }
+
+
         }
 #endif
         /* USER CODE END WHILE */
@@ -242,7 +240,6 @@ int main(void)
     /* USER CODE END 3 */
 
 }
-
 /** System Clock Configuration
 */
 void SystemClock_Config(void)
@@ -578,17 +575,18 @@ void nrf24_setup_gpio(void) {
     HAL_GPIO_WritePin(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_PIN_RESET);
 }
 
-void delay_us(uint8_t delay_us)
+void delay_us(uint8_t delay)
 {
-	for(uint32_t tick = 0; tick < total_ticks; tick++)
-	{
-	}
+	 volatile uint32_t nCount;
+	 nCount = (uint32_t) HAL_RCC_GetSysClockFreq()/10000000;
+	 for (; nCount!=0; nCount--);
+
+	 int a = 0;
 }
 
 void init_delay()
 {
-    ticks_per_1_us = (uint32_t) HAL_RCC_GetSysClockFreq()/1000;
-    total_ticks = ticks_per_1_us * delay_us;
+    ticks_per_1_us = (uint32_t) HAL_RCC_GetSysClockFreq()/1000000;
 }
 /* USER CODE END 4 */
 

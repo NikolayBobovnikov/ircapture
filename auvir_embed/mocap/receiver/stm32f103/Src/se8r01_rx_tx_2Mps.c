@@ -14,19 +14,12 @@ void delay_us(uint8_t us);
 
 
 uint8_t gtemp[5];
-uint8_t k=0;
-//***************************************************
-#define TX_ADR_WIDTH    4   // 5 uint8_ts TX(RX) address width
-#define TX_PLOAD_WIDTH  6  // 32 uint8_ts TX payload
 
-uint8_t TX_ADDRESS[TX_ADR_WIDTH]  =
-{
-    0x34,0x43,0x10,0x10
-}; // Define a static TX address
+// Define a static TX address
+extern uint8_t TX_ADDRESS[TX_ADR_WIDTH];
+extern uint8_t rx_buf[TX_PLOAD_WIDTH]; // initialize value
+extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 
-uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
-uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
-//***************************************************
 void setup()
 {
 
@@ -41,12 +34,15 @@ void setup()
 
     if (mode=='r') {
         SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3f);
+        // start listening
+        nrf24_ce_set(HIGH);
     }
     else {
         SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3E);
+        nrf24_ce_set(HIGH);
     }
 
-    nrf24_ce_set(HIGH);
+
 }
 
 void loop()
@@ -119,7 +115,7 @@ void radio_settings()
     //4 byte adress, but use 5 byte address! TODO: research http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
     SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_AW, 0x02);       //4 byte adress
 
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_RETR, 0xB00001010);        //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit HAL_Delay
+    SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_RETR, 0xB00001010); //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit HAL_Delay
     SPI_RW_Reg(W_REGISTER|iRF_BANK0_RF_CH, 40);
     SPI_RW_Reg(W_REGISTER|iRF_BANK0_RF_SETUP, 0x4f);        //2mps 0x4f
     //SPI_RW_Reg(W_REGISTER|iRF_BANK0_DYNPD, 0x01);          //pipe0 pipe1 enable dynamic payload length data
@@ -248,7 +244,7 @@ void se8r01_calibration()
 void se8r01_setup()
 {
     gtemp[0]=0x28;
-    gtemp[1]=0x32;
+    gtemp[1]=0x32;//RF_CH
     gtemp[2]=0x80;
     gtemp[3]=0x90;
     gtemp[4]=0x00;
