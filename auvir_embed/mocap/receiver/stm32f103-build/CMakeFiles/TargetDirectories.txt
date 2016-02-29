@@ -1,0 +1,1 @@
+D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103-build/CMakeFiles/motionsensor_receiver.dir

@@ -71,6 +71,9 @@ TIM_HandleTypeDef* ptim_data_read = &htim3;
 const bool _is_direct_logic = false;
 /// ===========================================
 
+uint32_t ticks_per_1_us = 0;
+uint32_t total_ticks = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,9 +92,9 @@ static void MX_USART1_UART_Init(void);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
-
 void nrf24_setup_gpio();
-
+void delay_us(uint8_t us);
+void init_delay();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -117,7 +120,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-char mode = 'r'; // 't'
+char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -164,18 +167,6 @@ int main(void)
     memcpy(strbuf, test_str, strlen(test_str));
     int size = strlen(test_str);
 
-    //==================== testing
-    uint8_t tx = NOP;
-    uint8_t rx = 0;
-    nrf24_csn_set(LOW);
-    HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
-    //rx = nrf24_spi_transaction(tx);
-    nrf24_csn_set(HIGH);
-    HAL_Delay(1);
-
-    //==================== testing
-
-
     // use identical bytes
     uint8_t addr[nrf24_ADDR_LEN]={0xAB,0xAB,0xAB,0xAB,0xAB};
     uint8_t rf_channel = 0;
@@ -193,8 +184,6 @@ int main(void)
         nrf24_config_tx(addr, rf_channel,payload_len);
     }
     */
-
-
     setup();
 
     uint8_t status_reg = nrf24_get_status_register();
@@ -587,6 +576,19 @@ void nrf24_setup_gpio(void) {
 
     /* CE low = disable TX/RX */
     HAL_GPIO_WritePin(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_PIN_RESET);
+}
+
+void delay_us(uint8_t delay_us)
+{
+	for(uint32_t tick = 0; tick < total_ticks; tick++)
+	{
+	}
+}
+
+void init_delay()
+{
+    ticks_per_1_us = (uint32_t) HAL_RCC_GetSysClockFreq()/1000;
+    total_ticks = ticks_per_1_us * delay_us;
 }
 /* USER CODE END 4 */
 

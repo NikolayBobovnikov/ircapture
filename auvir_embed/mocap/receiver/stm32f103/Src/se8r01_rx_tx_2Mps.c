@@ -4,8 +4,14 @@
 #include "nRF24L01P.h"
 #include "se8r01.h"
 
+///
+/// on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
+///
+
 extern SPI_HandleTypeDef hspi1;
 extern char mode;      //r=rx, t=tx
+void delay_us(uint8_t us);
+
 
 uint8_t gtemp[5];
 uint8_t k=0;
@@ -26,9 +32,8 @@ void setup()
 
     init_io();                        // Initialize IO port
     uint8_t status=SPI_Read(STATUS);
-
     nrf24_ce_set(LOW);
-    HAL_Delay(1);
+    delay_us(150);
     se8r01_powerup();
     se8r01_calibration();
     se8r01_setup();
@@ -110,7 +115,9 @@ void radio_settings()
 
     SPI_RW_Reg(W_REGISTER|iRF_BANK0_EN_AA, 0x01);          //enable auto acc on pip 1
     SPI_RW_Reg(W_REGISTER|iRF_BANK0_EN_RXADDR, 0x01);      //enable pip 1
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_AW, 0x02);        //4 byte adress
+
+    //4 byte adress, but use 5 byte address! TODO: research http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
+    SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_AW, 0x02);       //4 byte adress
 
     SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_RETR, 0xB00001010);        //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit HAL_Delay
     SPI_RW_Reg(W_REGISTER|iRF_BANK0_RF_CH, 40);
@@ -163,22 +170,21 @@ void se8r01_powerup()
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_CH,0x32);
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_SETUP,0x48);
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_PRE_GURD,0x77); //2450 calibration
-
-
 }
 
 void se8r01_calibration()
 {
-
-
+    //iBANK1
     se8r01_switch_bank(iBANK1);
 
+    //iRF_BANK1_PLL_CTL0 <= [0]=0x40 [1]=0x00 [2]=0x10 [3]=0xE6
     gtemp[0]=0x40;
     gtemp[1]=0x00;
     gtemp[2]=0x10;
     gtemp[3]=0xE6;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_PLL_CTL0, gtemp, 4);
 
+    //iRF_BANK1_CAL_CTL <= [0]=0x20 [1]=0x08 [2]=0x50 [3]=0x40 [4]=0x50
     gtemp[0]=0x20;
     gtemp[1]=0x08;
     gtemp[2]=0x50;
@@ -186,50 +192,56 @@ void se8r01_calibration()
     gtemp[4]=0x50;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_CAL_CTL, gtemp, 5);
 
+    //iRF_BANK1_IF_FREQ <= [0]=0x00 [1]=0x00 [2]=0x1E
     gtemp[0]=0x00;
     gtemp[1]=0x00;
     gtemp[2]=0x1E;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_IF_FREQ, gtemp, 3);
 
+    //iRF_BANK1_FDEV <= [0]=0x29
     gtemp[0]=0x29;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_FDEV, gtemp, 1);
 
+    //iRF_BANK1_DAC_CAL_LOW <= [0]=0x00
     gtemp[0]=0x00;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_DAC_CAL_LOW, gtemp, 1);
 
+    //iRF_BANK1_DAC_CAL_HI <= [0]=0x7F
     gtemp[0]=0x7F;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_DAC_CAL_HI, gtemp, 1);
 
+    //iRF_BANK1_AGC_GAIN <= [0]=0x02 [1]=0xC1 [2]=0xEB [3]=0x1C
     gtemp[0]=0x02;
     gtemp[1]=0xC1;
     gtemp[2]=0xEB;
     gtemp[3]=0x1C;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_AGC_GAIN, gtemp, 4);
 
+    //iRF_BANK1_RF_IVGEN <= [0]=0x97 [1]=0x64 [2]=0x00 [3]=0x81
     gtemp[0]=0x97;
     gtemp[1]=0x64;
     gtemp[2]=0x00;
     gtemp[3]=0x81;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_RF_IVGEN, gtemp, 4);
 
+//    iBANK0
+//    CE 1
+//    Delay 30 us
+//    CE 0
+//    Delay 15 ms
+//    CE 1
+//    Delay 30 us
+//    CE 0
+//    Delay 15 ms
     se8r01_switch_bank(iBANK0);
-
     nrf24_ce_set(HIGH);
-    HAL_Delay(1);
+    delay_us(30);
     nrf24_ce_set(LOW);
-    //digitalWrite(CEq, 1);
-    //delayMicroseconds(30);
-    //digitalWrite(CEq, 0);
-
-    HAL_Delay(1);
-    //delayMicroseconds(50);                            // delay 50ms waitting for calibaration.
-
+    delay_us(15);
     nrf24_ce_set(HIGH);
-    HAL_Delay(1);
+    delay_us(30);
     nrf24_ce_set(LOW);
-    //digitalWrite(CEq, 1);
-    //delayMicroseconds(30);
-    //digitalWrite(CEq, 0);
+    delay_us(15);
 
 }
 
@@ -242,7 +254,7 @@ void se8r01_setup()
     gtemp[4]=0x00;
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK0_SETUP_VALUE, gtemp, 5);
 
-    HAL_Delay(1);//delayMicroseconds(2);
+    delay_us(2);
 
     se8r01_switch_bank(iBANK1);
 
@@ -293,7 +305,6 @@ void se8r01_setup()
     SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_TEST_PKDET, gtemp, 4);
 
     se8r01_switch_bank(iBANK0);
-
 }
 
 /**************************************************

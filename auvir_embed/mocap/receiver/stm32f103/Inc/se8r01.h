@@ -1,20 +1,18 @@
 #ifndef se8r01_h
 #define se8r01_h
 
+///
+/// TODO: on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
+///
 
 #define STA_MARK_RX     0X40
 #define STA_MARK_TX     0X20
 #define STA_MARK_MX     0X10
 
-///////////////////////////////////////////////////////////////////////////////////////
 #define iBANK0                  0x00
 #define iBANK1                  0x80
-//
-//-------------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------------
 // SE8R01 SPI Commands
-//
 #define iRF_CMD_READ_REG        0x1F            // 000x xxxx Define read command to register
 #define iRF_CMD_WRITE_REG       0x20            // 001x xxxx Define write command to register
 #define iRF_CMD_RD_RX_PLOAD     0x61            // 0110 0001 Define RX payload register address
@@ -27,12 +25,9 @@
 #define iRF_CMD_ACTIVATE        0x50            // 0101 0000
 #define iRF_CMD_R_RX_PL_WID     0x60            // 0110 0000
 #define iRF_CMD_NOP             0xFF            // 1111 1111 Define No Operation, might be used to read status register
-//
-//-------------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------------
+
 // SE8R01 registers addresses
-//
 #define iRF_BANK0_CONFIG        0x00            // 'Config' register address
 #define iRF_BANK0_EN_AA         0x01            // 'Enable Auto Acknowledgment' register address
 #define iRF_BANK0_EN_RXADDR     0x02            // 'Enabled RX addresses' register address
@@ -92,29 +87,20 @@
 #define iRF_BANK1_AGC_GAIN      0x1D
 #define iRF_BANK1_RF_IVGEN      0x1E
 #define iRF_BANK1_TEST_PKDET    0x1F
-//
-//-------------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------------
 // SE8R01 interrupt status
-//
 #define iSTATUS_RX_DR           0x40
 #define iSTATUS_TX_DS           0x20
 #define iSTATUS_MAX_RT          0x10
 #define iSTATUS_TX_FULL         0x01
-//
-//-------------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------------
 // SE8R01 FIFO status
-//
 #define iFIFO_STATUS_TX_REUSE   0x40
 #define iFIFO_STATUS_TX_FULL    0x20
 #define iFIFO_STATUS_TX_EMPTY   0x10
 
 #define iFIFO_STATUS_RX_FULL    0x02
 #define iFIFO_STATUS_RX_EMPTY   0x01
-////////////////////////////////////////////////
 
 
 void setup();
