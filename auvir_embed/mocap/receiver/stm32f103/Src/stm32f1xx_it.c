@@ -34,6 +34,7 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_it.h"
+#include <stdbool.h>
 
 /* USER CODE BEGIN 0 */
 // TODO: read more about .h and .c file including during compiling. Check if this include is needed
@@ -47,8 +48,10 @@ void irreceiver_timer_ic_handler();
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
+extern bool us_elapsed;
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Interruption and Exception Handlers         */
@@ -102,6 +105,18 @@ void DMA1_Channel3_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel3_IRQn 1 */
 
   /* USER CODE END DMA1_Channel3_IRQn 1 */
+}
+
+/**
+* @brief This function handles TIM2 global interrupt.
+*/
+void TIM2_IRQHandler(void)
+{
+    /* USER CODE BEGIN TIM3_IRQn 0 */
+    /* USER CODE END TIM3_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim2);
+    /* USER CODE BEGIN TIM3_IRQn 1 */
+    /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**
