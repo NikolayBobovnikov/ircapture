@@ -38,7 +38,6 @@
 #include "infrared.h"
 #include "sensor.h"
 #include "sensor_hub.h"
-#include "nRF24L01P.h"
 #include "se8r01.h"
 
 // TODO: cleanup when done debugging
@@ -71,8 +70,6 @@ TIM_HandleTypeDef* ptim_data_read = &htim3;
 const bool _is_direct_logic = false;
 /// ===========================================
 
-uint32_t ticks_per_1_us = 0;
-uint32_t total_ticks = 0;
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x34,0x43,0x10,0x10,0xAB};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
@@ -97,7 +94,6 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
 void nrf24_setup_gpio();
 void delay_us(uint8_t us);
-void init_delay();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -152,7 +148,6 @@ int main(void)
     MX_USART1_UART_Init();
 
     /* USER CODE BEGIN 2 */
-    init_delay();
     debug_init_gpio();
     init_gpio_led();
     nrf24_init();
@@ -171,7 +166,7 @@ int main(void)
     uint8_t status_reg = 0;
 
     //=====================
-    status_reg = SPI_Read(STATUS);
+    status_reg = SPI_Read(iRF_BANK0_STATUS);
     nrf24_ce_set(LOW);
     delay_us(150);
     se8r01_powerup();
@@ -181,7 +176,7 @@ int main(void)
 
     radio_settings();
     if (mode=='r') {
-        SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3f);
+        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
         // start listening
         nrf24_ce_set(HIGH);
     }
@@ -209,9 +204,9 @@ int main(void)
     uint8_t rxaddr0[TX_ADR_WIDTH]={0};
     uint8_t rxaddr1[TX_ADR_WIDTH]={0};
 
-    nrf24_read_register_multi(TX_ADDR,txaddr,TX_ADR_WIDTH);
-    nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,TX_ADR_WIDTH);
-    nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,TX_ADR_WIDTH);
+    nrf24_read_register_buf(TX_ADDR,txaddr,TX_ADR_WIDTH);
+    nrf24_read_register_buf(RX_ADDR_P0,rxaddr0,TX_ADR_WIDTH);
+    nrf24_read_register_buf(RX_ADDR_P1,rxaddr1,TX_ADR_WIDTH);
 
 
     TransmissionStatus tx_status;
@@ -608,10 +603,6 @@ void delay_us(uint8_t delay)
 	 int a = 0;
 }
 
-void init_delay()
-{
-    ticks_per_1_us = (uint32_t) HAL_RCC_GetSysClockFreq()/1000000;
-}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT

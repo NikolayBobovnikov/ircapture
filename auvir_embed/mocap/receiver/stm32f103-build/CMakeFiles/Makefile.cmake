@@ -7,30 +7,16 @@ set(CMAKE_DEPENDS_GENERATOR "NMake Makefiles")
 # The top level Makefile was generated from the following files:
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeASMCompiler.cmake.in"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeASMInformation.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeCCompiler.cmake.in"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeCInformation.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeCXXCompiler.cmake.in"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeCXXInformation.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeCommonLanguageInclude.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeDetermineASMCompiler.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeDetermineCCompiler.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeDetermineCXXCompiler.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeDetermineCompiler.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeDetermineSystem.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeExtraGeneratorDetermineCompilerMacrosAndIncludeDirs.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeFindBinUtils.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeFindCodeBlocks.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeForceCompiler.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeGenericSystem.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeNMakeFindMake.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeSystem.cmake.in"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeSystemSpecificInformation.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/CMakeSystemSpecificInitialize.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeTestASMCompiler.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeTestCCompiler.cmake"
-  "D:/Software/CMake/share/cmake-3.4/Modules/CMakeTestCXXCompiler.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/Compiler/GNU-ASM.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/Compiler/GNU-C.cmake"
   "D:/Software/CMake/share/cmake-3.4/Modules/Compiler/GNU-CXX.cmake"
@@ -54,10 +40,6 @@ set(CMAKE_MAKEFILE_OUTPUTS
 
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
-  "CMakeFiles/3.4.0/CMakeSystem.cmake"
-  "CMakeFiles/3.4.0/CMakeCCompiler.cmake"
-  "CMakeFiles/3.4.0/CMakeCXXCompiler.cmake"
-  "CMakeFiles/3.4.0/CMakeASMCompiler.cmake"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 

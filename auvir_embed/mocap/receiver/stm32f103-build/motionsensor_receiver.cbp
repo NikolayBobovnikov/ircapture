@@ -284,9 +284,6 @@
       <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Inc/mxconstants.h">
          <Option target="motionsensor_receiver"/>
       </Unit>
-      <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Inc/nRF24L01P.h">
-         <Option target="motionsensor_receiver"/>
-      </Unit>
       <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Inc/se8r01.h">
          <Option target="motionsensor_receiver"/>
       </Unit>
@@ -308,10 +305,7 @@
       <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/main.c">
          <Option target="motionsensor_receiver"/>
       </Unit>
-      <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/nRF24L01P.c">
-         <Option target="motionsensor_receiver"/>
-      </Unit>
-      <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/se8r01_rx_tx_2Mps.c">
+      <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/se8r01.c">
          <Option target="motionsensor_receiver"/>
       </Unit>
       <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/Src/sensor.c">
@@ -331,12 +325,6 @@
       </Unit>
       <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/CMakeLists.txt">
           <Option virtualFolder="CMake Files\" />
-      </Unit>
-      <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/cmake/gcc_stm32.cmake">
-          <Option virtualFolder="CMake Files\cmake\" />
-      </Unit>
-      <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/cmake/gcc_stm32f1.cmake">
-          <Option virtualFolder="CMake Files\cmake\" />
       </Unit>
       <Unit filename="D:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103/cmake/gcc_stm32.cmake">
           <Option virtualFolder="CMake Files\cmake\" />

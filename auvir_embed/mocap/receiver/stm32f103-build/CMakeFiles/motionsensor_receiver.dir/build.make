@@ -506,57 +506,33 @@ CMakeFiles\motionsensor_receiver.dir\Src\main.c.obj.provides: CMakeFiles\motions
 CMakeFiles\motionsensor_receiver.dir\Src\main.c.obj.provides.build: CMakeFiles\motionsensor_receiver.dir\Src\main.c.obj
 
 
-CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
-CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\nRF24L01P.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/nRF24L01P.c.obj"
-	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\nRF24L01P.c
+CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
+CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/se8r01.c.obj"
+	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01.c
 
-CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/motionsensor_receiver.dir/Src/nRF24L01P.c.i"
-	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\nRF24L01P.c > CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.i
+CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/motionsensor_receiver.dir/Src/se8r01.c.i"
+	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01.c > CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.i
 
-CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/motionsensor_receiver.dir/Src/nRF24L01P.c.s"
-	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\nRF24L01P.c -o CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.s
+CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/motionsensor_receiver.dir/Src/se8r01.c.s"
+	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01.c -o CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.s
 
-CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.requires:
+CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.requires:
 
-.PHONY : CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.requires
+.PHONY : CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.requires
 
-CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.provides: CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.requires
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.provides.build
-.PHONY : CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.provides
+CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.provides: CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.requires
+	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.provides.build
+.PHONY : CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.provides
 
-CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.provides.build: CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj
-
-
-CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
-CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01_rx_tx_2Mps.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/se8r01_rx_tx_2Mps.c.obj"
-	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01_rx_tx_2Mps.c
-
-CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/motionsensor_receiver.dir/Src/se8r01_rx_tx_2Mps.c.i"
-	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01_rx_tx_2Mps.c > CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.i
-
-CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/motionsensor_receiver.dir/Src/se8r01_rx_tx_2Mps.c.s"
-	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\se8r01_rx_tx_2Mps.c -o CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.s
-
-CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.requires:
-
-.PHONY : CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.requires
-
-CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.provides: CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.requires
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.provides.build
-.PHONY : CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.provides
-
-CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.provides.build: CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj
+CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.provides.build: CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj
 
 
 CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
 CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\sensor.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/sensor.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/sensor.c.obj"
 	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\sensor.c
 
 CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.i: cmake_force
@@ -580,7 +556,7 @@ CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.obj.provides.build: CMakeFiles
 
 CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
 CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\sensor_hub.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/sensor_hub.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/sensor_hub.c.obj"
 	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\sensor_hub.c
 
 CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.i: cmake_force
@@ -604,7 +580,7 @@ CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.obj.provides.build: CMakeF
 
 CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
 CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\stm32f1xx_hal_msp.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/stm32f1xx_hal_msp.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/stm32f1xx_hal_msp.c.obj"
 	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\stm32f1xx_hal_msp.c
 
 CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.i: cmake_force
@@ -628,7 +604,7 @@ CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.obj.provides.build:
 
 CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_it.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
 CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_it.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\stm32f1xx_it.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/stm32f1xx_it.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/stm32f1xx_it.c.obj"
 	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_it.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\stm32f1xx_it.c
 
 CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_it.c.i: cmake_force
@@ -652,7 +628,7 @@ CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_it.c.obj.provides.build: CMak
 
 CMakeFiles\motionsensor_receiver.dir\Src\syscalls.c.obj: CMakeFiles\motionsensor_receiver.dir\flags.make
 CMakeFiles\motionsensor_receiver.dir\Src\syscalls.c.obj: D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\syscalls.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/syscalls.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building C object CMakeFiles/motionsensor_receiver.dir/Src/syscalls.c.obj"
 	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles\motionsensor_receiver.dir\Src\syscalls.c.obj   -c D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103\Src\syscalls.c
 
 CMakeFiles\motionsensor_receiver.dir\Src\syscalls.c.i: cmake_force
@@ -695,8 +671,7 @@ motionsensor_receiver_OBJECTS = \
 "CMakeFiles\motionsensor_receiver.dir\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xb.s.obj" \
 "CMakeFiles\motionsensor_receiver.dir\Src\infrared.c.obj" \
 "CMakeFiles\motionsensor_receiver.dir\Src\main.c.obj" \
-"CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj" \
-"CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj" \
+"CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj" \
 "CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.obj" \
 "CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.obj" \
 "CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.obj" \
@@ -725,18 +700,17 @@ motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Drivers\STM32F1xx_HA
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xb.s.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\infrared.c.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\main.c.obj
-motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj
-motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj
+motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_it.c.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\Src\syscalls.c.obj
 motionsensor_receiver: CMakeFiles\motionsensor_receiver.dir\build.make
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Linking C executable motionsensor_receiver"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103-build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Linking C executable motionsensor_receiver"
 	C:\PROGRA~2\MICROS~2.0\VC\bin\amd64\cl.exe  -mthumb -fno-builtin -mcpu=cortex-m3 -Wall -std=c99 -ffunction-sections -fdata-sections -fomit-frame-pointer -mabi=aapcs -fno-unroll-loops -ffast-math -ftree-vectorize -Og -g3 -O0  -Wl,--gc-sections -mthumb -mcpu=cortex-m3 -mabi=aapcs -TD:/nbobovnikov/home/dev/auvir/auvir_embed/mocap/receiver/stm32f103-build/motionsensor_receiver_flash.ld $(motionsensor_receiver_OBJECTS) $(motionsensor_receiver_EXTERNAL_OBJECTS)  -o motionsensor_receiver 
-	CMAKE_OBJCOPY-NOTFOUND -Oihex motionsensor_receiver motionsensor_receiver.hex
-	CMAKE_OBJCOPY-NOTFOUND -Obinary motionsensor_receiver motionsensor_receiver.bin
+	OBJCOPY_PRG-NOTFOUND -Oihex motionsensor_receiver motionsensor_receiver.hex
+	OBJCOPY_PRG-NOTFOUND -Obinary motionsensor_receiver motionsensor_receiver.bin
 
 # Rule to build all files generated by this target.
 CMakeFiles\motionsensor_receiver.dir\build: motionsensor_receiver
@@ -762,8 +736,7 @@ CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.
 CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\gcc\startup_stm32f103xb.s.obj.requires
 CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\infrared.c.obj.requires
 CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\main.c.obj.requires
-CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj.requires
-CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj.requires
+CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj.requires
 CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\sensor.c.obj.requires
 CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\sensor_hub.c.obj.requires
 CMakeFiles\motionsensor_receiver.dir\requires: CMakeFiles\motionsensor_receiver.dir\Src\stm32f1xx_hal_msp.c.obj.requires
