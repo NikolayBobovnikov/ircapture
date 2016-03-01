@@ -72,10 +72,16 @@
 #define PLL_LOCK    4
 #define RF_DR_LOW   5
 #define RF_DR_HIGH  3
-// for NRF24L01
 #define RF_PWR      1   //2 bits
-//for SE8R01
-#define PA_PWR      0   //3 bits
+
+//RF_SETUP register (se8r01)
+//Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
+//CONT_WAVE | PA_PWR_3 | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR            |
+#define CONT_WAVE   7
+#define PA_PWR_3    6
+#define RF_DR_LO    5
+#define RF_DR_HIG   3
+#define PA_PWR      0
 
 // general status register //
 #define RX_DR    6
@@ -217,6 +223,7 @@
 ///==========================================================================
 #define TX_ADR_WIDTH    5   // 5 uint8_ts TX(RX) address width
 #define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
+#define RF_CHANNEL      50  //
 
 
 // SPI chip enable pin //

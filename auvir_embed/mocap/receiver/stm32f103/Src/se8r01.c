@@ -549,8 +549,12 @@ void radio_settings()
     // Set RF channel
     nrf24_write_register(iRF_BANK0_RF_CH, 40);
 
-    //2mps 0x4f
-    nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
+    //original comment: 2mps 0x4f, which is 1001111 TODO: 2mps is (RF_DR_LO,RF_DR_HIG) = (0,1) according to datasheet, and 0x4f stands for 1mps wtf?
+    //RF_SETUP register
+    //Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
+    //CONT_WAVE | PA_PWR_3 | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR            |
+    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
+
 
     //Dynamic length configurations:
     //pipe0 pipe1 enable dynamic payload length data
@@ -575,11 +579,6 @@ void radio_settings()
     nrf24_write_register(iRF_BANK0_RX_PW_P5, 0x00);
 
 
-
-//    // CRC, number of bytes CRC length
-//    nrf24_write_register(CONFIG,((1<<EN_CRC)|(0<<CRCO)));
-
-
 //    // Start listening
 //    nrf24_powerUpRx();
 
@@ -587,7 +586,6 @@ void radio_settings()
 
 void init_io(void)
 {
-    //digitalWrite(IRQq, 0);
     nrf24_ce_set(LOW);
     nrf24_csn_set(HIGH);
 }
@@ -608,9 +606,7 @@ void se8r01_switch_bank(uint8_t bankindex)
 {
     uint8_t temp0,temp1;
     temp1 = bankindex;
-
     temp0 = SPI_RW(iRF_BANK0_STATUS);
-
     if((temp0&0x80)!=temp1)
     {
         SPI_RW_Reg(iRF_CMD_ACTIVATE,0x53);
@@ -624,18 +620,17 @@ void se8r01_powerup()
     //CONFIG
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
     //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-    SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG,0x03);
+    nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+
+    //Setup RF channel TODO: check necessity
+    nrf24_write_register(iRF_BANK0_RF_CH, RF_CHANNEL);
 
     //RF_SETUP register
-    //Bit 7    | Bit 6     | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0
-    //CONT_WAV | PA_PWR[3] | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR
-    SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_CH,0x32);
+    //Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
+    //CONT_WAVE | PA_PWR_3 | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR            |
+    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
 
-    //RF_SETUP register
-    //Bit 7    | Bit 6     | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0
-    //CONT_WAV | PA_PWR[3] | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR
-    SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_SETUP,0x48);// 0x48 - 01001000; 0x47 - 01000111
-
+    // TODO: reveal the Magic
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_PRE_GURD,0x77); //2450 calibration
 }
 
