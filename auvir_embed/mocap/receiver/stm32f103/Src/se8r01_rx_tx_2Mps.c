@@ -22,9 +22,8 @@ extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 
 void setup()
 {
-
     init_io();                        // Initialize IO port
-    uint8_t status=SPI_Read(STATUS);
+    uint8_t status = SPI_Read(STATUS);
     nrf24_ce_set(LOW);
     delay_us(150);
     se8r01_powerup();
@@ -61,7 +60,7 @@ void RXX()
 {
     if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW)
     {
-        HAL_Delay(1);      //read reg too close after irq low not good
+        delay_us(10);      //read reg too close after irq low not good
         uint8_t status = SPI_Read(STATUS);
 
         if(status & STA_MARK_RX)                                // if receive data ready (TX_DS) interrupt
@@ -99,6 +98,24 @@ void TXX()
 
     SPI_RW_Reg(FLUSH_TX,0);
     SPI_Write_Buf(W_TX_PAYLOAD,tx_buf,TX_PLOAD_WIDTH);
+
+    uint8_t tx_status = nrf24_last_messageStatus();
+                GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+                uint8_t retr = nrf24_get_last_msg_retransmission_count();
+                switch(tx_status){
+                    case NRF24_TRANSMISSON_OK:{
+                        int a = 0;
+                        break;
+                    }
+                    case NRF24_MESSAGE_LOST:{
+                        int a = 0;
+                        break;
+                    }
+                    case NRF24_MESSAGE_SENDING:{
+                        int a = 0;
+                        break;
+                    }
+                }
 
     SPI_RW_Reg(W_REGISTER + STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag
 
@@ -164,7 +181,12 @@ void se8r01_powerup()
     se8r01_switch_bank(iBANK0);
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG,0x03);
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_CH,0x32);
-    SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_SETUP,0x48);
+
+    //RF_SETUP register
+    //Bit 7    | Bit 6     | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0
+    //CONT_WAV | PA_PWR[3] | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR
+    SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_SETUP,0x48);// 0x48 - 01001000; 0x47 - 01000111
+
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_PRE_GURD,0x77); //2450 calibration
 }
 

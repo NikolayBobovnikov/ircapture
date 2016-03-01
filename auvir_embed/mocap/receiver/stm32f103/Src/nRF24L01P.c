@@ -234,7 +234,6 @@ uint8_t payload_len;
 void nrf24_init()
 {
     nrf24_setup_gpio();
-
     nrf24_ce_set(LOW);
     nrf24_csn_set(HIGH);
 }

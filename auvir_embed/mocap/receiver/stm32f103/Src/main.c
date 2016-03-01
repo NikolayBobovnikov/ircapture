@@ -73,7 +73,7 @@ const bool _is_direct_logic = false;
 
 uint32_t ticks_per_1_us = 0;
 uint32_t total_ticks = 0;
-uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x34,0x43,0x10,0x10,0xCD};
+uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x34,0x43,0x10,0x10,0xAB};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 
@@ -123,7 +123,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-char mode = 't'; // 't'
+char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -155,8 +155,8 @@ int main(void)
     init_delay();
     debug_init_gpio();
     init_gpio_led();
-
     nrf24_init();
+
     HAL_TIM_Base_Start_IT(ptim_data_read);
     HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
     /* USER CODE END 2 */
@@ -168,7 +168,30 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
-    setup();
+    uint8_t status_reg = 0;
+
+    //=====================
+    status_reg = SPI_Read(STATUS);
+    nrf24_ce_set(LOW);
+    delay_us(150);
+    se8r01_powerup();
+    se8r01_calibration();
+    se8r01_setup();
+
+
+    radio_settings();
+    if (mode=='r') {
+        SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3f);
+        // start listening
+        nrf24_ce_set(HIGH);
+    }
+    else {
+        SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3E);
+        nrf24_ce_set(HIGH);
+    }
+
+
+    //=====================
 
     /*
     if(is_receiver){
@@ -179,7 +202,7 @@ int main(void)
     }
     */
 
-    uint8_t status_reg = nrf24_get_status_register();
+    status_reg = nrf24_get_status_register();
     HAL_Delay(1);
 
     uint8_t txaddr[TX_ADR_WIDTH]={0};
@@ -194,8 +217,8 @@ int main(void)
     TransmissionStatus tx_status;
     while (1)
     {
-        //loop();
-#if 1
+        loop();
+#if 0
         if(is_transmitter){
         	    const char* test_str = "HelloWireless!\0";
         	    memcpy(tx_buf, test_str, strlen(test_str));
@@ -224,11 +247,12 @@ int main(void)
         }
         else if (is_receiver){
         	GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
-        	status = nrf24_get_status_register();
+            status_reg = nrf24_get_status_register();
             bool ready = nrf24_is_data_ready();
             if(ready)
             {
             	nrf24_receive(rx_buf);
+            	int a = 0;
             }
 
 
