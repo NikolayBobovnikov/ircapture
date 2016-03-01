@@ -619,59 +619,32 @@ Src\main.c.s:
 	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\main.c.s
 .PHONY : Src\main.c.s
 
-Src\nRF24L01P.obj: Src\nRF24L01P.c.obj
+Src\se8r01.obj: Src\se8r01.c.obj
 
-.PHONY : Src\nRF24L01P.obj
-
-# target to build an object file
-Src\nRF24L01P.c.obj:
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.obj
-.PHONY : Src\nRF24L01P.c.obj
-
-Src\nRF24L01P.i: Src\nRF24L01P.c.i
-
-.PHONY : Src\nRF24L01P.i
-
-# target to preprocess a source file
-Src\nRF24L01P.c.i:
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.i
-.PHONY : Src\nRF24L01P.c.i
-
-Src\nRF24L01P.s: Src\nRF24L01P.c.s
-
-.PHONY : Src\nRF24L01P.s
-
-# target to generate assembly for a file
-Src\nRF24L01P.c.s:
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\nRF24L01P.c.s
-.PHONY : Src\nRF24L01P.c.s
-
-Src\se8r01_rx_tx_2Mps.obj: Src\se8r01_rx_tx_2Mps.c.obj
-
-.PHONY : Src\se8r01_rx_tx_2Mps.obj
+.PHONY : Src\se8r01.obj
 
 # target to build an object file
-Src\se8r01_rx_tx_2Mps.c.obj:
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.obj
-.PHONY : Src\se8r01_rx_tx_2Mps.c.obj
+Src\se8r01.c.obj:
+	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.obj
+.PHONY : Src\se8r01.c.obj
 
-Src\se8r01_rx_tx_2Mps.i: Src\se8r01_rx_tx_2Mps.c.i
+Src\se8r01.i: Src\se8r01.c.i
 
-.PHONY : Src\se8r01_rx_tx_2Mps.i
+.PHONY : Src\se8r01.i
 
 # target to preprocess a source file
-Src\se8r01_rx_tx_2Mps.c.i:
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.i
-.PHONY : Src\se8r01_rx_tx_2Mps.c.i
+Src\se8r01.c.i:
+	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.i
+.PHONY : Src\se8r01.c.i
 
-Src\se8r01_rx_tx_2Mps.s: Src\se8r01_rx_tx_2Mps.c.s
+Src\se8r01.s: Src\se8r01.c.s
 
-.PHONY : Src\se8r01_rx_tx_2Mps.s
+.PHONY : Src\se8r01.s
 
 # target to generate assembly for a file
-Src\se8r01_rx_tx_2Mps.c.s:
-	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01_rx_tx_2Mps.c.s
-.PHONY : Src\se8r01_rx_tx_2Mps.c.s
+Src\se8r01.c.s:
+	$(MAKE) -f CMakeFiles\motionsensor_receiver.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\motionsensor_receiver.dir\Src\se8r01.c.s
+.PHONY : Src\se8r01.c.s
 
 Src\sensor.obj: Src\sensor.c.obj
 
@@ -872,12 +845,9 @@ help:
 	@echo ... Src/main.obj
 	@echo ... Src/main.i
 	@echo ... Src/main.s
-	@echo ... Src/nRF24L01P.obj
-	@echo ... Src/nRF24L01P.i
-	@echo ... Src/nRF24L01P.s
-	@echo ... Src/se8r01_rx_tx_2Mps.obj
-	@echo ... Src/se8r01_rx_tx_2Mps.i
-	@echo ... Src/se8r01_rx_tx_2Mps.s
+	@echo ... Src/se8r01.obj
+	@echo ... Src/se8r01.i
+	@echo ... Src/se8r01.s
 	@echo ... Src/sensor.obj
 	@echo ... Src/sensor.i
 	@echo ... Src/sensor.s
