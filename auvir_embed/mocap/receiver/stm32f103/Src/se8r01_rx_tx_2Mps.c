@@ -1,7 +1,6 @@
 //this is a copy and paste job made by F2k
 
 #include "stm32f1xx_hal.h"
-#include "nRF24L01P.h"
 #include "se8r01.h"
 
 ///
@@ -11,14 +10,471 @@
 extern SPI_HandleTypeDef hspi1;
 extern char mode;      //r=rx, t=tx
 void delay_us(uint8_t us);
-
-
+void nrf24_setup_gpio();
 uint8_t gtemp[5];
 
 // Define a static TX address
 extern uint8_t TX_ADDRESS[TX_ADR_WIDTH];
 extern uint8_t rx_buf[TX_PLOAD_WIDTH]; // initialize value
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
+
+
+
+
+uint8_t payload_len;
+
+void nrf24_init()
+{
+    nrf24_setup_gpio();
+    nrf24_ce_set(LOW);
+    nrf24_csn_set(HIGH);
+}
+
+void nrf24_config(uint8_t channel, uint8_t pay_length)
+{
+    // Use static payload length ... //
+    payload_len = pay_length;
+
+    // Set RF channel
+    nrf24_write_register(RF_CH,channel);
+
+    // Set length of incoming payload
+    nrf24_write_register(RX_PW_P0, payload_len); // Auto-ACK pipe ...
+    nrf24_write_register(RX_PW_P1, 0x00); // Data payload pipe
+    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
+
+    // 1 Mbps, TX gain: 0dbm
+    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
+
+    // CRC, number of bytes CRC length
+    nrf24_write_register(CONFIG,((1<<EN_CRC)|(0<<CRCO)));
+
+    // Auto Acknowledgment
+    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
+
+    // Enable RX addresses
+    nrf24_write_register(EN_RXADDR,(1<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
+
+    // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
+    nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
+
+    // Dynamic length configurations: No dynamic length
+    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
+
+    // Start listening
+    nrf24_powerUpRx();
+}
+
+void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
+{
+    // setup addresses for pipe
+    nrf24_write_register_multi(RX_ADDR_P1, pipe_addr, TX_ADR_WIDTH);
+
+    // Use static payload length ... //
+    payload_len = pay_length;
+
+    // Set RF channel
+    nrf24_write_register(RF_CH,channel);
+
+    // Set length of incoming payload
+    nrf24_write_register(RX_PW_P0, 0x00); // Auto-ACK pipe ...
+    nrf24_write_register(RX_PW_P1, payload_len); // Data payload pipe
+    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
+
+    // 1 Mbps, TX gain: 0dbm
+    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
+
+    //                          (CRC enabled,  1 byte)
+    nrf24_write_register(CONFIG,(1<<EN_CRC) | (0<<CRCO));
+
+    // Auto Acknowledgment
+    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
+
+    // Enable RX addresses
+    nrf24_write_register(EN_RXADDR,(0<<ERX_P0)|(1<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
+
+    // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
+    nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
+
+    // Dynamic length configurations: No dynamic length
+    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
+
+    // Start listening
+    nrf24_powerUpRx();
+}
+
+void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
+{
+    // setup addresses for pipes
+    //nrf24_write_register_multi(RX_ADDR_P0, pipe_addr, nrf24_ADDR_LEN);
+    nrf24_write_register_multi(TX_ADDR, pipe_addr, TX_ADR_WIDTH);
+
+    // Use static payload length ... //
+    payload_len = pay_length;
+
+    // Set RF channel
+    nrf24_write_register(RF_CH,channel);
+
+    // Set length of incoming payload
+    nrf24_write_register(RX_PW_P0, 0x00); // Auto-ACK pipe ...
+    nrf24_write_register(RX_PW_P1, 0x00); // Data payload pipe
+    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
+    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
+
+    // 1 Mbps, TX gain: 0dbm
+    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
+
+    //                          (CRC enabled,  1 byte)
+    nrf24_write_register(CONFIG,(1<<EN_CRC) | (0<<CRCO));
+
+    // Auto Acknowledgment
+    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
+
+    // Enable RX addresses
+    nrf24_write_register(EN_RXADDR,(0<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
+
+    // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
+    nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
+
+    // Dynamic length configurations: No dynamic length
+    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
+
+    // Start listening
+    nrf24_powerUpTx();
+}
+
+void nrf24_set_rx_address(uint8_t * adr)
+{
+    //nrf24_ce_set(LOW);
+    nrf24_write_register_multi(RX_ADDR_P0,adr,TX_ADR_WIDTH);
+    //nrf24_ce_set(HIGH);
+}
+
+void nrf24_set_tx_address(uint8_t* adr)
+{
+    // RX_ADDR_P0 must be set to the sending addr for auto ack to work. //
+   nrf24_write_register_multi(RX_ADDR_P0, adr, TX_ADR_WIDTH);
+   nrf24_write_register_multi(TX_ADDR, adr, TX_ADR_WIDTH);
+}
+
+uint8_t nrf24_get_payload_len()
+{
+    return payload_len;
+}
+
+uint8_t nrf24_get_rx_fifo_pending_data_length()
+{
+    uint8_t status;
+    nrf24_csn_set(LOW);
+    nrf24_spi_transaction(R_RX_PL_WID);
+    status = nrf24_spi_transaction(0x00);
+    nrf24_csn_set(HIGH);
+    return status;
+}
+
+bool nrf24_is_data_ready()
+{
+    // See note in getData() function - just checking RX_DR isn't good enough
+    uint8_t status = nrf24_get_status_register();
+
+    // We can short circuit on RX_DR, but if it's not set, we still need
+    // to check the FIFO for any pending packets
+    if ( status & (1 << RX_DR) )
+    {
+        return true;
+    }
+
+    return !nrf24_is_rx_fifo_empty();
+}
+
+bool nrf24_is_rx_fifo_empty()
+{
+    uint8_t fifoStatus;
+
+    nrf24_read_register_multi(FIFO_STATUS, &fifoStatus,1);
+
+    //return (fifoStatus & (1 << RX_EMPTY)); // TODO: verify correctness
+    if(fifoStatus & (1 << RX_EMPTY)){
+        return true;
+    }
+    return false;
+}
+
+// Reads payload bytes into data array //
+void nrf24_receive(uint8_t* data)
+{
+    // Pull down chip select //
+    nrf24_csn_set(LOW);
+
+    // Send cmd to read rx payload //
+    nrf24_spi_transaction( R_RX_PAYLOAD );
+
+    // Read payload //
+    nrf24_transferSync(data,data,payload_len);
+
+    // Pull up chip select //
+    nrf24_csn_set(HIGH);
+
+    // Reset status register //
+    nrf24_write_register(STATUS,(1<<RX_DR));
+}
+
+// Returns the number of retransmissions occured for the last message //
+uint8_t nrf24_get_last_msg_retransmission_count()
+{
+    uint8_t rv;
+    nrf24_read_register_multi(OBSERVE_TX,&rv,1);
+    rv = rv & 0x0F;
+    return rv;
+}
+
+// Sends a data package to the default address. Be sure to send the correct
+// amount of bytes as configured as payload on the receiver.
+void nrf24_send(uint8_t* value)
+{
+    // Go to Standby-I first //
+    nrf24_ce_set(LOW);
+
+    // Set to transmitter mode , Power up if needed //
+    nrf24_powerUpTx();
+
+    // Do we really need to flush TX fifo each time ? // TODO
+#if 1
+    // Pull down chip select //
+    nrf24_csn_set(LOW);
+
+    // Write cmd to flush transmit FIFO //
+    nrf24_spi_transaction(FLUSH_TX);
+
+    // Pull up chip select //
+    nrf24_csn_set(HIGH);
+#endif
+
+    // Pull down chip select //
+    nrf24_csn_set(LOW);
+
+    // Write cmd to write payload //
+    nrf24_spi_transaction(W_TX_PAYLOAD);
+
+    // Write payload //
+    nrf24_transmitSync(value,payload_len);
+
+    // Pull up chip select //
+    nrf24_csn_set(HIGH);
+
+    // Start the transmission //
+    nrf24_ce_set(HIGH);
+
+    HAL_Delay(1); //should be >10 microseconds
+    nrf24_ce_set(LOW);
+}
+
+bool nrf24_is_sending()
+{
+    uint8_t status;
+
+    // read the current status //
+    status = nrf24_get_status_register();
+
+    // if sending successful (TX_DS) or max retries exceded (MAX_RT). //
+    if((status & ((1 << TX_DS)  | (1 << MAX_RT))))
+    {
+        return false;
+    }
+
+    return true;
+
+}
+
+uint8_t nrf24_get_status_register()
+{
+    uint8_t rv;
+    nrf24_csn_set(LOW);
+    rv = nrf24_spi_transaction(NOP);
+    nrf24_csn_set(HIGH);
+    return rv;
+}
+
+TransmissionStatus nrf24_last_messageStatus()
+{
+    uint8_t rv;
+
+    rv = nrf24_get_status_register();
+
+    // Transmission went OK //
+    if(is_register_bit_set(STATUS, TX_DS))
+    {
+        nrf24_reset_register_bit(STATUS, TX_DS);
+        return NRF24_TRANSMISSON_OK;
+    }
+    // Maximum retransmission count is reached //
+    // Last message probably went missing ... //
+    else if(is_register_bit_set(STATUS, MAX_RT))
+    {
+        nrf24_reset_register_bit(STATUS, MAX_RT);
+        return NRF24_MESSAGE_LOST;
+    }
+    // Probably still sending ... //
+    else
+    {
+        return NRF24_MESSAGE_SENDING;
+    }
+}
+
+void nrf24_powerUpRx()
+{
+    nrf24_csn_set(LOW);
+    nrf24_spi_transaction(FLUSH_RX);
+    nrf24_csn_set(HIGH);
+
+    nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
+
+    nrf24_ce_set(LOW);
+    nrf24_write_register(CONFIG,(1<<PWR_UP)|(1<<PRIM_RX));
+
+    // start listening
+    nrf24_ce_set(HIGH);
+
+}
+
+void nrf24_powerUpTx()
+{
+    nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
+    nrf24_write_register(CONFIG,(1<<PWR_UP)|(0<<PRIM_RX));
+}
+
+void nrf24_powerDown()
+{
+    nrf24_ce_set(LOW);
+    nrf24_write_register(CONFIG,0<<PWR_UP);
+}
+
+void nrf24_reset()
+{
+
+    //1)use power down mode (PWR_UP = 0)
+    nrf24_ce_set(LOW);
+    nrf24_write_register(CONFIG,0<<PWR_UP);
+
+    //2)clear data ready flag and data sent flag in status register
+    nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
+
+    //3)flush tx/rx buffer
+    nrf24_csn_set(LOW);
+    nrf24_spi_transaction(FLUSH_RX);
+    nrf24_csn_set(HIGH);
+
+    //4)write status register as 0x0e;
+    nrf24_write_register(STATUS,0x0E);
+}
+// Clocks only one byte into the given nrf24 register //
+void nrf24_write_register(uint8_t reg, uint8_t value)
+{
+    nrf24_csn_set(LOW);
+    nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
+    nrf24_spi_transaction(value);
+    nrf24_csn_set(HIGH);
+}
+
+// Read single register from nrf24 //
+void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
+{
+    nrf24_csn_set(LOW);
+    nrf24_spi_transaction(R_REGISTER | (REGISTER_MASK & reg));
+    nrf24_transferSync(value,value,len);
+    nrf24_csn_set(HIGH);
+}
+
+// Write to a single register of nrf24 //
+void nrf24_write_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
+{
+
+    nrf24_csn_set(LOW);
+    nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
+    nrf24_transmitSync(value,len);
+    nrf24_csn_set(HIGH);
+}
+
+
+//========================================
+// Interface functions
+
+void nrf24_ce_set(uint8_t state)
+{
+    assert_param(state == LOW || state == HIGH);
+    HAL_GPIO_WritePin(NRF24_CE_PORT,NRF24_CE_PIN, state);
+}
+
+void nrf24_csn_set(uint8_t state)
+{
+    assert_param(state == LOW || state == HIGH);
+    HAL_GPIO_WritePin(NRF24_CSN_PORT,NRF24_CSN_PIN, state);
+}
+
+// @param: byte to be sent
+// @returns: nrf24 STATUS register
+uint8_t nrf24_spi_transaction(uint8_t tx)
+{
+    uint8_t rx = 0;
+
+    HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
+
+    return rx;
+}
+
+// send and receive multiple bytes over SPI //
+void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
+{
+    uint8_t i;
+
+    for(i=0;i<len;i++)
+    {
+        datain[i] = nrf24_spi_transaction(dataout[i]);
+    }
+
+}
+
+// send multiple bytes over SPI //
+void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
+{
+    uint8_t i;
+    for(i=0;i<len;i++)
+    {
+        nrf24_spi_transaction(dataout[i]);
+    }
+
+}
+
+void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit)
+{
+    uint8_t reg = 0;
+    nrf24_read_register_multi(reg_name, &reg, 1);
+    nrf24_write_register(reg_name, reg | (1 << bit));
+}
+
+bool is_register_bit_set(uint8_t reg_name, uint8_t bit)
+{
+    uint8_t reg = 0;
+    nrf24_read_register_multi(reg_name, &reg, 1);
+    if(reg & (1 << bit)){
+        return true;
+    }
+    return false;
+}
+
+
+
+
+
+
 
 void setup()
 {
