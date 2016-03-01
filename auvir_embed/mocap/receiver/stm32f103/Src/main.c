@@ -215,9 +215,9 @@ int main(void)
         loop();
 #if 0
         if(is_transmitter){
-        	    const char* test_str = "HelloWireless!\0";
-        	    memcpy(tx_buf, test_str, strlen(test_str));
-        	    int size = strlen(test_str);
+                const char* test_str = "HelloWireless!\0";
+                memcpy(tx_buf, test_str, strlen(test_str));
+                int size = strlen(test_str);
 
             nrf24_send(tx_buf);
             HAL_Delay(10);
@@ -241,13 +241,13 @@ int main(void)
 
         }
         else if (is_receiver){
-        	GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+            GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
             status_reg = nrf24_get_status_register();
             bool ready = nrf24_is_data_ready();
             if(ready)
             {
-            	nrf24_receive(rx_buf);
-            	int a = 0;
+                nrf24_receive(rx_buf);
+                int a = 0;
             }
 
 
@@ -596,11 +596,11 @@ void nrf24_setup_gpio(void) {
 
 void delay_us(uint8_t delay)
 {
-	 volatile uint32_t nCount;
-	 nCount = (uint32_t) HAL_RCC_GetSysClockFreq()/10000000;
-	 for (; nCount!=0; nCount--);
+     volatile uint32_t nCount;
+     nCount = (uint32_t) HAL_RCC_GetSysClockFreq()/10000000;
+     for (; nCount!=0; nCount--);
 
-	 int a = 0;
+     int a = 0;
 }
 
 /* USER CODE END 4 */

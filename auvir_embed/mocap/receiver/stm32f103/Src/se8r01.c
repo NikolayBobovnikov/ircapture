@@ -556,13 +556,15 @@ void radio_settings()
     nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
 
 
+#if 0
     //Dynamic length configurations:
     //pipe0 pipe1 enable dynamic payload length data
-    //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_DYNPD, 0x01);
-    //nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
+    nrf24_write_register(iRF_BANK0_DYNPD, 0x01);
+    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
 
     // enable dynamic paload lenght; enbale payload with ack enable w_tx_payload_noack
     //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_FEATURE, 0x07);
+#endif
 
     //Set transmit address
     nrf24_write_register_buf(iRF_BANK0_TX_ADDR, TX_ADDRESS, TX_ADR_WIDTH);
@@ -577,10 +579,6 @@ void radio_settings()
     nrf24_write_register(iRF_BANK0_RX_PW_P3, 0x00);
     nrf24_write_register(iRF_BANK0_RX_PW_P4, 0x00);
     nrf24_write_register(iRF_BANK0_RX_PW_P5, 0x00);
-
-
-//    // Start listening
-//    nrf24_powerUpRx();
 
 }
 
