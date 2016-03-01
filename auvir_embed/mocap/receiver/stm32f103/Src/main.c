@@ -166,7 +166,7 @@ int main(void)
     uint8_t status_reg = 0;
 
     //=====================
-    status_reg = SPI_Read(STATUS);
+    status_reg = SPI_Read(iRF_BANK0_STATUS);
     nrf24_ce_set(LOW);
     delay_us(150);
     se8r01_powerup();
@@ -176,7 +176,7 @@ int main(void)
 
     radio_settings();
     if (mode=='r') {
-        SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3f);
+        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
         // start listening
         nrf24_ce_set(HIGH);
     }
@@ -204,9 +204,9 @@ int main(void)
     uint8_t rxaddr0[TX_ADR_WIDTH]={0};
     uint8_t rxaddr1[TX_ADR_WIDTH]={0};
 
-    nrf24_read_register_multi(TX_ADDR,txaddr,TX_ADR_WIDTH);
-    nrf24_read_register_multi(RX_ADDR_P0,rxaddr0,TX_ADR_WIDTH);
-    nrf24_read_register_multi(RX_ADDR_P1,rxaddr1,TX_ADR_WIDTH);
+    nrf24_read_register_buf(TX_ADDR,txaddr,TX_ADR_WIDTH);
+    nrf24_read_register_buf(RX_ADDR_P0,rxaddr0,TX_ADR_WIDTH);
+    nrf24_read_register_buf(RX_ADDR_P1,rxaddr1,TX_ADR_WIDTH);
 
 
     TransmissionStatus tx_status;

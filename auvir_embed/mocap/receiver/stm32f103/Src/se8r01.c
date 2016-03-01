@@ -17,11 +17,8 @@ uint8_t gtemp[5];
 extern uint8_t TX_ADDRESS[TX_ADR_WIDTH];
 extern uint8_t rx_buf[TX_PLOAD_WIDTH]; // initialize value
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
+uint8_t payload_len = TX_PLOAD_WIDTH;
 
-
-
-
-uint8_t payload_len;
 
 void nrf24_init()
 {
@@ -30,11 +27,8 @@ void nrf24_init()
     nrf24_csn_set(HIGH);
 }
 
-void nrf24_config(uint8_t channel, uint8_t pay_length)
+void nrf24_config(uint8_t channel)
 {
-    // Use static payload length ... //
-    payload_len = pay_length;
-
     // Set RF channel
     nrf24_write_register(RF_CH,channel);
 
@@ -68,13 +62,10 @@ void nrf24_config(uint8_t channel, uint8_t pay_length)
     nrf24_powerUpRx();
 }
 
-void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
+void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel)
 {
     // setup addresses for pipe
-    nrf24_write_register_multi(RX_ADDR_P1, pipe_addr, TX_ADR_WIDTH);
-
-    // Use static payload length ... //
-    payload_len = pay_length;
+    nrf24_write_register_buf(RX_ADDR_P1, pipe_addr, TX_ADR_WIDTH);
 
     // Set RF channel
     nrf24_write_register(RF_CH,channel);
@@ -109,14 +100,11 @@ void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
     nrf24_powerUpRx();
 }
 
-void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
+void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel)
 {
     // setup addresses for pipes
     //nrf24_write_register_multi(RX_ADDR_P0, pipe_addr, nrf24_ADDR_LEN);
-    nrf24_write_register_multi(TX_ADDR, pipe_addr, TX_ADR_WIDTH);
-
-    // Use static payload length ... //
-    payload_len = pay_length;
+    nrf24_write_register_buf(TX_ADDR, pipe_addr, TX_ADR_WIDTH);
 
     // Set RF channel
     nrf24_write_register(RF_CH,channel);
@@ -154,28 +142,23 @@ void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length)
 void nrf24_set_rx_address(uint8_t * adr)
 {
     //nrf24_ce_set(LOW);
-    nrf24_write_register_multi(RX_ADDR_P0,adr,TX_ADR_WIDTH);
+    nrf24_write_register_buf(RX_ADDR_P0,adr,TX_ADR_WIDTH);
     //nrf24_ce_set(HIGH);
 }
 
 void nrf24_set_tx_address(uint8_t* adr)
 {
     // RX_ADDR_P0 must be set to the sending addr for auto ack to work. //
-   nrf24_write_register_multi(RX_ADDR_P0, adr, TX_ADR_WIDTH);
-   nrf24_write_register_multi(TX_ADDR, adr, TX_ADR_WIDTH);
-}
-
-uint8_t nrf24_get_payload_len()
-{
-    return payload_len;
+   nrf24_write_register_buf(RX_ADDR_P0, adr, TX_ADR_WIDTH);
+   nrf24_write_register_buf(TX_ADDR, adr, TX_ADR_WIDTH);
 }
 
 uint8_t nrf24_get_rx_fifo_pending_data_length()
 {
     uint8_t status;
     nrf24_csn_set(LOW);
-    nrf24_spi_transaction(R_RX_PL_WID);
-    status = nrf24_spi_transaction(0x00);
+    SPI_RW(R_RX_PL_WID);
+    status = SPI_RW(0x00);
     nrf24_csn_set(HIGH);
     return status;
 }
@@ -199,7 +182,7 @@ bool nrf24_is_rx_fifo_empty()
 {
     uint8_t fifoStatus;
 
-    nrf24_read_register_multi(FIFO_STATUS, &fifoStatus,1);
+    nrf24_read_register_buf(FIFO_STATUS, &fifoStatus,1);
 
     //return (fifoStatus & (1 << RX_EMPTY)); // TODO: verify correctness
     if(fifoStatus & (1 << RX_EMPTY)){
@@ -215,7 +198,7 @@ void nrf24_receive(uint8_t* data)
     nrf24_csn_set(LOW);
 
     // Send cmd to read rx payload //
-    nrf24_spi_transaction( R_RX_PAYLOAD );
+    SPI_RW( R_RX_PAYLOAD );
 
     // Read payload //
     nrf24_transferSync(data,data,payload_len);
@@ -231,7 +214,7 @@ void nrf24_receive(uint8_t* data)
 uint8_t nrf24_get_last_msg_retransmission_count()
 {
     uint8_t rv;
-    nrf24_read_register_multi(OBSERVE_TX,&rv,1);
+    nrf24_read_register_buf(OBSERVE_TX,&rv,1);
     rv = rv & 0x0F;
     return rv;
 }
@@ -252,7 +235,7 @@ void nrf24_send(uint8_t* value)
     nrf24_csn_set(LOW);
 
     // Write cmd to flush transmit FIFO //
-    nrf24_spi_transaction(FLUSH_TX);
+    SPI_RW(FLUSH_TX);
 
     // Pull up chip select //
     nrf24_csn_set(HIGH);
@@ -262,10 +245,10 @@ void nrf24_send(uint8_t* value)
     nrf24_csn_set(LOW);
 
     // Write cmd to write payload //
-    nrf24_spi_transaction(W_TX_PAYLOAD);
+    SPI_RW(W_TX_PAYLOAD);
 
     // Write payload //
-    nrf24_transmitSync(value,payload_len);
+    // TODO func(value,payload_len);
 
     // Pull up chip select //
     nrf24_csn_set(HIGH);
@@ -298,7 +281,7 @@ uint8_t nrf24_get_status_register()
 {
     uint8_t rv;
     nrf24_csn_set(LOW);
-    rv = nrf24_spi_transaction(NOP);
+    rv = SPI_RW(NOP);
     nrf24_csn_set(HIGH);
     return rv;
 }
@@ -332,7 +315,7 @@ TransmissionStatus nrf24_last_messageStatus()
 void nrf24_powerUpRx()
 {
     nrf24_csn_set(LOW);
-    nrf24_spi_transaction(FLUSH_RX);
+    SPI_RW(FLUSH_RX);
     nrf24_csn_set(HIGH);
 
     nrf24_write_register(STATUS,(1<<RX_DR)|(1<<TX_DS)|(1<<MAX_RT));
@@ -369,38 +352,11 @@ void nrf24_reset()
 
     //3)flush tx/rx buffer
     nrf24_csn_set(LOW);
-    nrf24_spi_transaction(FLUSH_RX);
+    SPI_RW(FLUSH_RX);
     nrf24_csn_set(HIGH);
 
     //4)write status register as 0x0e;
     nrf24_write_register(STATUS,0x0E);
-}
-// Clocks only one byte into the given nrf24 register //
-void nrf24_write_register(uint8_t reg, uint8_t value)
-{
-    nrf24_csn_set(LOW);
-    nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
-    nrf24_spi_transaction(value);
-    nrf24_csn_set(HIGH);
-}
-
-// Read single register from nrf24 //
-void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
-{
-    nrf24_csn_set(LOW);
-    nrf24_spi_transaction(R_REGISTER | (REGISTER_MASK & reg));
-    nrf24_transferSync(value,value,len);
-    nrf24_csn_set(HIGH);
-}
-
-// Write to a single register of nrf24 //
-void nrf24_write_register_multi(uint8_t reg, uint8_t* value, uint8_t len)
-{
-
-    nrf24_csn_set(LOW);
-    nrf24_spi_transaction(W_REGISTER | (REGISTER_MASK & reg));
-    nrf24_transmitSync(value,len);
-    nrf24_csn_set(HIGH);
 }
 
 
@@ -419,16 +375,6 @@ void nrf24_csn_set(uint8_t state)
     HAL_GPIO_WritePin(NRF24_CSN_PORT,NRF24_CSN_PIN, state);
 }
 
-// @param: byte to be sent
-// @returns: nrf24 STATUS register
-uint8_t nrf24_spi_transaction(uint8_t tx)
-{
-    uint8_t rx = 0;
-
-    HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
-
-    return rx;
-}
 
 // send and receive multiple bytes over SPI //
 void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
@@ -437,7 +383,7 @@ void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
 
     for(i=0;i<len;i++)
     {
-        datain[i] = nrf24_spi_transaction(dataout[i]);
+        datain[i] = SPI_RW(dataout[i]);
     }
 
 }
@@ -448,7 +394,7 @@ void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
     uint8_t i;
     for(i=0;i<len;i++)
     {
-        nrf24_spi_transaction(dataout[i]);
+        SPI_RW(dataout[i]);
     }
 
 }
@@ -456,14 +402,14 @@ void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit)
 {
     uint8_t reg = 0;
-    nrf24_read_register_multi(reg_name, &reg, 1);
+    nrf24_read_register_buf(reg_name, &reg, 1);
     nrf24_write_register(reg_name, reg | (1 << bit));
 }
 
 bool is_register_bit_set(uint8_t reg_name, uint8_t bit)
 {
     uint8_t reg = 0;
-    nrf24_read_register_multi(reg_name, &reg, 1);
+    nrf24_read_register_buf(reg_name, &reg, 1);
     if(reg & (1 << bit)){
         return true;
     }
@@ -488,12 +434,12 @@ void setup()
     radio_settings();
 
     if (mode=='r') {
-        SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3f);
+        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
         // start listening
         nrf24_ce_set(HIGH);
     }
     else {
-        SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3E);
+        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
         nrf24_ce_set(LOW);
     }
 
@@ -517,22 +463,21 @@ void RXX()
     if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW)
     {
         delay_us(10);      //read reg too close after irq low not good
-        uint8_t status = SPI_Read(STATUS);
+        uint8_t status = SPI_Read(iRF_BANK0_STATUS);
 
         if(status & STA_MARK_RX)                                // if receive data ready (TX_DS) interrupt
         {
             SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
-            SPI_RW_Reg(FLUSH_RX,0); // clear RX_FIFO
+            SPI_RW_Reg(FLUSH_RX,0);
+            // clear RX_FIFO
             for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
             {
-                int a = 0;
-                int b = a;
             }
-            SPI_RW_Reg(W_REGISTER+STATUS,0xff);
+            SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
         }
         else{
 
-            SPI_RW_Reg(W_REGISTER+STATUS,0xff);
+            SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
 
         }
 
@@ -550,10 +495,10 @@ void TXX()
     memcpy(tx_buf, test_str, strlen(test_str));
 
 
-    uint8_t status = SPI_Read(STATUS);
+    uint8_t status = SPI_Read(iRF_BANK0_STATUS);
 
-    SPI_RW_Reg(FLUSH_TX,0);
-    SPI_Write_Buf(W_TX_PAYLOAD,tx_buf,TX_PLOAD_WIDTH);
+    SPI_RW_Reg(iRF_CMD_FLUSH_TX,0);
+    SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
 
     uint8_t tx_status = nrf24_last_messageStatus();
                 GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
@@ -573,7 +518,7 @@ void TXX()
                     }
                 }
 
-    SPI_RW_Reg(W_REGISTER + STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag
+    SPI_RW_Reg(iRF_CMD_WRITE_REG + iRF_BANK0_STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag
 
     HAL_Delay(500);
 
@@ -582,21 +527,61 @@ void TXX()
 void radio_settings()
 {
 
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_EN_AA, 0x01);          //enable auto acc on pip 1
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_EN_RXADDR, 0x01);      //enable pip 1
+    // Enable Auto Acknowledgment
+    nrf24_write_register(iRF_BANK0_EN_AA, (1<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
+
+    // Enable RX addresses (pipes)
+    //nrf24_write_register(iRF_BANK0_EN_RXADDR, 0x01);      //enable pip 1
+    nrf24_write_register(iRF_BANK0_EN_RXADDR,(1<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
+
 
     //4 byte adress, but use 5 byte address! TODO: research http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_AW, 0x02);       //4 byte adress
+    // 11 5 bytes
+    // 10 4 bytes
+    // 01 Illegal
+    // 00 Illegal
+    nrf24_write_register(iRF_BANK0_SETUP_AW, 0x02);
 
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_SETUP_RETR, 0xB00001010); //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit HAL_Delay
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_RF_CH, 40);
-    SPI_RW_Reg(W_REGISTER|iRF_BANK0_RF_SETUP, 0x4f);        //2mps 0x4f
-    //SPI_RW_Reg(W_REGISTER|iRF_BANK0_DYNPD, 0x01);          //pipe0 pipe1 enable dynamic payload length data
-    //SPI_RW_Reg(W_REGISTER|iRF_BANK0_FEATURE, 0x07);        // enable dynamic paload lenght; enbale payload with ack enable w_tx_payload_noack
+    // Auto retransmit delay and count (ARD, ARC)
+    //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit
+    nrf24_write_register(iRF_BANK0_SETUP_RETR, 0xB00001010);
 
-    SPI_Write_Buf(W_REGISTER + TX_ADDR, TX_ADDRESS, TX_ADR_WIDTH);  //from tx
-    SPI_Write_Buf(W_REGISTER + RX_ADDR_P0, TX_ADDRESS, TX_ADR_WIDTH); // Use the same address on the RX device as the TX device
-    SPI_RW_Reg(W_REGISTER + RX_PW_P0, TX_PLOAD_WIDTH); // Select same RX payload width as TX Payload width
+    // Set RF channel
+    nrf24_write_register(iRF_BANK0_RF_CH, 40);
+
+    //2mps 0x4f
+    nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
+
+    //Dynamic length configurations:
+    //pipe0 pipe1 enable dynamic payload length data
+    //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_DYNPD, 0x01);
+    //nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
+
+    // enable dynamic paload lenght; enbale payload with ack enable w_tx_payload_noack
+    //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_FEATURE, 0x07);
+
+    //Set transmit address
+    nrf24_write_register_buf(iRF_BANK0_TX_ADDR, TX_ADDRESS, TX_ADR_WIDTH);
+
+    // Use the same address on the RX device as the TX device
+    nrf24_write_register_buf(iRF_BANK0_RX_ADDR_P0, TX_ADDRESS, TX_ADR_WIDTH);
+
+    // Select same RX payload width as TX Payload width
+    nrf24_write_register(iRF_BANK0_RX_PW_P0, TX_PLOAD_WIDTH);
+    nrf24_write_register(iRF_BANK0_RX_PW_P1, 0x00);
+    nrf24_write_register(iRF_BANK0_RX_PW_P2, 0x00);
+    nrf24_write_register(iRF_BANK0_RX_PW_P3, 0x00);
+    nrf24_write_register(iRF_BANK0_RX_PW_P4, 0x00);
+    nrf24_write_register(iRF_BANK0_RX_PW_P5, 0x00);
+
+
+
+//    // CRC, number of bytes CRC length
+//    nrf24_write_register(CONFIG,((1<<EN_CRC)|(0<<CRCO)));
+
+
+//    // Start listening
+//    nrf24_powerUpRx();
 
 }
 
@@ -635,7 +620,15 @@ void se8r01_switch_bank(uint8_t bankindex)
 void se8r01_powerup()
 {
     se8r01_switch_bank(iBANK0);
+
+    //CONFIG
+    //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+    //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG,0x03);
+
+    //RF_SETUP register
+    //Bit 7    | Bit 6     | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0
+    //CONT_WAV | PA_PWR[3] | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR
     SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_RF_CH,0x32);
 
     //RF_SETUP register
@@ -780,6 +773,35 @@ void se8r01_setup()
 
     se8r01_switch_bank(iBANK0);
 }
+
+
+
+// Clocks only one byte into the given nrf24 register //
+void nrf24_write_register(uint8_t reg, uint8_t value)
+{
+    nrf24_csn_set(LOW);
+    SPI_RW(iRF_CMD_WRITE_REG | (REGISTER_MASK & reg));
+    SPI_RW(value);
+    nrf24_csn_set(HIGH);
+}
+
+// Read single register from nrf24 //
+void nrf24_read_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
+{
+    nrf24_csn_set(LOW);
+    SPI_Read_Buf(iRF_CMD_READ_REG | (REGISTER_MASK & reg), value, len);
+    nrf24_csn_set(HIGH);
+}
+
+// Write to a single register of nrf24 //
+void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
+{
+    nrf24_csn_set(LOW);
+    SPI_Write_Buf(iRF_CMD_WRITE_REG | (REGISTER_MASK & reg), value, len);
+    nrf24_csn_set(HIGH);
+
+}
+
 
 /**************************************************
  * Function: SPI_RW();

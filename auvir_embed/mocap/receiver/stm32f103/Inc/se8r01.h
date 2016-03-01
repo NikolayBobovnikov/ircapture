@@ -77,15 +77,6 @@
 //for SE8R01
 #define PA_PWR      0   //3 bits
 
-//RF_DR_HIGH Select between the high speed data rates. This bit
-//is don’t care if RF_DR_LOW is set.
-//[RF_DR_LOW, RF_DR_HIGH]:
-//‘00’ – 1Mbps
-//‘01’ – 2Mbps
-//‘10’ – 250kbps
-//‘11’ – Reserved
-
-
 // general status register //
 #define RX_DR    6
 #define TX_DS    5
@@ -223,51 +214,10 @@
 #define iFIFO_STATUS_RX_FULL    0x02
 #define iFIFO_STATUS_RX_EMPTY   0x01
 
-
 ///==========================================================================
 #define TX_ADR_WIDTH    5   // 5 uint8_ts TX(RX) address width
 #define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
 
-
-typedef struct nrf24_addr{
- uint8_t byte_0;
- uint8_t byte_1;
- uint8_t byte_2;
- uint8_t byte_3;
- uint8_t byte_4;
-} nrf24_addr;
-
-typedef enum {
- P0dBm1,
- Pm6dBm1,
- Pm12dBm1,
- Pm18dBm1
-} NRF24_Power;
-
-typedef enum {
- R2mbps,
- R1mbps,
- R250kbps
-} NRF24_Rate;
-
-typedef struct NRF24_InitTypeDef{
- uint8_t frequency;
- NRF24_Power power;
- NRF24_Rate rate;
- uint8_t auto_ack;
- uint8_t crc_enabled;
- uint8_t crc_encoding;
- uint8_t address_width;
- uint8_t num_retries;
- uint8_t EN_RXADDR_PipeEnable;
- uint8_t rf_setup_reg;
-} NRF24_InitTypeDef;
-
-typedef enum{
-    NRF24_TRANSMISSON_OK,
-    NRF24_MESSAGE_LOST,
-    NRF24_MESSAGE_SENDING
-}TransmissionStatus;
 
 // SPI chip enable pin //
 #ifndef NRF24_CSN_PIN
@@ -290,13 +240,71 @@ typedef enum{
 #define LOW GPIO_PIN_RESET
 #define HIGH GPIO_PIN_SET
 
+typedef enum {
+ Power_plus5dBm1,
+ Power_0dBm1,
+ Power_minus6dBm1,
+ Power_minus12dBm1,
+ Power_minus18dBm1
+} NRF24_Power;
+
+typedef enum {
+ DataRate_2mbps,
+ DataRate_1mbps,
+ DataRate_500kbps,
+ DataRate_250kbps
+} NRF24_Rate;
+
+//TODO
+typedef struct NRF24_InitTypeDef{
+ uint8_t frequency;
+ NRF24_Power power;
+ NRF24_Rate rate;
+ bool auto_ack_enabled;
+ bool crc_enabled;
+ uint8_t crc_num_bytes;
+ uint8_t address_width;
+ uint8_t num_retries;
+ uint8_t pipe;
+} NRF24_InitTypeDef;
+
+typedef enum{
+    NRF24_TRANSMISSON_OK,
+    NRF24_MESSAGE_LOST,
+    NRF24_MESSAGE_SENDING
+}TransmissionStatus;
+
+void setup_radio(NRF24_InitTypeDef* settings);
+
+void nrf24_ce_set(uint8_t state);
+void nrf24_csn_set(uint8_t state);
+
+void setup();
+void loop();
+void RXX();
+void TXX();
+void radio_settings();
+void init_io(void);
+
+uint8_t SPI_RW(uint8_t tx);
+uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value);
+uint8_t SPI_Read(uint8_t reg);
+uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
+uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
+
+void se8r01_switch_bank(uint8_t bankindex);
+void se8r01_powerup();
+void se8r01_calibration();
+void se8r01_setup();
+
+//
 // adjustment functions //
 void nrf24_init();
 void nrf24_set_rx_address(uint8_t* adr);
 void nrf24_set_tx_address(uint8_t* adr);
-void nrf24_config(uint8_t channel, uint8_t pay_length);
-void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length);
-void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel, uint8_t pay_length);
+void nrf24_config(uint8_t channel);
+void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel);
+void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel);
 
 // state check functions
 uint8_t nrf24_get_status_register();
@@ -308,16 +316,12 @@ bool nrf24_is_rx_fifo_empty();
 void nrf24_send(uint8_t* value);
 void nrf24_receive(uint8_t* data);
 
-// Returns the payload length //
-uint8_t nrf24_get_payload_len();
-
 // use in dynamic length mode //
 uint8_t nrf24_get_rx_fifo_pending_data_length();
 
 // post transmission analysis //
 TransmissionStatus nrf24_last_messageStatus();
 uint8_t nrf24_get_last_msg_retransmission_count();
-
 
 bool is_register_bit_set(uint8_t reg_name, uint8_t bit);
 void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit);
@@ -329,50 +333,13 @@ void nrf24_powerDown();
 void nrf24_reset();
 
 // low level interface ... //
-uint8_t nrf24_spi_transaction(uint8_t tx);
+uint8_t SPI_RW(uint8_t tx);
 void nrf24_transmitSync(uint8_t* dataout,uint8_t len);
 void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
 
-void nrf24_read_register_multi(uint8_t reg, uint8_t* value, uint8_t len);
-void nrf24_write_register_multi(uint8_t reg, uint8_t* value, uint8_t len);
+void nrf24_read_register_buf(uint8_t reg, uint8_t* value, uint8_t len);
+void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len);
 void nrf24_write_register(uint8_t reg, uint8_t value);
 
-
-// -------------------------------------------------------------------------- //
-// You should implement the platform spesific functions in your code //
-// -------------------------------------------------------------------------- //
-
-
-// -------------------------------------------------------------------------- //
-// nrf24 CE pin control function
-// - state:1 => Pin HIGH
-// - state:0 => Pin LOW  //
-// -------------------------------------------------------------------------- //
-void nrf24_ce_set(uint8_t state);
-
-// -------------------------------------------------------------------------- //
-// nrf24 CE pin control function
-// - state:1 => Pin HIGH
-// - state:0 => Pin LOW  //
-// -------------------------------------------------------------------------- //
-void nrf24_csn_set(uint8_t state);
-
-
-
-void setup();
-void loop();
-void RXX();
-void TXX();
-void radio_settings();
-void init_io(void);
-uint8_t SPI_RW(uint8_t tx);
-uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value);
-uint8_t SPI_Read(uint8_t reg);
-uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
-uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
-void se8r01_switch_bank(uint8_t bankindex);
-void se8r01_powerup();
-void se8r01_calibration();
-void se8r01_setup();
 
 #endif
