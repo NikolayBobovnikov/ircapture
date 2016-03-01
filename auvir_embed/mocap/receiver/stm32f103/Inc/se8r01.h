@@ -288,6 +288,7 @@ static void nrf24_csn_set(uint8_t state);
 
 void setup();
 void loop();
+void nrf_receive_handler();
 
 static void RXX();
 static void TXX();

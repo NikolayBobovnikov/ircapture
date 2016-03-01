@@ -170,7 +170,7 @@ int main(void)
 
     while (1)
     {
-        loop();
+        //loop();
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }
@@ -507,12 +507,15 @@ void send_data_uart()
 void nrf24_setup_gpio(void) {
     GPIO_InitTypeDef GPIO_InitStruct;
 
-    //Configure CSN pin
+    //Configure IRQ pin
     GPIO_InitStruct.Pin = NRF24_IRQ_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(NRF24_IRQ_PORT, &GPIO_InitStruct);
+
+    HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
     //Configure CSN pin
     GPIO_InitStruct.Pin = NRF24_CSN_PIN;

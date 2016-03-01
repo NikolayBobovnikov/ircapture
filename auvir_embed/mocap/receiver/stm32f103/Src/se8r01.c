@@ -386,6 +386,28 @@ void loop()
     }
 }
 
+void nrf_receive_handler()
+{
+    delay_us(10);      //read reg too close after irq low not good
+    uint8_t status = SPI_Read(iRF_BANK0_STATUS);
+
+    if(status & STA_MARK_RX)                                // if receive data ready (TX_DS) interrupt
+    {
+        SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
+        nrf24_write_register(FLUSH_RX,0);
+        // clear RX_FIFO. TODO: verify
+        for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
+        {
+        }
+        nrf24_write_register(iRF_BANK0_STATUS,0xff);
+    }
+    else{
+        nrf24_write_register(iRF_BANK0_STATUS,0xff);
+    }
+    HAL_Delay(1);
+}
+
+
 static void RXX()
 {
     if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW)
@@ -410,6 +432,7 @@ static void RXX()
         }
 
     }
+    GPIO_PinState state = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
     HAL_Delay(1);
 
 }
