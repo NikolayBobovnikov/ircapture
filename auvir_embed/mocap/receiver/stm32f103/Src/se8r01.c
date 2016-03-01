@@ -27,7 +27,7 @@ void nrf24_init()
     nrf24_csn_set(HIGH);
 }
 
-void nrf24_config(uint8_t channel)
+static void nrf24_config(uint8_t channel)
 {
     // Set RF channel
     nrf24_write_register(RF_CH,channel);
@@ -62,91 +62,14 @@ void nrf24_config(uint8_t channel)
     nrf24_powerUpRx();
 }
 
-void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel)
-{
-    // setup addresses for pipe
-    nrf24_write_register_buf(RX_ADDR_P1, pipe_addr, TX_ADR_WIDTH);
-
-    // Set RF channel
-    nrf24_write_register(RF_CH,channel);
-
-    // Set length of incoming payload
-    nrf24_write_register(RX_PW_P0, 0x00); // Auto-ACK pipe ...
-    nrf24_write_register(RX_PW_P1, payload_len); // Data payload pipe
-    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
-    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
-    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
-    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
-
-    // 1 Mbps, TX gain: 0dbm
-    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
-
-    //                          (CRC enabled,  1 byte)
-    nrf24_write_register(CONFIG,(1<<EN_CRC) | (0<<CRCO));
-
-    // Auto Acknowledgment
-    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
-
-    // Enable RX addresses
-    nrf24_write_register(EN_RXADDR,(0<<ERX_P0)|(1<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
-
-    // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
-    nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
-
-    // Dynamic length configurations: No dynamic length
-    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
-
-    // Start listening
-    nrf24_powerUpRx();
-}
-
-void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel)
-{
-    // setup addresses for pipes
-    //nrf24_write_register_multi(RX_ADDR_P0, pipe_addr, nrf24_ADDR_LEN);
-    nrf24_write_register_buf(TX_ADDR, pipe_addr, TX_ADR_WIDTH);
-
-    // Set RF channel
-    nrf24_write_register(RF_CH,channel);
-
-    // Set length of incoming payload
-    nrf24_write_register(RX_PW_P0, 0x00); // Auto-ACK pipe ...
-    nrf24_write_register(RX_PW_P1, 0x00); // Data payload pipe
-    nrf24_write_register(RX_PW_P2, 0x00); // Pipe not used
-    nrf24_write_register(RX_PW_P3, 0x00); // Pipe not used
-    nrf24_write_register(RX_PW_P4, 0x00); // Pipe not used
-    nrf24_write_register(RX_PW_P5, 0x00); // Pipe not used
-
-    // 1 Mbps, TX gain: 0dbm
-    nrf24_write_register(RF_SETUP, (0<<RF_DR_HIGH)|((0x03)<<RF_PWR));
-
-    //                          (CRC enabled,  1 byte)
-    nrf24_write_register(CONFIG,(1<<EN_CRC) | (0<<CRCO));
-
-    // Auto Acknowledgment
-    nrf24_write_register(EN_AA,(0<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
-
-    // Enable RX addresses
-    nrf24_write_register(EN_RXADDR,(0<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
-
-    // Auto retransmit delay: 1000 us and Up to 15 retransmit trials
-    nrf24_write_register(SETUP_RETR,(0x04<<ARD)|(0x0F<<ARC));
-
-    // Dynamic length configurations: No dynamic length
-    nrf24_write_register(DYNPD,(0<<DPL_P0)|(0<<DPL_P1)|(0<<DPL_P2)|(0<<DPL_P3)|(0<<DPL_P4)|(0<<DPL_P5));
-
-    // Start listening
-    nrf24_powerUpTx();
-}
-
-void nrf24_set_rx_address(uint8_t * adr)
+static void nrf24_set_rx_address(uint8_t * adr)
 {
     //nrf24_ce_set(LOW);
     nrf24_write_register_buf(RX_ADDR_P0,adr,TX_ADR_WIDTH);
     //nrf24_ce_set(HIGH);
 }
 
-void nrf24_set_tx_address(uint8_t* adr)
+static void nrf24_set_tx_address(uint8_t* adr)
 {
     // RX_ADDR_P0 must be set to the sending addr for auto ack to work. //
    nrf24_write_register_buf(RX_ADDR_P0, adr, TX_ADR_WIDTH);
@@ -363,21 +286,20 @@ void nrf24_reset()
 //========================================
 // Interface functions
 
-void nrf24_ce_set(uint8_t state)
+static void nrf24_ce_set(uint8_t state)
 {
     assert_param(state == LOW || state == HIGH);
     HAL_GPIO_WritePin(NRF24_CE_PORT,NRF24_CE_PIN, state);
 }
 
-void nrf24_csn_set(uint8_t state)
+static void nrf24_csn_set(uint8_t state)
 {
     assert_param(state == LOW || state == HIGH);
     HAL_GPIO_WritePin(NRF24_CSN_PORT,NRF24_CSN_PIN, state);
 }
 
-
 // send and receive multiple bytes over SPI //
-void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
+static void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
 {
     uint8_t i;
 
@@ -389,7 +311,7 @@ void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len)
 }
 
 // send multiple bytes over SPI //
-void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
+static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 {
     uint8_t i;
     for(i=0;i<len;i++)
@@ -399,14 +321,14 @@ void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 }
 
-void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit)
+static void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit)
 {
     uint8_t reg = 0;
     nrf24_read_register_buf(reg_name, &reg, 1);
     nrf24_write_register(reg_name, reg | (1 << bit));
 }
 
-bool is_register_bit_set(uint8_t reg_name, uint8_t bit)
+static bool is_register_bit_set(uint8_t reg_name, uint8_t bit)
 {
     uint8_t reg = 0;
     nrf24_read_register_buf(reg_name, &reg, 1);
@@ -417,30 +339,36 @@ bool is_register_bit_set(uint8_t reg_name, uint8_t bit)
 }
 
 
-
-
-
-
-
 void setup()
 {
-    init_io();                        // Initialize IO port
-    uint8_t status = SPI_Read(STATUS);
+    //init_io();                        // Initialize IO port
     nrf24_ce_set(LOW);
     delay_us(150);
+
+    //set CONFIG, RF_SETUP, RF_CH, PRE_GURD
     se8r01_powerup();
+
     se8r01_calibration();
+
+    // similar to se8r01_calibration() ?
     se8r01_setup();
+
+    //set EN_AA, EN_RXADDR, RF_CH (needless?), RF_SETUP (needless?), AW, SETUP_RETR, TX_ADDR, RX_ADDR_P*
     radio_settings();
 
     if (mode=='r') {
-        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
+        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+        // turn on irq for receiver; turn off irq for transmitter
+        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
         // start listening
         nrf24_ce_set(HIGH);
     }
     else {
-        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
-        nrf24_ce_set(LOW);
+        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+        nrf24_ce_set(HIGH);
     }
 
 
@@ -458,7 +386,7 @@ void loop()
     }
 }
 
-void RXX()
+static void RXX()
 {
     if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW)
     {
@@ -486,7 +414,7 @@ void RXX()
 
 }
 
-void TXX()
+static void TXX()
 {
 
     //for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
@@ -524,14 +452,13 @@ void TXX()
 
 }
 
-void radio_settings()
+static void radio_settings()
 {
 
     // Enable Auto Acknowledgment
     nrf24_write_register(iRF_BANK0_EN_AA, (1<<ENAA_P0)|(0<<ENAA_P1)|(0<<ENAA_P2)|(0<<ENAA_P3)|(0<<ENAA_P4)|(0<<ENAA_P5));
 
     // Enable RX addresses (pipes)
-    //nrf24_write_register(iRF_BANK0_EN_RXADDR, 0x01);      //enable pip 1
     nrf24_write_register(iRF_BANK0_EN_RXADDR,(1<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
 
 
@@ -582,7 +509,7 @@ void radio_settings()
 
 }
 
-void init_io(void)
+static void init_io(void)
 {
     nrf24_ce_set(LOW);
     nrf24_csn_set(HIGH);
@@ -600,7 +527,7 @@ void init_io(void)
  * ToDo: One high pulse(>10us) on CE will now send this
  * packet and expext an acknowledgment from the RX device.
  **************************************************/
-void se8r01_switch_bank(uint8_t bankindex)
+static void se8r01_switch_bank(uint8_t bankindex)
 {
     uint8_t temp0,temp1;
     temp1 = bankindex;
@@ -611,7 +538,7 @@ void se8r01_switch_bank(uint8_t bankindex)
     }
 }
 
-void se8r01_powerup()
+static void se8r01_powerup()
 {
     se8r01_switch_bank(iBANK0);
 
@@ -629,10 +556,10 @@ void se8r01_powerup()
     nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
 
     // TODO: reveal the Magic
-    SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_PRE_GURD,0x77); //2450 calibration
+    nrf24_write_register(iRF_BANK0_PRE_GURD,0x77); //2450 calibration
 }
 
-void se8r01_calibration()
+static void se8r01_calibration()
 {
     //iBANK1
     se8r01_switch_bank(iBANK1);
@@ -642,7 +569,7 @@ void se8r01_calibration()
     gtemp[1]=0x00;
     gtemp[2]=0x10;
     gtemp[3]=0xE6;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_PLL_CTL0, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_PLL_CTL0, gtemp, 4);
 
     //iRF_BANK1_CAL_CTL <= [0]=0x20 [1]=0x08 [2]=0x50 [3]=0x40 [4]=0x50
     gtemp[0]=0x20;
@@ -650,39 +577,39 @@ void se8r01_calibration()
     gtemp[2]=0x50;
     gtemp[3]=0x40;
     gtemp[4]=0x50;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_CAL_CTL, gtemp, 5);
+    nrf24_write_register_buf(iRF_BANK1_CAL_CTL, gtemp, 5);
 
     //iRF_BANK1_IF_FREQ <= [0]=0x00 [1]=0x00 [2]=0x1E
     gtemp[0]=0x00;
     gtemp[1]=0x00;
     gtemp[2]=0x1E;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_IF_FREQ, gtemp, 3);
+    nrf24_write_register_buf(iRF_BANK1_IF_FREQ, gtemp, 3);
 
     //iRF_BANK1_FDEV <= [0]=0x29
     gtemp[0]=0x29;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_FDEV, gtemp, 1);
+    nrf24_write_register_buf(iRF_BANK1_FDEV, gtemp, 1);
 
     //iRF_BANK1_DAC_CAL_LOW <= [0]=0x00
     gtemp[0]=0x00;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_DAC_CAL_LOW, gtemp, 1);
+    nrf24_write_register_buf(iRF_BANK1_DAC_CAL_LOW, gtemp, 1);
 
     //iRF_BANK1_DAC_CAL_HI <= [0]=0x7F
     gtemp[0]=0x7F;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_DAC_CAL_HI, gtemp, 1);
+    nrf24_write_register_buf(iRF_BANK1_DAC_CAL_HI, gtemp, 1);
 
     //iRF_BANK1_AGC_GAIN <= [0]=0x02 [1]=0xC1 [2]=0xEB [3]=0x1C
     gtemp[0]=0x02;
     gtemp[1]=0xC1;
     gtemp[2]=0xEB;
     gtemp[3]=0x1C;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_AGC_GAIN, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_AGC_GAIN, gtemp, 4);
 
     //iRF_BANK1_RF_IVGEN <= [0]=0x97 [1]=0x64 [2]=0x00 [3]=0x81
     gtemp[0]=0x97;
     gtemp[1]=0x64;
     gtemp[2]=0x00;
     gtemp[3]=0x81;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_RF_IVGEN, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_RF_IVGEN, gtemp, 4);
 
 //    iBANK0
 //    CE 1
@@ -705,14 +632,14 @@ void se8r01_calibration()
 
 }
 
-void se8r01_setup()
+static void se8r01_setup()
 {
     gtemp[0]=0x28;
     gtemp[1]=0x32;//RF_CH
     gtemp[2]=0x80;
     gtemp[3]=0x90;
     gtemp[4]=0x00;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK0_SETUP_VALUE, gtemp, 5);
+    nrf24_write_register_buf(iRF_BANK0_SETUP_VALUE, gtemp, 5);
 
     delay_us(2);
 
@@ -722,55 +649,65 @@ void se8r01_setup()
     gtemp[1]=0x01;
     gtemp[2]=0x30;
     gtemp[3]=0xE2;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_PLL_CTL0, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_PLL_CTL0, gtemp, 4);
 
     gtemp[0]=0x29;
     gtemp[1]=0x89;
     gtemp[2]=0x55;
     gtemp[3]=0x40;
     gtemp[4]=0x50;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_CAL_CTL, gtemp, 5);
+    nrf24_write_register_buf(iRF_BANK1_CAL_CTL, gtemp, 5);
 
     gtemp[0]=0x29;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_FDEV, gtemp, 1);
+    nrf24_write_register_buf(iRF_BANK1_FDEV, gtemp, 1);
 
     gtemp[0]=0x55;
     gtemp[1]=0xC2;
     gtemp[2]=0x09;
     gtemp[3]=0xAC;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_RX_CTRL, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_RX_CTRL, gtemp, 4);
 
     gtemp[0]=0x00;
     gtemp[1]=0x14;
     gtemp[2]=0x08;
     gtemp[3]=0x29;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_FAGC_CTRL_1, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_FAGC_CTRL_1, gtemp, 4);
 
     gtemp[0]=0x02;
     gtemp[1]=0xC1;
     gtemp[2]=0xCB;
     gtemp[3]=0x1C;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_AGC_GAIN, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_AGC_GAIN, gtemp, 4);
 
     gtemp[0]=0x97;
     gtemp[1]=0x64;
     gtemp[2]=0x00;
     gtemp[3]=0x01;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_RF_IVGEN, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_RF_IVGEN, gtemp, 4);
 
     gtemp[0]=0x2A;
     gtemp[1]=0x04;
     gtemp[2]=0x00;
     gtemp[3]=0x7D;
-    SPI_Write_Buf(iRF_CMD_WRITE_REG|iRF_BANK1_TEST_PKDET, gtemp, 4);
+    nrf24_write_register_buf(iRF_BANK1_TEST_PKDET, gtemp, 4);
 
     se8r01_switch_bank(iBANK0);
+
+    nrf24_ce_set(HIGH);
+    delay_us(30);
+    nrf24_ce_set(LOW);
+    delay_us(15);
+    nrf24_ce_set(HIGH);
+    delay_us(30);
+    nrf24_ce_set(LOW);
+    delay_us(15);
+
 }
 
 
 
 // Clocks only one byte into the given nrf24 register //
-void nrf24_write_register(uint8_t reg, uint8_t value)
+static void nrf24_write_register(uint8_t reg, uint8_t value)
 {
     nrf24_csn_set(LOW);
     SPI_RW(iRF_CMD_WRITE_REG | (REGISTER_MASK & reg));
@@ -779,7 +716,7 @@ void nrf24_write_register(uint8_t reg, uint8_t value)
 }
 
 // Read single register from nrf24 //
-void nrf24_read_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
+static void nrf24_read_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
 {
     nrf24_csn_set(LOW);
     SPI_Read_Buf(iRF_CMD_READ_REG | (REGISTER_MASK & reg), value, len);
@@ -787,7 +724,7 @@ void nrf24_read_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
 }
 
 // Write to a single register of nrf24 //
-void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
+static void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
 {
     nrf24_csn_set(LOW);
     SPI_Write_Buf(iRF_CMD_WRITE_REG | (REGISTER_MASK & reg), value, len);
@@ -803,7 +740,7 @@ void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
  * Writes one uint8_t to nRF24L01, and return the uint8_t read
  * from nRF24L01 during write, according to SPI protocol
  **************************************************/
-uint8_t SPI_RW(uint8_t tx)
+static uint8_t SPI_RW(uint8_t tx)
 {
     uint8_t rx = 0;
     HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
@@ -817,7 +754,7 @@ uint8_t SPI_RW(uint8_t tx)
  * Description:
  * Writes value 'value' to register 'reg'
 /**************************************************/
-uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value)
+static uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value)
 {
     uint8_t status;
 
@@ -836,7 +773,7 @@ uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value)
  * Description:
  * Read one uint8_t from nRF24L01 register, 'reg'
 /**************************************************/
-uint8_t SPI_Read(uint8_t reg)
+static uint8_t SPI_Read(uint8_t reg)
 {
     uint8_t reg_val;
 
@@ -856,7 +793,7 @@ uint8_t SPI_Read(uint8_t reg)
  * Reads 'uint8_ts' #of uint8_ts from register 'reg'
  * Typically used to read RX payload, Rx/Tx address
 /**************************************************/
-uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
+static uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 {
     uint8_t status,i;
 
@@ -881,7 +818,7 @@ uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
  * Writes contents of buffer '*pBuf' to nRF24L01
  * Typically used to write TX payload, Rx/Tx address
 /**************************************************/
-uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
+static uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 {
     uint8_t status,i;
 

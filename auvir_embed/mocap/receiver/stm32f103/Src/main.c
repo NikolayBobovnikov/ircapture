@@ -166,103 +166,11 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
-    uint8_t status_reg = 0;
+    setup();
 
-    //=====================
-    status_reg = SPI_Read(iRF_BANK0_STATUS);
-    nrf24_ce_set(LOW);
-    delay_us(150);
-    se8r01_powerup();
-    se8r01_calibration();
-    se8r01_setup();
-
-
-    radio_settings();
-    if (mode=='r') {
-        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
-        // start listening
-        nrf24_ce_set(HIGH);
-    }
-    else {
-        SPI_RW_Reg(W_REGISTER|iRF_BANK0_CONFIG, 0x3E);
-        nrf24_ce_set(HIGH);
-    }
-
-
-    //=====================
-
-    /* check delay
-    while(10){
-        delay_us(10);
-        HAL_GPIO_TogglePin(NRF24_CSN_PORT,NRF24_CSN_PIN);
-    }
-    */
-    //setup();
-
-    /*
-    if(is_receiver){
-        nrf24_config_rx(TX_ADDRESS, 0, TX_PLOAD_WIDTH);
-    }
-    if(is_transmitter){
-        nrf24_config_tx(TX_ADDRESS, 0, TX_PLOAD_WIDTH);
-    }
-    */
-
-    status_reg = nrf24_get_status_register();
-    HAL_Delay(1);
-
-    uint8_t txaddr[TX_ADR_WIDTH]={0};
-    uint8_t rxaddr0[TX_ADR_WIDTH]={0};
-    uint8_t rxaddr1[TX_ADR_WIDTH]={0};
-
-    nrf24_read_register_buf(TX_ADDR,txaddr,TX_ADR_WIDTH);
-    nrf24_read_register_buf(RX_ADDR_P0,rxaddr0,TX_ADR_WIDTH);
-    nrf24_read_register_buf(RX_ADDR_P1,rxaddr1,TX_ADR_WIDTH);
-
-
-    TransmissionStatus tx_status;
     while (1)
     {
         loop();
-#if 0
-        if(is_transmitter){
-                const char* test_str = "HelloWireless!\0";
-                memcpy(tx_buf, test_str, strlen(test_str));
-                int size = strlen(test_str);
-
-            nrf24_send(tx_buf);
-            HAL_Delay(10);
-            tx_status = nrf24_last_messageStatus();
-            GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
-            uint8_t retr = nrf24_get_last_msg_retransmission_count();
-            switch(tx_status){
-                case NRF24_TRANSMISSON_OK:{
-                    int a = 0;
-                    break;
-                }
-                case NRF24_MESSAGE_LOST:{
-                    int a = 0;
-                    break;
-                }
-                case NRF24_MESSAGE_SENDING:{
-                    int a = 0;
-                    break;
-                }
-            }
-
-        }
-        else if (is_receiver){
-            GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
-            status_reg = nrf24_get_status_register();
-            bool ready = nrf24_is_data_ready();
-            if(ready)
-            {
-                nrf24_receive(rx_buf);
-            }
-
-
-        }
-#endif
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }

@@ -283,35 +283,28 @@ typedef enum{
 
 void setup_radio(NRF24_InitTypeDef* settings);
 
-void nrf24_ce_set(uint8_t state);
-void nrf24_csn_set(uint8_t state);
+static void nrf24_ce_set(uint8_t state);
+static void nrf24_csn_set(uint8_t state);
 
 void setup();
 void loop();
-void RXX();
-void TXX();
-void radio_settings();
-void init_io(void);
 
-uint8_t SPI_RW(uint8_t tx);
-uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value);
-uint8_t SPI_Read(uint8_t reg);
-uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
-uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
+static void RXX();
+static void TXX();
+static void radio_settings();
+static void init_io(void);
 
-void se8r01_switch_bank(uint8_t bankindex);
-void se8r01_powerup();
-void se8r01_calibration();
-void se8r01_setup();
+static void se8r01_switch_bank(uint8_t bankindex);
+static void se8r01_powerup();
+static void se8r01_calibration();
+static void se8r01_setup();
 
 //
 // adjustment functions //
 void nrf24_init();
-void nrf24_set_rx_address(uint8_t* adr);
-void nrf24_set_tx_address(uint8_t* adr);
-void nrf24_config(uint8_t channel);
-void nrf24_config_rx(uint8_t *pipe_addr, uint8_t channel);
-void nrf24_config_tx(uint8_t *pipe_addr, uint8_t channel);
+static void nrf24_set_rx_address(uint8_t* adr);
+static void nrf24_set_tx_address(uint8_t* adr);
+static void nrf24_config(uint8_t channel);
 
 // state check functions
 uint8_t nrf24_get_status_register();
@@ -324,29 +317,35 @@ void nrf24_send(uint8_t* value);
 void nrf24_receive(uint8_t* data);
 
 // use in dynamic length mode //
-uint8_t nrf24_get_rx_fifo_pending_data_length();
+static uint8_t nrf24_get_rx_fifo_pending_data_length();
 
 // post transmission analysis //
-TransmissionStatus nrf24_last_messageStatus();
-uint8_t nrf24_get_last_msg_retransmission_count();
+static TransmissionStatus nrf24_last_messageStatus();
+static uint8_t nrf24_get_last_msg_retransmission_count();
 
-bool is_register_bit_set(uint8_t reg_name, uint8_t bit);
-void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit);
+static bool is_register_bit_set(uint8_t reg_name, uint8_t bit);
+static void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit);
 
 // power management //
-void nrf24_powerUpRx();
-void nrf24_powerUpTx();
-void nrf24_powerDown();
-void nrf24_reset();
+static void nrf24_powerUpRx();
+static void nrf24_powerUpTx();
+static void nrf24_powerDown();
+static void nrf24_reset();
 
 // low level interface ... //
-uint8_t SPI_RW(uint8_t tx);
-void nrf24_transmitSync(uint8_t* dataout,uint8_t len);
-void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
+static uint8_t SPI_RW(uint8_t tx);
+static uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value);
+static uint8_t SPI_Read(uint8_t reg);
+static uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
+static uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
 
-void nrf24_read_register_buf(uint8_t reg, uint8_t* value, uint8_t len);
-void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len);
-void nrf24_write_register(uint8_t reg, uint8_t value);
+
+static void nrf24_transmitSync(uint8_t* dataout,uint8_t len);
+static void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
+
+static void nrf24_read_register_buf(uint8_t reg, uint8_t* value, uint8_t len);
+static void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len);
+static void nrf24_write_register(uint8_t reg, uint8_t value);
 
 
 #endif
