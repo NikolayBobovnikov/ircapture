@@ -127,9 +127,9 @@
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h" type="1"/>
-    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c" type="1"/>
     <File name="Src/sensor_hub.c" path="../../Src/sensor_hub.c" type="1"/>
     <File name="Src/main.c" path="../../Src/main.c" type="1"/>
+    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c" type="1"/>
     <File name="Drivers/CMSIS/Include/core_cmInstr.h" path="../../Drivers/CMSIS/Include/core_cmInstr.h" type="1"/>
     <File name="Drivers/CMSIS" path="" type="2"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h" type="1"/>

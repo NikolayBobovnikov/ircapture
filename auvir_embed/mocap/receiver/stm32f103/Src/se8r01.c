@@ -360,14 +360,16 @@ void setup()
         //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
         //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
         // turn on irq for receiver; turn off irq for transmitter
-        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+        //TODO refactoring//nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
         // start listening
         nrf24_ce_set(HIGH);
     }
     else {
         //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
         //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+        //TODO refactoring//nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
         nrf24_ce_set(HIGH);
     }
 
@@ -445,16 +447,15 @@ static void TXX()
     const char* test_str = "HelloWireless!\0";
     memcpy(tx_buf, test_str, strlen(test_str));
 
-
     uint8_t status = SPI_Read(iRF_BANK0_STATUS);
 
     SPI_RW_Reg(iRF_CMD_FLUSH_TX,0);
     SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
 
+    GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
     uint8_t tx_status = nrf24_last_messageStatus();
-                GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
-                uint8_t retr = nrf24_get_last_msg_retransmission_count();
-                switch(tx_status){
+    uint8_t retr = nrf24_get_last_msg_retransmission_count();
+    switch(tx_status){
                     case NRF24_TRANSMISSON_OK:{
                         int a = 0;
                         break;
@@ -503,8 +504,8 @@ static void radio_settings()
     //RF_SETUP register
     //Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
     //CONT_WAVE | PA_PWR_3 | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR            |
-    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
-
+    //nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
+    nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
 
 #if 0
     //Dynamic length configurations:
@@ -715,7 +716,7 @@ static void se8r01_setup()
     nrf24_write_register_buf(iRF_BANK1_TEST_PKDET, gtemp, 4);
 
     se8r01_switch_bank(iBANK0);
-
+/*
     nrf24_ce_set(HIGH);
     delay_us(30);
     nrf24_ce_set(LOW);
@@ -724,7 +725,7 @@ static void se8r01_setup()
     delay_us(30);
     nrf24_ce_set(LOW);
     delay_us(15);
-
+*/
 }
 
 
