@@ -161,9 +161,9 @@ static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 void setup()
 {
-    //init_io();                        // Initialize IO port
+    init_io();                        // Initialize IO port
     nrf24_ce_set(LOW);
-    delay_us(350);//150
+    delay_us(150);//150
 
     //set CONFIG, RF_SETUP, RF_CH, PRE_GURD
     se8r01_powerup();
@@ -233,7 +233,7 @@ void nrf_receive_handler()
 static void RXX()
 {
     if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW){
-    	int a = 0;
+        int a = 0;
     }
         delay_us(10);      //read reg too close after irq low not good
         uint8_t status = SPI_Read(iRF_BANK0_STATUS);
@@ -247,6 +247,9 @@ static void RXX()
             {
             }
             SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
+
+            //TODO: this is for debug
+            HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         }
         else{
 
@@ -268,12 +271,18 @@ static void TXX()
     const char* test_str = "HelloWireless!\0";
     memcpy(tx_buf, test_str, strlen(test_str));
 
-    uint8_t status = SPI_Read(iRF_BANK0_STATUS);
     SPI_RW_Reg(iRF_CMD_FLUSH_TX,0);
     SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
 
     TransmissionStatus tx_status = nrf24_last_messageStatus();
     GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+    uint8_t status = SPI_Read(iRF_BANK0_STATUS);
+
+    //TODO: this is for debug
+    if(tx_status == NRF24_TRANSMISSON_OK || tx_status == NRF24_MESSAGE_LOST)
+    {
+        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+    }
 
     SPI_RW_Reg(iRF_CMD_WRITE_REG + iRF_BANK0_STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag
     HAL_Delay(500);
@@ -295,7 +304,7 @@ static void radio_settings()
     // 10 4 bytes
     // 01 Illegal
     // 00 Illegal
-    nrf24_write_register(iRF_BANK0_SETUP_AW, 0x03);
+    nrf24_write_register(iRF_BANK0_SETUP_AW, 0x02);
 
     // Auto retransmit delay and count (ARD, ARC)
     //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit
@@ -317,9 +326,9 @@ static void radio_settings()
     // 0010 Output -12 dbm              | 00 1Mbps
     // 0001 Output -18 dbm              |
 
-    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0x7 << PA_PWR) );
+    //nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (0x7 << PA_PWR) );
     //original comment: 2mps 0x4f, which is 1001111 TODO: 2mps is (RF_DR_LO,RF_DR_HIG) = (0,1) according to datasheet, and 0x4f stands for 1mps wtf?
-    //nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
+    nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
 
 
 #if 0
@@ -381,7 +390,7 @@ static void se8r01_powerup()
 {
     se8r01_switch_bank(iBANK0);
 
-    //CONFIG
+    ///CONFIG
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
     //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
     nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
@@ -389,10 +398,19 @@ static void se8r01_powerup()
     //Setup RF channel TODO: check necessity
     nrf24_write_register(iRF_BANK0_RF_CH, RF_CHANNEL);
 
-    //RF_SETUP register
+
+    ///RF_SETUP
     //Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
     //CONT_WAVE | PA_PWR_3 | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR            |
-    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
+    /// Power                           |  DataRate
+    // PA_PWR[3:0]                      | [RF_DR_LOW, RF_DR_HIGH]:
+    // 1111 Output +5 dbm  0b111 = 0x7  | 11 500Kbps
+    // 1000 Output 0 dbm                | 10 reserved
+    // 0100 Output -6 dbm               | 01 2Mbps
+    // 0010 Output -12 dbm              | 00 1Mbps
+    // 0001 Output -18 dbm              |
+
+    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (0x7 << PA_PWR) );
 
     // TODO: reveal the Magic
     nrf24_write_register(iRF_BANK0_PRE_GURD,0x77); //2450 calibration

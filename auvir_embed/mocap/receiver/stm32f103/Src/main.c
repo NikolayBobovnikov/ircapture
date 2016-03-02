@@ -121,7 +121,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 't'; // 't'
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -154,6 +154,8 @@ int main(void)
     debug_init_gpio();
     init_gpio_led();
     nrf24_init();
+
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_SET);
 
     HAL_TIM_Base_Start_IT(ptim_data_read);
     HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
@@ -435,6 +437,7 @@ void MX_GPIO_Init(void)
     __GPIOD_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
     __GPIOB_CLK_ENABLE();
+    __GPIOC_CLK_ENABLE();
 
     /*Configure GPIO pin : PA2 */
     GPIO_InitStruct.Pin = GPIO_PIN_2;

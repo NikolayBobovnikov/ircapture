@@ -223,7 +223,7 @@
 ///==========================================================================
 #define TX_ADR_WIDTH    5   // 5 uint8_ts TX(RX) address width
 #define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
-#define RF_CHANNEL      50  //
+#define RF_CHANNEL      40  //
 
 
 // SPI chip enable pin //
