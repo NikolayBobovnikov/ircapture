@@ -71,7 +71,7 @@ TIM_HandleTypeDef* ptim_data_read = &htim3;
 const bool _is_direct_logic = false;
 /// ===========================================
 
-uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x34,0x43,0x10,0x10,0xAB};
+uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0xAB,0xAB,0xAB,0xAB,0xAB};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 
@@ -121,7 +121,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-char mode = 'r'; // 't'
+const char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)

@@ -303,19 +303,11 @@ static void se8r01_setup();
 //
 // adjustment functions //
 void nrf24_init();
-static void nrf24_set_rx_address(uint8_t* adr);
-static void nrf24_set_tx_address(uint8_t* adr);
-static void nrf24_config(uint8_t channel);
 
 // state check functions
-uint8_t nrf24_get_status_register();
 bool nrf24_is_data_ready();
 bool nrf24_is_sending();
 bool nrf24_is_rx_fifo_empty();
-
-// core rx & tx functions //
-void nrf24_send(uint8_t* value);
-void nrf24_receive(uint8_t* data);
 
 // use in dynamic length mode //
 static uint8_t nrf24_get_rx_fifo_pending_data_length();
@@ -324,12 +316,7 @@ static uint8_t nrf24_get_rx_fifo_pending_data_length();
 static TransmissionStatus nrf24_last_messageStatus();
 static uint8_t nrf24_get_last_msg_retransmission_count();
 
-static bool is_register_bit_set(uint8_t reg_name, uint8_t bit);
-static void nrf24_reset_register_bit(uint8_t reg_name, uint8_t bit);
-
 // power management //
-static void nrf24_powerUpRx();
-static void nrf24_powerUpTx();
 static void nrf24_powerDown();
 static void nrf24_reset();
 
