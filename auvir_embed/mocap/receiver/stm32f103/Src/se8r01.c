@@ -304,12 +304,23 @@ static void radio_settings()
     // Set RF channel
     nrf24_write_register(iRF_BANK0_RF_CH, RF_CHANNEL);
 
-    //original comment: 2mps 0x4f, which is 1001111 TODO: 2mps is (RF_DR_LO,RF_DR_HIG) = (0,1) according to datasheet, and 0x4f stands for 1mps wtf?
-    //RF_SETUP register
+    // RF_SETUP
+    ///RF_SETUP register
     //Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
     //CONT_WAVE | PA_PWR_3 | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR            |
-    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0b111 << PA_PWR) );
+
+    /// Power                           |  DataRate
+    // PA_PWR[3:0]                      | [RF_DR_LOW, RF_DR_HIGH]:
+    // 1111 Output +5 dbm  0b111 = 0x7  | 11 500Kbps
+    // 1000 Output 0 dbm                | 10 reserved
+    // 0100 Output -6 dbm               | 01 2Mbps
+    // 0010 Output -12 dbm              | 00 1Mbps
+    // 0001 Output -18 dbm              |
+
+    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (1 << CRCO)  | (0x7 << PA_PWR) );
+    //original comment: 2mps 0x4f, which is 1001111 TODO: 2mps is (RF_DR_LO,RF_DR_HIG) = (0,1) according to datasheet, and 0x4f stands for 1mps wtf?
     //nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
+
 
 #if 0
     //Dynamic length configurations:
