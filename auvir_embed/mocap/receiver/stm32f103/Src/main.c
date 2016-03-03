@@ -121,7 +121,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 'r'; // 't'
+const char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -517,8 +517,8 @@ void nrf24_setup_gpio(void) {
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(NRF24_IRQ_PORT, &GPIO_InitStruct);
 
-    HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+    //HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+    //HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
     //Configure CSN pin
     GPIO_InitStruct.Pin = NRF24_CSN_PIN;

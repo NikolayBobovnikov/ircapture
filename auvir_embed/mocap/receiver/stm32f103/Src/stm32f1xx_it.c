@@ -163,7 +163,7 @@ void SPI1_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 void EXTI4_IRQHandler(void)
 {
-    //nrf_receive_handler();
+    nrf_receive_handler();
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
 }
 /* USER CODE END 1 */

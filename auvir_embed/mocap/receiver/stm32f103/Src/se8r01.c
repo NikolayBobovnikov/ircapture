@@ -180,6 +180,7 @@ void setup()
         //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
         //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
         // turn on irq for receiver; turn off irq for transmitter
+        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
         //TODO refactoring//nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
         SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
         // start listening
@@ -188,9 +189,10 @@ void setup()
     else {
         //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
         //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-        //TODO refactoring//nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
+        //TODO refactoring//nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
         SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
-        nrf24_ce_set(HIGH);
+        nrf24_ce_set(LOW);
     }
 
 
@@ -210,7 +212,6 @@ void loop()
 
 void nrf_receive_handler()
 {
-    delay_us(10);      //read reg too close after irq low not good
     uint8_t status = SPI_Read(iRF_BANK0_STATUS);
 
     if(status & STA_MARK_RX)                                // if receive data ready (TX_DS) interrupt
@@ -226,7 +227,6 @@ void nrf_receive_handler()
     else{
         nrf24_write_register(iRF_BANK0_STATUS,0xff);
     }
-    HAL_Delay(1);
 }
 
 
@@ -265,6 +265,12 @@ static void RXX()
 
 static void TXX()
 {
+    //power on
+	//Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+	//Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+    //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
+    //nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+    //delay_us(200);
 
     //for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
       //  tx_buf[i] = k++;
@@ -273,6 +279,20 @@ static void TXX()
 
     SPI_RW_Reg(iRF_CMD_FLUSH_TX,0);
     SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
+
+    //start transmission by toggling SE high for more than 10 us
+    nrf24_ce_set(HIGH);
+
+    delay_us(15);
+    /*
+    uint8_t is_packet_sent = SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
+    while( !is_packet_sent )
+    {
+        is_packet_sent = SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
+    }
+    */
+    // stop transmission
+    nrf24_ce_set(LOW);
 
     TransmissionStatus tx_status = nrf24_last_messageStatus();
     GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
@@ -285,6 +305,13 @@ static void TXX()
     }
 
     SPI_RW_Reg(iRF_CMD_WRITE_REG + iRF_BANK0_STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag
+
+    //turn off
+    //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+    //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+    //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
+    //nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (0 << PWR_UP) | (0 << PRIM_RX) );
+
     HAL_Delay(500);
 
 }
@@ -304,6 +331,10 @@ static void radio_settings()
     // 10 4 bytes
     // 01 Illegal
     // 00 Illegal
+    uint8_t SETUP_AW_value = 0x02;
+    if(TX_ADR_WIDTH == 5){
+        SETUP_AW_value = 0x3;
+    }
     nrf24_write_register(iRF_BANK0_SETUP_AW, 0x02);
 
     // Auto retransmit delay and count (ARD, ARC)
@@ -560,7 +591,6 @@ static void se8r01_setup()
     delay_us(15);
 
 }
-
 
 
 // Clocks only one byte into the given nrf24 register //
