@@ -334,11 +334,13 @@ static void radio_settings()
     if(TX_ADR_WIDTH == 5){
         SETUP_AW_value = 0x3;
     }
+    //TODO
     nrf24_write_register(iRF_BANK0_SETUP_AW, 0x02);
 
     // Auto retransmit delay and count (ARD, ARC)
     //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit
-    nrf24_write_register(iRF_BANK0_SETUP_RETR, 0xB00001010);
+    //nrf24_write_register(iRF_BANK0_SETUP_RETR, 0xB00001010);
+    nrf24_write_register(iRF_BANK0_SETUP_RETR, 0x1a);// 500us + 86us, 10 retrans...?
 
     // Set RF channel
     nrf24_write_register(iRF_BANK0_RF_CH, RF_CHANNEL);
@@ -356,9 +358,10 @@ static void radio_settings()
     // 0010 Output -12 dbm              | 00 1Mbps
     // 0001 Output -18 dbm              |
 
-    //nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (0x7 << PA_PWR) );
+    nrf24_write_register(iRF_BANK0_RF_SETUP, (0 << CONT_WAVE) | (1 << PA_PWR_3) | (0 << RF_DR_LO) | (1 << RF_DR_HIG) | (0x7 << PA_PWR) );
     //original comment: 2mps 0x4f, which is 1001111 TODO: 2mps is (RF_DR_LO,RF_DR_HIG) = (0,1) according to datasheet, and 0x4f stands for 1mps wtf?
-    nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
+    //0x47 1000111
+    //nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
 
 
 #if 0
