@@ -259,15 +259,14 @@ static void RXX()
 
 
     GPIO_PinState state = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
-    HAL_Delay(1);
 
 }
 
 static void TXX()
 {
     //power on
-	//Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
-	//Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+    //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+    //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
     //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
     //nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
     //delay_us(200);
@@ -512,11 +511,11 @@ static void se8r01_calibration()
     nrf24_ce_set(HIGH);
     delay_us(30);
     nrf24_ce_set(LOW);
-    delay_us(15);
+    HAL_Delay(15);
     nrf24_ce_set(HIGH);
     delay_us(30);
     nrf24_ce_set(LOW);
-    delay_us(15);
+    HAL_Delay(15);
 
 }
 
