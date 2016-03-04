@@ -237,7 +237,7 @@ static void RXX()
 {
     if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW){
         int a = 0;
-    }
+
         delay_us(10);      //read reg too close after irq low not good
         uint8_t status = SPI_Read(iRF_BANK0_STATUS);
 
@@ -260,8 +260,8 @@ static void RXX()
 
         }
 
-
-    GPIO_PinState state = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+        GPIO_PinState state = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+    }
 
 }
 
