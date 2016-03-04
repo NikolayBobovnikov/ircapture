@@ -71,7 +71,7 @@ TIM_HandleTypeDef* ptim_data_read = &htim3;
 const bool _is_direct_logic = false;
 /// ===========================================
 
-uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0xAB,0xAB,0xAB,0xAB,0xAB};
+uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 

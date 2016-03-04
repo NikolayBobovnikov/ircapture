@@ -163,10 +163,11 @@ void setup()
 {
     init_io();                        // Initialize IO port
     nrf24_ce_set(LOW);
-    delay_us(150);//150
+    HAL_Delay(150);//150
 
     //set CONFIG, RF_SETUP, RF_CH, PRE_GURD
-    se8r01_powerup();
+    //se8r01_powerup();
+    nrf24_write_register(iRF_BANK0_PRE_GURD,0x77); //2450 calibration
 
     se8r01_calibration();
 
@@ -181,18 +182,20 @@ void setup()
         //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
         // turn on irq for receiver; turn off irq for transmitter
         //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
-        //TODO refactoring//nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
-        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
+        //TODO refactoring//
+        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
         // start listening
+        delay_us(10);
         nrf24_ce_set(HIGH);
     }
     else {
         //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
         //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
         //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
-        //TODO refactoring//nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
-        SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
-        nrf24_ce_set(LOW);
+        //TODO refactoring//
+        nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
     }
 
 
@@ -283,13 +286,13 @@ static void TXX()
     nrf24_ce_set(HIGH);
 
     delay_us(15);
-    /*
-    uint8_t is_packet_sent = SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
-    while( !is_packet_sent )
+
+    int Delay = 85;
+    uint32_t tickstart = HAL_GetTick();
+    while( ! SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT) && (HAL_GetTick() - tickstart) < Delay)
     {
-        is_packet_sent = SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
     }
-    */
+
     // stop transmission
     nrf24_ce_set(LOW);
 
@@ -311,7 +314,7 @@ static void TXX()
     //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
     //nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (0 << PWR_UP) | (0 << PRIM_RX) );
 
-    HAL_Delay(500);
+    HAL_Delay(50);
 
 }
 
