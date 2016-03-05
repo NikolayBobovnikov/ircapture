@@ -300,6 +300,7 @@ static void se8r01_powerup();
 static void se8r01_calibration();
 static void se8r01_setup();
 
+static void power_off();
 //
 // adjustment functions //
 void nrf24_init();
