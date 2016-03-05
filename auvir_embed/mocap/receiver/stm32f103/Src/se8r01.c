@@ -133,6 +133,12 @@ static void nrf24_csn_set(uint8_t state)
 {
     assert_param(state == LOW || state == HIGH);
     HAL_GPIO_WritePin(NRF24_CSN_PORT,NRF24_CSN_PIN, state);
+    if(state == HIGH){
+        delay_us(100);
+    }
+    else{
+        delay_us(11);
+    }
 }
 
 // send and receive multiple bytes over SPI //
@@ -163,7 +169,7 @@ void setup()
 {
     init_io();                        // Initialize IO port
     //nrf24_ce_set(LOW);
-    HAL_Delay(150);//150
+    HAL_Delay(5);
 
     //set CONFIG, RF_SETUP, RF_CH, PRE_GURD
     //se8r01_powerup();
@@ -197,7 +203,6 @@ void setup()
         nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
         //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
     }
-
 
 }
 
@@ -283,13 +288,24 @@ static void TXX()
     //start transmission by toggling SE high for more than 10 us
     nrf24_ce_set(HIGH);
 
-    delay_us(15);
-
+//============== TODO: investigate
+    delay_us(13);
+    //HAL_Delay(2);
+#if 0
     int Delay = 85;
     uint32_t tickstart = HAL_GetTick();
-    while( ! SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT) && (HAL_GetTick() - tickstart) < Delay)
-    {
+
+    uint8_t packet_not_sent = !SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
+    uint8_t there_is_still_time = HAL_GetTick() - tickstart < Delay;
+
+    while( packet_not_sent && there_is_still_time){
+        packet_not_sent = ! SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
+        there_is_still_time = HAL_GetTick() - tickstart < Delay;
+        delay_us(1);
     }
+#endif
+    //==============
+
 
     // stop transmission
     nrf24_ce_set(LOW);
@@ -363,6 +379,13 @@ static void radio_settings()
     //original comment: 2mps 0x4f, which is 1001111 TODO: 2mps is (RF_DR_LO,RF_DR_HIG) = (0,1) according to datasheet, and 0x4f stands for 1mps wtf?
     //0x47 1000111
     //nrf24_write_register(iRF_BANK0_RF_SETUP, 0x4f);
+
+    // TODO: if setup is 0 or ff then there was no response from module
+    uint8_t rf_setup = 0;
+    nrf24_read_register_buf(iRF_BANK0_RF_SETUP, &rf_setup, 1);
+    if(rf_setup == 0 && setup == 0xff){
+        int error = 1;
+    }
 
 
 #if 0
@@ -603,11 +626,34 @@ static void se8r01_setup()
 
 static void power_off()
 {
-    nrf24_ce_set(LOW);
-    SPI_RW_Reg(W_REGISTER + CONFIG, 0x0D);
-    nrf24_ce_set(HIGH);
+    nrf24_csn_set(LOW);
+    SPI_RW_Reg(W_REGISTER + CONFIG, 0x0D);//0x0D=1101
+    nrf24_csn_set(HIGH);
     delay_us(20);
 }
+
+static void power_on_tx()
+{
+    nrf24_ce_set(LOW);
+    //CONFIG
+    //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+    //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+    nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (0 << PWR_UP) | (0 << PRIM_RX) );
+    delay_us(150);
+}
+
+static void power_on_rx()
+{
+    nrf24_ce_set(LOW);
+    //CONFIG
+    //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+    //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+    nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+    delay_us(2);
+    nrf24_ce_set(HIGH);
+    delay_us(150);
+}
+
 // Clocks only one byte into the given nrf24 register //
 static void nrf24_write_register(uint8_t reg, uint8_t value)
 {

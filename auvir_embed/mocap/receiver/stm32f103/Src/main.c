@@ -121,7 +121,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 't'; // 't'
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -155,6 +155,8 @@ int main(void)
     init_gpio_led();
     nrf24_setup_gpio();
 
+    // enable timer for delay
+    HAL_TIM_Base_Start_IT(&htim2);
     HAL_TIM_Base_Start_IT(ptim_data_read);
     HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
     /* USER CODE END 2 */
@@ -542,11 +544,8 @@ void nrf24_setup_gpio(void) {
 void delay_us(uint8_t delay)
 {
     htim2.Instance->CNT = 0;
-    HAL_TIM_Base_Start_IT(&htim2);
     while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET)
-    {
-
-    }
+    {}
 }
 
 /* USER CODE END 4 */
