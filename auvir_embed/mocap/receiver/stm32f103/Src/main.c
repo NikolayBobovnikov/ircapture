@@ -121,7 +121,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 'r'; // 't'
+const char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -168,11 +168,13 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
-    setup();
+    //setup();
 
     while (1)
     {
-        loop();
+        delay_us(10);
+        HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+        //loop();
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }
@@ -269,7 +271,7 @@ void MX_TIM2_Init(void)
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 720 - 1;
+    htim2.Init.Period = 72 - 1;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim2);
 
@@ -544,8 +546,11 @@ void nrf24_setup_gpio(void) {
 void delay_us(uint8_t delay)
 {
     htim2.Instance->CNT = 0;
-    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET)
-    {}
+    for(uint8_t us_counter = 0; us_counter < delay; us_counter++){
+        while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET)
+        {}
+        HAL_TIM_IRQHandler(&htim2);
+    }
 }
 
 /* USER CODE END 4 */
