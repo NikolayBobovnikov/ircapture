@@ -304,8 +304,6 @@ static void power_off();
 static void power_on_tx();
 static void power_on_rx();
 //
-// adjustment functions //
-void nrf24_init();
 
 // state check functions
 bool nrf24_is_data_ready();

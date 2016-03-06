@@ -19,13 +19,6 @@ extern uint8_t rx_buf[TX_PLOAD_WIDTH]; // initialize value
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 uint8_t payload_len = TX_PLOAD_WIDTH;
 
-void nrf24_init()
-{
-    nrf24_setup_gpio();
-    nrf24_csn_set(HIGH);
-    nrf24_ce_set(LOW);
-}
-
 uint8_t nrf24_get_rx_fifo_pending_data_length()
 {
     uint8_t status;
@@ -127,6 +120,7 @@ static void nrf24_ce_set(uint8_t state)
 {
     assert_param(state == LOW || state == HIGH);
     HAL_GPIO_WritePin(NRF24_CE_PORT,NRF24_CE_PIN, state);
+    delay_us(10);
 }
 
 static void nrf24_csn_set(uint8_t state)
@@ -258,7 +252,8 @@ static void RXX()
 
         delay_us(10);      //read reg too close after irq low not good
 
-        if(status & STA_MARK_RX || !(SPI_Read(R_REGISTER | FIFO_STATUS) ))                                // if receive data ready (TX_DS) interrupt
+        //if(status & STA_MARK_RX || !(SPI_Read(R_REGISTER | FIFO_STATUS) ))                                // if receive data ready (TX_DS) interrupt
+        if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
         {
             SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
             SPI_RW_Reg(FLUSH_RX,0);
@@ -270,7 +265,6 @@ static void RXX()
             //TODO: this is for debug
             HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         }
-
         else{
 
             SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
@@ -301,7 +295,7 @@ static void TXX()
     nrf24_ce_set(HIGH);
 
 //============== TODO: investigate
-    delay_us(10);
+    //delay_us(10);
     //HAL_Delay(2);
 #if 1
     int Delay = 100;
