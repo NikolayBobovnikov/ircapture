@@ -215,7 +215,7 @@ void loop()
     }
     else
     {
-        power_on_tx();
+        //power_on_tx();
 
         TXX();
 
@@ -225,7 +225,7 @@ void loop()
         //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
         //nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (0 << PWR_UP) | (0 << PRIM_RX) );
 
-        power_off();
+        //power_off();
         HAL_Delay(30);
     }
 }
@@ -301,19 +301,18 @@ static void TXX()
     nrf24_ce_set(HIGH);
 
 //============== TODO: investigate
-    delay_us(13);
+    delay_us(10);
     //HAL_Delay(2);
-#if 0
-    int Delay = 85;
+#if 1
+    int Delay = 100;
     uint32_t tickstart = HAL_GetTick();
 
     uint8_t packet_not_sent = !SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
-    uint8_t there_is_still_time = HAL_GetTick() - tickstart < Delay;
+    uint8_t elapsed = HAL_GetTick() - tickstart;
 
-    while( packet_not_sent && there_is_still_time){
+    while( packet_not_sent && elapsed < Delay){
         packet_not_sent = ! SPI_Read(iRF_BANK0_STATUS) & (iSTATUS_TX_DS | iSTATUS_MAX_RT);
-        there_is_still_time = HAL_GetTick() - tickstart < Delay;
-        delay_us(1);
+        elapsed = HAL_GetTick() - tickstart;
     }
 #endif
     //==============
@@ -454,7 +453,7 @@ static void se8r01_powerup()
     ///CONFIG
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
     //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-    nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+    nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
 
     //Setup RF channel TODO: check necessity
     nrf24_write_register(iRF_BANK0_RF_CH, RF_CHANNEL);
@@ -656,7 +655,7 @@ static void power_on_rx()
     //CONFIG
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
     //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-    nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+    nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
     delay_us(2);
     nrf24_ce_set(HIGH);
     delay_us(150);

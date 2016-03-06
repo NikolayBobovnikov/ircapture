@@ -169,13 +169,13 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
-    //setup();
+    setup();
 
     while (1)
     {
-        delay_us(100);
-        HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
-        //loop();
+        //delay_us(100);
+        //HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
+        loop();
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }
