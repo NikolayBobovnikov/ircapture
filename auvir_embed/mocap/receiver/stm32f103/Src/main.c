@@ -74,7 +74,6 @@ const bool _is_direct_logic = false;
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,6 +94,9 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
 void nrf24_setup_gpio();
+
+volatile uint32_t us_cnt = 0;
+volatile uint32_t us_delay_value = 0;
 void delay_us(uint8_t us);
 /* USER CODE END PFP */
 
@@ -133,7 +135,6 @@ int main(void)
 
     /* MCU Configuration----------------------------------------------------------*/
 
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
 
     /* Configure the system clock */
@@ -155,10 +156,12 @@ int main(void)
     init_gpio_led();
     nrf24_setup_gpio();
 
-    // enable timer for delay
+    // start usec delay timer
     HAL_TIM_Base_Start_IT(&htim2);
-    HAL_TIM_Base_Start_IT(ptim_data_read);
-    HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
+    __HAL_TIM_DISABLE_IT(&htim2, TIM_IT_UPDATE);
+
+    //HAL_TIM_Base_Start_IT(ptim_data_read);
+    //HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -173,6 +176,7 @@ int main(void)
     while (1)
     {
         delay_us(10);
+        //HAL_Delay(1);
         HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
         //loop();
         /* USER CODE END WHILE */
@@ -545,13 +549,32 @@ void nrf24_setup_gpio(void) {
 
 void delay_us(uint8_t delay)
 {
+    //int f = HAL_RCC_GetSysClockFreq();
+    //htim2.Instance->ARR = 72 * delay - 1;
+    us_cnt = 0;
+    us_delay_value = delay;
     htim2.Instance->CNT = 0;
-    for(uint8_t us_counter = 0; us_counter < delay; us_counter++){
-        while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET)
-        {}
-        HAL_TIM_IRQHandler(&htim2);
+    //htim2.Init.Period = 720 - 1;
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+    //HAL_TIM_Base_Start_IT(&htim2);
+    while(us_cnt < us_delay_value){
+        int a = 0;
     }
+    __HAL_TIM_DISABLE_IT(&htim2, TIM_IT_UPDATE);
 }
+
+/*
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    // handle tim2 event since it is delay event
+  if(htim->Instance == TIM2)
+  {
+      if(us_cnt > us_delay_value - 1){
+        HAL_TIM_Base_Stop_IT(&htim2);
+      }
+  }
+}
+*/
 
 /* USER CODE END 4 */
 
