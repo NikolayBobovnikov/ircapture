@@ -53,9 +53,6 @@ extern SPI_HandleTypeDef hspi1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
-extern bool us_elapsed;
-extern uint32_t us_cnt;
-extern uint32_t us_delay_value;
 /******************************************************************************/
 /*            Cortex-M3 Processor Interruption and Exception Handlers         */
 /******************************************************************************/
@@ -116,10 +113,8 @@ void DMA1_Channel3_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
     /* USER CODE BEGIN TIM3_IRQn 0 */
-
-    us_cnt++;
     /* USER CODE END TIM3_IRQn 0 */
-    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+    HAL_TIM_IRQHandler(&htim2);
     /* USER CODE BEGIN TIM3_IRQn 1 */
     /* USER CODE END TIM3_IRQn 1 */
 }

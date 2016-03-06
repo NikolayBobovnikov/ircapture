@@ -95,9 +95,8 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
 void nrf24_setup_gpio();
 
-volatile uint32_t us_cnt = 0;
-volatile uint32_t us_delay_value = 0;
 void delay_us(uint8_t us);
+#define TIMER_DELAY_ARR_DIV 72
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -157,8 +156,7 @@ int main(void)
     nrf24_setup_gpio();
 
     // start usec delay timer
-    HAL_TIM_Base_Start_IT(&htim2);
-    __HAL_TIM_DISABLE_IT(&htim2, TIM_IT_UPDATE);
+    HAL_TIM_Base_Start(&htim2);
 
     //HAL_TIM_Base_Start_IT(ptim_data_read);
     //HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
@@ -175,8 +173,7 @@ int main(void)
 
     while (1)
     {
-        delay_us(10);
-        //HAL_Delay(1);
+        delay_us(100);
         HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
         //loop();
         /* USER CODE END WHILE */
@@ -275,7 +272,7 @@ void MX_TIM2_Init(void)
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 72 - 1;
+    htim2.Init.Period = 720 - 1;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim2);
 
@@ -549,18 +546,12 @@ void nrf24_setup_gpio(void) {
 
 void delay_us(uint8_t delay)
 {
-    //int f = HAL_RCC_GetSysClockFreq();
-    //htim2.Instance->ARR = 72 * delay - 1;
-    us_cnt = 0;
-    us_delay_value = delay;
     htim2.Instance->CNT = 0;
-    //htim2.Init.Period = 720 - 1;
-    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-    //HAL_TIM_Base_Start_IT(&htim2);
-    while(us_cnt < us_delay_value){
-        int a = 0;
-    }
-    __HAL_TIM_DISABLE_IT(&htim2, TIM_IT_UPDATE);
+    // TODO: delay - 1 results in a more precise measurements
+    // Why?
+    htim2.Instance->ARR = TIMER_DELAY_ARR_DIV * (delay - 1) - 1;
+    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
 }
 
 /*
