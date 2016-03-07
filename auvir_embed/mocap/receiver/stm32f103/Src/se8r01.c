@@ -295,7 +295,7 @@ static void TXX()
     nrf24_ce_set(HIGH);
 
 //============== TODO: investigate
-    //delay_us(10);
+    delay_us(100);
     //HAL_Delay(2);
 #if 1
     int Delay = 100;
@@ -320,9 +320,18 @@ static void TXX()
     uint8_t status = SPI_Read(iRF_BANK0_STATUS);
 
     //TODO: this is for debug
-    if(tx_status == NRF24_TRANSMISSON_OK || tx_status == NRF24_MESSAGE_LOST)
+    if(tx_status == NRF24_TRANSMISSON_OK)
     {
         HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+    }
+    else if(tx_status == NRF24_MESSAGE_LOST){
+        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+        //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13, GPIO_PIN_RESET);//nop
+    }
+    else{
+        nrf24_csn_set(LOW);
+        SPI_RW(FLUSH_RX);
+        nrf24_csn_set(HIGH);
     }
 
     SPI_RW_Reg(iRF_CMD_WRITE_REG + iRF_BANK0_STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag
