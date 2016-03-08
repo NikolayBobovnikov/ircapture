@@ -158,46 +158,24 @@ static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 }
 
-
 void setup()
 {
     init_io();                        // Initialize IO port
-    //nrf24_ce_set(LOW);
     HAL_Delay(5);
-
-    //set CONFIG, RF_SETUP, RF_CH, PRE_GURD
-    //se8r01_powerup();
-    nrf24_write_register(iRF_BANK0_PRE_GURD,0x77); //2450 calibration
-
-    se8r01_calibration();
-
-    // similar to se8r01_calibration() ?
-    se8r01_setup();
 
     //set EN_AA, EN_RXADDR, RF_CH (needless?), RF_SETUP (needless?), AW, SETUP_RETR, TX_ADDR, RX_ADDR_P*
     radio_settings();
 
-    if (mode=='r') {
-        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
-        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-        // turn on irq for receiver; turn off irq for transmitter
-        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
-        //TODO refactoring//
-        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
-        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
-        // start listening
-        delay_us(10);
-        nrf24_ce_set(HIGH);
-        delay_us(210);
-    }
-    else {
-        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
-        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
-        //TODO refactoring//
-        nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
-        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
-    }
+    // set CONFIG register according to rx/tx mode
+    set_rx_tx_mode();
+
+    se8r01_calibration();
+    se8r01_setup();
+
+    // set CONFIG register according to rx/tx mode
+    set_rx_tx_mode();
+
+
 
 }
 
@@ -420,7 +398,32 @@ static void radio_settings()
 
 }
 
-static void init_io(void)
+static void set_rx_tx_mode()
+{
+    if (mode=='r') {
+        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+        // turn on irq for receiver; turn off irq for transmitter
+        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
+        //TODO refactoring//
+        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
+        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
+        // start listening
+        delay_us(10);
+        nrf24_ce_set(HIGH);
+        delay_us(210);
+    }
+    else {
+        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
+        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
+        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
+        //TODO refactoring//
+        nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
+    }
+}
+
+static void init_io()
 {
     nrf24_ce_set(LOW);
     nrf24_csn_set(HIGH);
@@ -732,7 +735,7 @@ static uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value)
  * Description:
  * Read one uint8_t from nRF24L01 register, 'reg'
 /**************************************************/
-static uint8_t SPI_Read(uint8_t reg)
+uint8_t SPI_Read(uint8_t reg)
 {
     uint8_t reg_val;
 

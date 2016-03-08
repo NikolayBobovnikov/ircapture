@@ -293,7 +293,8 @@ void nrf_receive_handler();
 static void RXX();
 static void TXX();
 static void radio_settings();
-static void init_io(void);
+static void set_rx_tx_mode();
+static void init_io();
 
 static void se8r01_switch_bank(uint8_t bankindex);
 static void se8r01_powerup();
@@ -324,7 +325,7 @@ static void nrf24_reset();
 // low level interface ... //
 static uint8_t SPI_RW(uint8_t tx);
 static uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value);
-static uint8_t SPI_Read(uint8_t reg);
+uint8_t SPI_Read(uint8_t reg);
 static uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
 static uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes);
 
