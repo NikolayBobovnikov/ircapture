@@ -7,15 +7,21 @@
 /// on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
 ///
 
+
 extern SPI_HandleTypeDef hspi1;
 extern char mode;      //r=rx, t=tx
 void delay_us(uint8_t us);
 uint8_t gtemp[5];
 
 // Define a static TX address
+extern uint8_t TX_ADDRESS[TX_ADR_WIDTH];
+extern uint8_t rx_buf[TX_PLOAD_WIDTH]; // initialize value
+extern uint8_t tx_buf[TX_PLOAD_WIDTH];
+
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
+
 
 //===============  Function prototypes
 static void nrf24_ce_set(uint8_t state);
@@ -215,9 +221,6 @@ void setup()
 
     // set CONFIG register according to rx/tx mode
     set_rx_tx_mode();
-
-
-
 }
 
 void nrf_receive_handler()
@@ -290,7 +293,7 @@ void TXX()
     nrf24_ce_set(HIGH);
 
 //============== TODO: investigate
-    delay_us(20);
+    delay_us(100);
     //HAL_Delay(2);
 #if 1
     int Delay = 100;

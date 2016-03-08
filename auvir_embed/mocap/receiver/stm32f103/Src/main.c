@@ -71,9 +71,6 @@ TIM_HandleTypeDef* ptim_data_read = &htim3;
 const bool _is_direct_logic = false;
 /// ===========================================
 
-uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
-uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
-uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,6 +92,7 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
 void nrf24_setup_gpio();
 
+//TODO: refactor; merge routines with those from transmitter
 void delay_us(uint8_t us);
 #define TIMER_DELAY_ARR_DIV 72
 /* USER CODE END PFP */
@@ -122,7 +120,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 't'; // 't'
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -151,15 +149,14 @@ int main(void)
     MX_USART1_UART_Init();
 
     /* USER CODE BEGIN 2 */
-    debug_init_gpio();
+    //debug_init_gpio();
     init_gpio_led();
     nrf24_setup_gpio();
 
     // start usec delay timer
     HAL_TIM_Base_Start(&htim2);
-
-    //HAL_TIM_Base_Start_IT(ptim_data_read);
-    //HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
+    HAL_TIM_Base_Start_IT(ptim_data_read);
+    HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -173,15 +170,13 @@ int main(void)
 
     while (1)
     {
-        //delay_us(100);
-        //HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_0);
-        loop();
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
 
 }
+
 /** System Clock Configuration
 */
 void SystemClock_Config(void)

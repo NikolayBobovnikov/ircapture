@@ -2,6 +2,8 @@
 #include <stdbool.h>
 
 
+/// ================== Functions ================
+void RXX();
 /// ================== Parameters ================
 //TODO: cleanup when done debugging
 extern const bool _debug;
@@ -447,16 +449,27 @@ void  debug_init_gpio()
 {
     if(_debug)
     {
+        /* these gpio are used elsewhere
         GPIO_InitTypeDef GPIO_InitStruct;
-
         GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        */
     }
 }
+void  init_gpio_led() {
+    GPIO_InitTypeDef GPIO_InitStruct;
 
+    GPIO_InitStruct.Pin = GPIO_PIN_13;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    __GPIOC_CLK_ENABLE();
+
+}
 void init_beamer_channels_gpio()
 {
     GPIO_InitTypeDef GPIO_InitStruct;

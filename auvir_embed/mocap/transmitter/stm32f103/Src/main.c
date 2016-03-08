@@ -32,6 +32,7 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
+#include "se8r01.h"
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
@@ -46,6 +47,7 @@ SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
@@ -91,6 +93,7 @@ static void MX_DMA_Init(void);
 static void MX_CRC_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
@@ -99,6 +102,11 @@ static void MX_USART1_UART_Init(void);
 /* Private function prototypes -----------------------------------------------*/
 void notify_transmission_finished();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+
+//TODO: refactor; merge routines with those from receiver
+#define TIMER_DELAY_ARR_DIV 72
+void delay_us(uint8_t delay);
+void nrf24_setup_gpio();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -127,6 +135,8 @@ void ReceiveDataToSend()
       }
     }
 }
+
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -149,6 +159,7 @@ int main(void)
   MX_CRC_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
+  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_USART1_UART_Init();
@@ -158,6 +169,17 @@ int main(void)
   init_beamer_channels_gpio();
   HAL_TIM_Base_Start_IT(phtim_envelop);      // envelop
   HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);  // pwm
+
+  // TODO: this is requred. Refactor to avoid possible mistakes in the future
+  // start usec delay timer
+  HAL_TIM_Base_Start(&htim2);
+
+  init_gpio_led();
+
+  bool is_transmitter = (mode =='t');
+  bool is_receiver = !is_transmitter;
+
+  setup();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -165,6 +187,7 @@ int main(void)
   while (1) {
     init_data();
     sensor_send_data();
+    //RXX();
     //ReceiveDataToSend();
     //HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
 
@@ -253,6 +276,29 @@ void MX_SPI2_Init(void)
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
   hspi2.Init.CRCPolynomial = 10;
   HAL_SPI_Init(&hspi2);
+
+}
+
+/* TIM2 init function */
+void MX_TIM2_Init(void)
+{
+
+    TIM_ClockConfigTypeDef sClockSourceConfig;
+    TIM_MasterConfigTypeDef sMasterConfig;
+
+    htim2.Instance = TIM2;
+    htim2.Init.Prescaler = 0;
+    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim2.Init.Period = 720 - 1;
+    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    HAL_TIM_Base_Init(&htim2);
+
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 
 }
 
@@ -381,6 +427,51 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     tx_data_frame = uart_msg.data;
     sensor_send_data();
 }
+
+void nrf24_setup_gpio(void) {
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    //Configure IRQ pin
+    GPIO_InitStruct.Pin = NRF24_IRQ_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(NRF24_IRQ_PORT, &GPIO_InitStruct);
+
+    //HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+    //HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+    //Configure CSN pin
+    GPIO_InitStruct.Pin = NRF24_CSN_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
+
+    //Configure CE pin
+    GPIO_InitStruct.Pin = NRF24_CE_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
+
+    /* CSN high = disable SPI */
+    HAL_GPIO_WritePin(NRF24_CSN_PORT, NRF24_CSN_PIN, GPIO_PIN_SET);
+
+    /* CE low = disable TX/RX */
+    HAL_GPIO_WritePin(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_PIN_RESET);
+}
+
+void delay_us(uint8_t delay)
+{
+    htim2.Instance->CNT = 0;
+    // TODO: delay - 1 results in a more precise measurements
+    // Why?
+    htim2.Instance->ARR = TIMER_DELAY_ARR_DIV * (delay - 1) - 1;
+    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
+}
+
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT

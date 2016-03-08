@@ -1,5 +1,9 @@
 #include "infrared.h"
 
+
+/// ============================ Functions ============================
+
+void TXX();
 /// ============================ Parameters ============================
 extern TIM_HandleTypeDef* ptim_input_capture;
 extern TIM_HandleTypeDef* ptim_data_read;
@@ -36,9 +40,6 @@ volatile uint16_t _ccr1 = 0;
 volatile uint16_t _ccr2 = 0;
 volatile uint16_t _delay_counter = 0;
 
-
-const uint8_t led_off_threshold = 5;
-uint8_t led_off_counter = 0;
 GPIO_TypeDef * GPIO_LED_PORT = GPIOB;
 uint16_t GPIO_LED_PIN = GPIO_PIN_3;
 ///====================== Dubugging scaffolding ======================
@@ -517,11 +518,7 @@ static inline void reset_receiver_state()
     ptim_data_read->Instance->CNT = 0;
 
     {
-        led_off_counter++;
-        if(led_off_counter > led_off_threshold){
-            led_off_counter = led_off_threshold + 1;
-            HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
-        }
+        HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
     }
 
     //HAL_TIM_Base_Stop_IT(ptim_data_read);
@@ -536,8 +533,8 @@ static inline void process_received_data()
         debug_data_verified();
 
         {
+            TXX();
             HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_SET);
-            led_off_counter = 0;
         }
 
         copy_data_frame_to_buffer(&rx_data_frame);

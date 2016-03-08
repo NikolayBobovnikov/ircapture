@@ -15,9 +15,9 @@
 
 // FIXME: TODO: keep values below in sync with transmitter
 #define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
-#define PreambleBitLength           (400 - 1)    // 270 works not reliably; 280 works;  chosen more
-#define PreambleDelayLength         (400 - 1)    // 270 works not reliably; 280 works;  chosen more.
-#define DataBitLength               (250 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
+#define PreambleBitLength           (450 - 1)    // 270 works not reliably; 280 works;  chosen more
+#define PreambleDelayLength         (450 - 1)    // 270 works not reliably; 280 works;  chosen more.
+#define DataBitLength               (300 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
 #define InterframeDelayLength       (14000 - 1)  //12900 doesn't work; 13000 works; chosen more
 
 #define PreambleTotalLength         (PreambleBitLength * 2 + PreambleDelayLength * 2)
