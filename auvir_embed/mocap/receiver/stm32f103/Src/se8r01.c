@@ -320,12 +320,12 @@ void TXX()
         HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
     }
     else if(tx_status == NRF24_MESSAGE_LOST){
-        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+        //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13, GPIO_PIN_RESET);//nop
     }
     else{
         nrf24_csn_set(LOW);
-        SPI_RW(FLUSH_RX);
+        SPI_RW(FLUSH_TX);
         nrf24_csn_set(HIGH);
     }
 
