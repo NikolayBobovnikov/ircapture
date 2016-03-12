@@ -324,9 +324,7 @@ void TXX()
         //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13, GPIO_PIN_RESET);//nop
     }
     else{
-        nrf24_csn_set(LOW);
-        SPI_RW(FLUSH_TX);
-        nrf24_csn_set(HIGH);
+
     }
 
     SPI_RW_Reg(iRF_CMD_WRITE_REG + iRF_BANK0_STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag

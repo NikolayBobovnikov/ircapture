@@ -7,21 +7,15 @@
 /// on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
 ///
 
-
 extern SPI_HandleTypeDef hspi1;
 extern char mode;      //r=rx, t=tx
 void delay_us(uint8_t us);
 uint8_t gtemp[5];
 
 // Define a static TX address
-extern uint8_t TX_ADDRESS[TX_ADR_WIDTH];
-extern uint8_t rx_buf[TX_PLOAD_WIDTH]; // initialize value
-extern uint8_t tx_buf[TX_PLOAD_WIDTH];
-
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
-
 
 //===============  Function prototypes
 static void nrf24_ce_set(uint8_t state);
@@ -221,6 +215,9 @@ void setup()
 
     // set CONFIG register according to rx/tx mode
     set_rx_tx_mode();
+
+
+
 }
 
 void nrf_receive_handler()
@@ -293,7 +290,7 @@ void TXX()
     nrf24_ce_set(HIGH);
 
 //============== TODO: investigate
-    delay_us(100);
+    delay_us(20);
     //HAL_Delay(2);
 #if 1
     int Delay = 100;
@@ -323,13 +320,11 @@ void TXX()
         HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
     }
     else if(tx_status == NRF24_MESSAGE_LOST){
-        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+        //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13, GPIO_PIN_RESET);//nop
     }
     else{
-        nrf24_csn_set(LOW);
-        SPI_RW(FLUSH_RX);
-        nrf24_csn_set(HIGH);
+
     }
 
     SPI_RW_Reg(iRF_CMD_WRITE_REG + iRF_BANK0_STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag
