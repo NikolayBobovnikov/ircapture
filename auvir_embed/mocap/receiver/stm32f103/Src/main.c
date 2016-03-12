@@ -170,6 +170,13 @@ int main(void)
 
     while (1)
     {
+        if(is_receiver){
+            RXX();
+        }
+        else if(is_transmitter){
+            TXX();
+            HAL_Delay(100);
+        }
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }

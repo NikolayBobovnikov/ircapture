@@ -215,9 +215,6 @@ void setup()
 
     // set CONFIG register according to rx/tx mode
     set_rx_tx_mode();
-
-
-
 }
 
 void nrf_receive_handler()
@@ -290,7 +287,7 @@ void TXX()
     nrf24_ce_set(HIGH);
 
 //============== TODO: investigate
-    delay_us(20);
+    delay_us(10);
     //HAL_Delay(2);
 #if 1
     int Delay = 100;
@@ -304,11 +301,9 @@ void TXX()
         elapsed = HAL_GetTick() - tickstart;
     }
 #endif
-    //==============
-
-
     // stop transmission
     nrf24_ce_set(LOW);
+    //==============
 
     TransmissionStatus tx_status = nrf24_last_messageStatus();
     GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
@@ -435,6 +430,7 @@ static void set_rx_tx_mode()
         //TODO refactoring//
         nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
         //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
+        delay_us(10);
     }
 }
 
