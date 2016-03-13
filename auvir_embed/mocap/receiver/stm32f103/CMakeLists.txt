@@ -27,8 +27,9 @@ ADD_DEFINITIONS(
 )
 #=======================================================================================================
 
-SET(THIRDPARTY_STM32LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Libraries)
+SET(THIRDPARTY_STM32LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../Libraries)
 SET(I2CDevLib_STM32 ${THIRDPARTY_STM32LIB_PATH}/i2cdevlib_hal)
+SET(radio_lib_dir ${THIRDPARTY_STM32LIB_PATH}/radio)
 
 SET(I2CDevLib_MPU6050 ${I2CDevLib_STM32}/MPU6050)
 SET(I2CDevLib_I2Cdev ${I2CDevLib_STM32}/I2Cdev)
@@ -38,35 +39,10 @@ SET(LIB_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Src
-    ${I2CDevLib_MPU6050}
-    ${I2CDevLib_I2Cdev}
+    #${I2CDevLib_MPU6050}
+    #${I2CDevLib_I2Cdev}
+    ${radio_lib_dir}
 )
-
-# SPL modules
-SET(STM32_MISC   misc)
-SET(STM32_ADC    stm32f10x_adc)
-SET(STM32_BKP    stm32f10x_bkp)
-SET(STM32_CAN    stm32f10x_can)
-SET(STM32_CEC    stm32f10x_cec)
-SET(STM32_CRC    stm32f10x_crc)
-SET(STM32_DAC    stm32f10x_dac)
-SET(STM32_DBGMCU stm32f10x_dbgmcu)
-SET(STM32_DMA    stm32f10x_dma)
-SET(STM32_EXTI   stm32f10x_exti)
-SET(STM32_FLASH  stm32f10x_flash)
-SET(STM32_FSMC   stm32f10x_fsmc)
-SET(STM32_GPIO   stm32f10x_gpio)
-SET(STM32_I2C    stm32f10x_i2c)
-SET(STM32_IWDG   stm32f10x_iwdg)
-SET(STM32_PWR    stm32f10x_pwr)
-SET(STM32_RCC    stm32f10x_rcc)
-SET(STM32_RTC    stm32f10x_rtc)
-SET(STM32_SDIO   stm32f10x_sdio)
-SET(STM32_SPI    stm32f10x_spi)
-SET(STM32_TIM    stm32f10x_tim)
-SET(STM32_USART  stm32f10x_usart)
-SET(STM32_WWDG   stm32f10x_wwdg)
-
 
 
 ################################################
