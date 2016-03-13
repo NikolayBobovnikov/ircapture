@@ -281,7 +281,7 @@ typedef enum{
     NRF24_MESSAGE_SENDING
 }TransmissionStatus;
 
-// TODO
+void nrf24_setup_gpio();
 void setup_radio(NRF24_InitTypeDef* settings);
 void setup();
 void nrf_receive_handler();

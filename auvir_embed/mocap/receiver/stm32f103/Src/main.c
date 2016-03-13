@@ -39,6 +39,7 @@
 #include "sensor.h"
 #include "sensor_hub.h"
 #include "se8r01.h"
+#include "common.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -69,6 +70,7 @@ TIM_HandleTypeDef* ptim_input_capture = &htim4;
 TIM_HandleTypeDef* ptim_data_read = &htim3;
 
 const bool _is_direct_logic = false;
+const bool _debug = true;
 /// ===========================================
 
 /* USER CODE END PV */
@@ -90,7 +92,6 @@ static void MX_USART1_UART_Init(void);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
-void nrf24_setup_gpio();
 
 //TODO: refactor; merge routines with those from transmitter
 void delay_us(uint8_t us);
@@ -510,40 +511,6 @@ void send_data_uart()
     if (status != HAL_OK) {
         // TODO: process error
     }
-}
-
-void nrf24_setup_gpio(void) {
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    //Configure IRQ pin
-    GPIO_InitStruct.Pin = NRF24_IRQ_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(NRF24_IRQ_PORT, &GPIO_InitStruct);
-
-    //HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
-    //HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
-    //Configure CSN pin
-    GPIO_InitStruct.Pin = NRF24_CSN_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
-
-    //Configure CE pin
-    GPIO_InitStruct.Pin = NRF24_CE_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
-
-    /* CSN high = disable SPI */
-    HAL_GPIO_WritePin(NRF24_CSN_PORT, NRF24_CSN_PIN, GPIO_PIN_SET);
-
-    /* CE low = disable TX/RX */
-    HAL_GPIO_WritePin(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_PIN_RESET);
 }
 
 void delay_us(uint8_t delay)

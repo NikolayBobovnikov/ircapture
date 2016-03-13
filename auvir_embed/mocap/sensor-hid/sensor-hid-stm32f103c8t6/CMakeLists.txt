@@ -30,9 +30,10 @@ ADD_DEFINITIONS(
 SET(THIRDPARTY_STM32LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../Libraries)
 SET(I2CDevLib_STM32 ${THIRDPARTY_STM32LIB_PATH}/i2cdevlib_hal)
 SET(radio_lib_dir ${THIRDPARTY_STM32LIB_PATH}/radio)
-
 SET(I2CDevLib_MPU6050 ${I2CDevLib_STM32}/MPU6050)
 SET(I2CDevLib_I2Cdev ${I2CDevLib_STM32}/I2Cdev)
+SET(COMMON_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../common)
+
 
 SET(LIB_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers
@@ -41,7 +42,8 @@ SET(LIB_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/Src
     #${I2CDevLib_MPU6050}
     #${I2CDevLib_I2Cdev}
-    #${radio_lib_dir}
+    ${radio_lib_dir}
+    ${COMMON_SRC_DIR}
 )
 
 # SPL modules

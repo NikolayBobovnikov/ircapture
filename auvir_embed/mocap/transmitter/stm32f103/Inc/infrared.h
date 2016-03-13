@@ -66,9 +66,6 @@ typedef struct
 void init_data();
 void sensor_send_data();
 void transmit_handler();
-
-void  debug_init_gpio();
-void  init_gpio_led();
 void  init_beamer_channels_gpio();
 
 #endif //INFRARED_H

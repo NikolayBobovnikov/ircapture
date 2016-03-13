@@ -199,6 +199,41 @@ static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 }
 
+void nrf24_setup_gpio(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    //Configure IRQ pin
+    GPIO_InitStruct.Pin = NRF24_IRQ_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(NRF24_IRQ_PORT, &GPIO_InitStruct);
+
+    //HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+    //HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
+    //Configure CSN pin
+    GPIO_InitStruct.Pin = NRF24_CSN_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
+
+    //Configure CE pin
+    GPIO_InitStruct.Pin = NRF24_CE_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
+
+    /* CSN high = disable SPI */
+    HAL_GPIO_WritePin(NRF24_CSN_PORT, NRF24_CSN_PIN, GPIO_PIN_SET);
+
+    /* CE low = disable TX/RX */
+    HAL_GPIO_WritePin(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_PIN_RESET);
+}
+
 void setup()
 {
     init_io();                        // Initialize IO port
