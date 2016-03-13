@@ -175,7 +175,7 @@ int main(void)
         }
         else if(is_transmitter){
             TXX();
-            HAL_Delay(50);
+            HAL_Delay(100);
         }
 #endif
 
