@@ -37,6 +37,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "infrared.h"
+#include "common.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -288,7 +289,7 @@ void MX_TIM2_Init(void)
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 720 - 1;
+    htim2.Init.Period = DELAY_PRESCALER;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim2);
 
@@ -425,16 +426,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     tx_data_frame = uart_msg.data;
     sensor_send_data();
-}
-
-void delay_us(uint8_t delay)
-{
-    htim2.Instance->CNT = 0;
-    // TODO: delay - 1 results in a more precise measurements
-    // Why?
-    htim2.Instance->ARR = TIMER_DELAY_ARR_DIV * (delay - 1) - 1;
-    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
-    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
 }
 
 /* USER CODE END 4 */

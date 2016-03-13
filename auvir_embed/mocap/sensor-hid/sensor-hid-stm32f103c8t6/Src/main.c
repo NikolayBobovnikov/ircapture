@@ -37,6 +37,7 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include "usbd_cdc_if.h"
+#include "se8r01.h"
 #include "common.h"
 /* USER CODE END Includes */
 
@@ -65,7 +66,7 @@ static void MX_TIM2_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -91,8 +92,15 @@ int main(void)
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim2);
+
   init_gpio_led();
   nrf24_setup_gpio();
+
+  // use identical bytes
+  bool is_transmitter = (mode =='t');
+  bool is_receiver = !is_transmitter;
+  setup();
 
   const char * str_example = "Hello there!\0";
   char buf[100] = {0};
@@ -103,6 +111,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+#if 1
+        if(is_receiver){
+            RXX();
+        }
+        else if(is_transmitter){
+            TXX();
+            HAL_Delay(50);
+        }
+#endif
+
       //CDC_Transmit_FS((uint8_t*)str_example, (uint16_t)strlen(str_example));
       //HAL_Delay(500);
   /* USER CODE END WHILE */

@@ -93,8 +93,6 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
 
-//TODO: refactor; merge routines with those from transmitter
-void delay_us(uint8_t us);
 #define TIMER_DELAY_ARR_DIV 72
 /* USER CODE END PFP */
 
@@ -121,7 +119,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 't'; // 't'
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -171,13 +169,16 @@ int main(void)
 
     while (1)
     {
+#if 1
         if(is_receiver){
             RXX();
         }
         else if(is_transmitter){
             TXX();
-            HAL_Delay(100);
+            HAL_Delay(50);
         }
+#endif
+
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }
@@ -275,7 +276,7 @@ void MX_TIM2_Init(void)
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 720 - 1;
+    htim2.Init.Period = DELAY_PRESCALER;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     HAL_TIM_Base_Init(&htim2);
 
@@ -511,16 +512,6 @@ void send_data_uart()
     if (status != HAL_OK) {
         // TODO: process error
     }
-}
-
-void delay_us(uint8_t delay)
-{
-    htim2.Instance->CNT = 0;
-    // TODO: delay - 1 results in a more precise measurements
-    // Why?
-    htim2.Instance->ARR = TIMER_DELAY_ARR_DIV * (delay - 1) - 1;
-    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
-    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
 }
 
 /*
