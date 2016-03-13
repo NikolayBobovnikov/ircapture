@@ -119,7 +119,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 'r'; // 't'
+const char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)

@@ -22,8 +22,6 @@ void  init_gpio_led() {
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    __GPIOC_CLK_ENABLE();
-
 }
 void  debug_init_gpio() {
     if(_debug)

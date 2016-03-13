@@ -291,6 +291,7 @@ void RXX()
             SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
             //TODO: this is for debug
             HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+            HAL_Delay(10);
         }
         else{
 
