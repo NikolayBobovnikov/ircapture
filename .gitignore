@@ -11,6 +11,8 @@ auvir_embed/toolchain/
 *release
 *.autosave
 *~
+*.lock
+*.lock*
 *.out
 *.exe
 *.obj
