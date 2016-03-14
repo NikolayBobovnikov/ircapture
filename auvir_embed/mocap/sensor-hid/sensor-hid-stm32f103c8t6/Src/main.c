@@ -88,7 +88,7 @@ int main(void)
   MX_GPIO_Init();
   MX_CRC_Init();
   MX_TIM2_Init();
-  MX_USB_DEVICE_Init();
+  //MX_USB_DEVICE_Init();
   MX_SPI1_Init();
 
   /* USER CODE BEGIN 2 */
@@ -112,7 +112,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      CDC_Transmit_FS((uint8_t*)str_example, (uint16_t)strlen(str_example));
+      //CDC_Transmit_FS((uint8_t*)str_example, (uint16_t)strlen(str_example));
 
 #if 1
         if(is_receiver){
