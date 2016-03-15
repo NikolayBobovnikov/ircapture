@@ -71,6 +71,9 @@ TIM_HandleTypeDef* ptim_data_read = &htim3;
 
 const bool _is_direct_logic = false;
 const bool _debug = true;
+
+extern GPIO_TypeDef * GPIO_LED_PORT;
+extern uint16_t GPIO_LED_PIN;
 /// ===========================================
 
 /* USER CODE END PV */
@@ -119,7 +122,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 'r'; // 't'
+const char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)

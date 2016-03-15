@@ -9,6 +9,9 @@
 
 extern SPI_HandleTypeDef hspi1;
 extern char mode;      //r=rx, t=tx
+extern GPIO_TypeDef * GPIO_LED_PORT;
+extern uint16_t GPIO_LED_PIN;
+
 void delay_us(uint8_t us);
 uint8_t gtemp[5];
 
@@ -349,6 +352,7 @@ void TXX()
     if(tx_status == NRF24_TRANSMISSON_OK)
     {
         HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+        HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
     }
     else if(tx_status == NRF24_MESSAGE_LOST){
         //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
