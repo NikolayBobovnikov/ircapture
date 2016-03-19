@@ -26,46 +26,82 @@
 #define pwm_timer_period        (1880 - 1)
 #define pwm_pulse_width         (940 - 1)
 
+#define PreambleTotalLength       (PreambleBitLength * 2 + PreambleDelayLength * 2)
+#define HalfDataBitLength   		((DataBitLength + 1) / 2 - 1)   //(DataBitLength + 1) / 2 - 1; // TODO: check the value
+#define max_period                (65535 - 1)
 
-enum TransmitterStates
+#define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.1)
+#define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1)
+#define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1)
+
+#define NUMBER_OF_BEAMER_CHANNELS 8
+
+
+typedef enum TransmitterStates
 {
     TX_WAITING,
     TX_PREAMBLE,
     TX_DATA,
     TX_EPILOGUE,
     TX_DELAY
-};
+} TransmitterStates;
 
-enum DataFrameStates
+// TODO: unite
+typedef enum DataFrameStates
 {
     DATAFRAME_0_NODATA,
     DATAFRAME_1_BEAMER_ID,
     DATAFRAME_2_ANGLE,
     DATAFRAME_3_ANGLE_REV
-};
+} DataFrameStates;
 
-enum StartStopSequenceStates
+typedef enum TxStartStopSequenceStates
 {
-    STAGE_PREAMBLE_BIT_1,
-    STAGE_PREAMBLE_DELAY_1,
-    STAGE_PREAMBLE_BIT_2,
-    STAGE_PREAMBLE_DELAY_2,
-    STAGE_OFF2,
-    STAGE_ON3,
-    STAGE_OFF3
-};
+    Tx_PREAMBLE_BIT_1,
+    Tx_PREAMBLE_DELAY_1,
+    Tx_PREAMBLE_BIT_2,
+    Tx_PREAMBLE_DELAY_2
+} TxStartStopSequenceStates;
 
-typedef struct
+typedef struct DataFrame_t
 {
     uint8_t _1_beamer_id;
     uint8_t _2_angle_code;
     uint8_t _3_angle_code_rev;
 } DataFrame_t;
 
+enum ReceiverStates
+{
+    RX_WAITING_FOR_START_BIT,
+    RX_START_BIT_PROCESSING,
+    RX_START_BIT_DONE,
+    RX_DATA_PROCESSNG,
+    RX_DATA_DONE,
+    RX_STOP_BIT_PROCESSING,
+    RX_STOP_BIT_DONE
+};
 
+enum LineLevels
+{
+    LINE_UNDEFINED,
+    LINE_LOW_ON_UPDATE_EVENT,
+    LINE_HIGH_ON_UPDATE_EVENT
+};
+
+typedef struct MCU_PIN{
+    GPIO_TypeDef * pin_port;
+    uint16_t pin_number;
+} MCU_PIN;
+
+///====================== Function prototypes ======================
 void init_data();
 void sensor_send_data();
 void transmit_handler();
 void  init_beamer_channels_gpio();
+
+// main functions used in timer interrupt handlers
+void irreceiver_timer_prob_handler(); // for update timer
+void irreceiver_timer_up_handler(); // for update timer
+void irreceiver_timer_ic_handler(); // for input capture timer
 
 #endif //INFRARED_H

@@ -1,42 +1,25 @@
 #include "infrared.h"
 #include <stdbool.h>
 
-
-/// ================== Functions ================
-void RXX();
 /// ================== Parameters ================
 //TODO: cleanup when done debugging
 extern const bool _debug;
-//TODO: cleanup when done debugging
 const bool _is_direct_logic = true;
-
 
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;
 
 /// ================== Variables ================
-uint8_t StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
-uint8_t DataFrameState = DATAFRAME_0_NODATA;
-uint8_t TransmitterState = TX_WAITING;
-
-///TODO: refactor constants below
+TxStartStopSequenceStates StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
+DataFrameStates TxDataFrameState = DATAFRAME_0_NODATA;
+TransmitterStates TransmitterState = TX_WAITING;
 DataFrame_t tx_data_frame;
-volatile size_t tx_total_bits_beamer_id = 0;
-volatile size_t tx_total_bits_angle = 0;
-volatile size_t tx_total_bits_angle_rev = 0;
-volatile size_t tx_total_bits = 0;
-volatile uint8_t tx_current_bit_pos = 0;
-volatile uint8_t tx_bit = 0;
 
-uint8_t level[100] = {0};
-uint16_t pwm_period[100] = {0};
-uint8_t arr_index = 0;
+uint8_t tx_total_bits = 0;
+uint8_t tx_current_bit_pos = 0;
+uint8_t tx_bit = 0;
 
-typedef struct MCU_PIN{
-    GPIO_TypeDef * pin_port;
-    uint16_t pin_number;
-} MCU_PIN;
 
 // constant, use for transmission non-structured light data
 const MCU_PIN standard_data_pin = { GPIOB, GPIO_PIN_12};
@@ -44,7 +27,6 @@ const MCU_PIN standard_data_pin = { GPIOB, GPIO_PIN_12};
 // variable, use for transmission coded angle
 MCU_PIN current_pin  = { GPIOB, GPIO_PIN_12};
 
-#define NUMBER_OF_BEAMER_CHANNELS 8
 MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
     { GPIOB, GPIO_PIN_0},
     { GPIOB, GPIO_PIN_1},
@@ -56,10 +38,10 @@ MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
     { GPIOB, GPIO_PIN_8}
 };
 uint8_t current_beamer_channel_index = 0;
-//#define current_pin (beamer_channel_array[current_beamer_channel_index])
 
 
-
+/// ================== External Function prototypes ================
+void RXX();
 
 /// ============================== Private function declarations ==============================
 static inline void reset_transmitter();
@@ -73,7 +55,7 @@ static inline void force_envelop_timer_output_off();
 
 
 /// ============================== Function definitions ==============================
-///
+
 void init_data()
 {
     // sample data. TODO: use actual one
@@ -173,38 +155,38 @@ void transmit_handler()
             switch(StartStopSequenceTransmitState)
             {
                 // First (long) bit
-                case STAGE_PREAMBLE_BIT_1:
+                case Tx_PREAMBLE_BIT_1:
                 {
                     force_envelop_timer_output_on();
                     phtim_envelop->Instance->ARR = PreambleBitCorrected;
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_1;
+                    StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_1;
                     break;
                 }
                 // First short delay
-                case STAGE_PREAMBLE_DELAY_1:
+                case Tx_PREAMBLE_DELAY_1:
                 {
                     force_envelop_timer_output_off(); //TODO done anyway in timer interrupt handler?
                     phtim_envelop->Instance->ARR = PreambleDelayCorrected;
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_2;
+                    StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_2;
                     break;
                 }
                 // Second (short) bit
-                case STAGE_PREAMBLE_BIT_2:
+                case Tx_PREAMBLE_BIT_2:
                 {
                     force_envelop_timer_output_on();
                     phtim_envelop->Instance->ARR = PreambleBitCorrected;
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_2;
+                    StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_2;
                     break;
                 }
                 // Second short delay
-                case STAGE_PREAMBLE_DELAY_2:
+                case Tx_PREAMBLE_DELAY_2:
                 {
                     force_envelop_timer_output_off();
                     phtim_envelop->Instance->ARR = PreambleDelayCorrected;
 
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
+                    StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
                     TransmitterState = TX_DATA;
-                    DataFrameState = DATAFRAME_1_BEAMER_ID;
+                    TxDataFrameState = DATAFRAME_1_BEAMER_ID;
                     tx_current_bit_pos = 0;
                     break;
                 }
@@ -215,7 +197,7 @@ void transmit_handler()
         {
             phtim_envelop->Instance->ARR = DataBitLength;
 
-            switch (DataFrameState)
+            switch (TxDataFrameState)
             {
                 case(DATAFRAME_1_BEAMER_ID):
                 {
@@ -230,7 +212,7 @@ void transmit_handler()
                     else
                     {
                         // change state to process next part of data
-                        DataFrameState = DATAFRAME_2_ANGLE;
+                        TxDataFrameState = DATAFRAME_2_ANGLE;
                         tx_current_bit_pos = 0;
                     }
                     break;
@@ -250,7 +232,7 @@ void transmit_handler()
                     else
                     {
                         // change state to process next part of data
-                        DataFrameState = DATAFRAME_3_ANGLE_REV;
+                        TxDataFrameState = DATAFRAME_3_ANGLE_REV;
                         tx_current_bit_pos = 0;
                     }
 
@@ -278,8 +260,8 @@ void transmit_handler()
 
                         // move on to next stage
                         TransmitterState = TX_EPILOGUE;
-                        StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
-                        DataFrameState = DATAFRAME_0_NODATA;
+                        StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
+                        TxDataFrameState = DATAFRAME_0_NODATA;
                         tx_current_bit_pos = 0;
                     }
 
@@ -304,14 +286,14 @@ void transmit_handler()
             // Start sequence consists of signal sequence {1,0,1}
             switch(StartStopSequenceTransmitState)
             {
-                case STAGE_PREAMBLE_BIT_1:
+                case Tx_PREAMBLE_BIT_1:
                 {
                     force_envelop_timer_output_on();
                     phtim_envelop->Instance->ARR = EpilogueBitCorrected;
-                    StartStopSequenceTransmitState = STAGE_PREAMBLE_DELAY_1;
+                    StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_1;
                     break;
                 }
-                case STAGE_PREAMBLE_DELAY_1:
+                case Tx_PREAMBLE_DELAY_1:
                 {
                     reset_transmitter();
                     break;
@@ -322,14 +304,13 @@ void transmit_handler()
     } // switch(TransmitterState)
 }
 
-/// private, used only in infrared module
 static inline void reset_transmitter()
 {
     force_envelop_timer_output_off();
     TransmitterState = TX_WAITING;
     phtim_envelop->Instance->ARR = InterframeDelayLength;
-    StartStopSequenceTransmitState = STAGE_PREAMBLE_BIT_1;
-    DataFrameState = DATAFRAME_0_NODATA;
+    StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
+    TxDataFrameState = DATAFRAME_0_NODATA;
     current_pin = standard_data_pin;
     current_beamer_channel_index = 0;
 }
@@ -375,7 +356,7 @@ static inline void reset_previous_update_current_beamer_pin()
 {
     HAL_GPIO_WritePin(current_pin.pin_port, current_pin.pin_number, GPIO_PIN_RESET);
 
-    if(DATAFRAME_2_ANGLE == DataFrameState){
+    if(DATAFRAME_2_ANGLE == TxDataFrameState){
         current_pin = beamer_channel_array[current_beamer_channel_index];
     }
     else{
