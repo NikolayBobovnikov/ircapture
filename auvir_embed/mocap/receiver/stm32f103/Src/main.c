@@ -61,8 +61,6 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 /// parameters for receiver ===================
-TIM_HandleTypeDef* ic_tim_p = &htim4;
-TIM_HandleTypeDef* up_tim_p = &htim3;
 const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
 const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
 
@@ -88,6 +86,7 @@ static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+void setup_ic_timer();
 static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
@@ -172,7 +171,7 @@ int main(void)
 
     while (1)
     {
-#if 1
+#if 0
         if(is_receiver){
             RXX();
         }
@@ -181,6 +180,11 @@ int main(void)
             HAL_Delay(100);
         }
 #endif
+
+        delay_us(1000);
+        //HAL_Delay(100);
+        HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
+
 
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
@@ -412,7 +416,6 @@ void MX_USART1_UART_Init(void)
     huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     huart1.Init.OverSampling = UART_OVERSAMPLING_16;
     HAL_UART_Init(&huart1);
-
 }
 
 /**
@@ -511,10 +514,6 @@ void send_data_uart()
     msg._ir_hub_id = 2;
     msg.data = rx_data_frame;
 
-    HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)&msg, sizeof(msg), 10);
-    if (status != HAL_OK) {
-        // TODO: process error
-    }
 }
 
 /*

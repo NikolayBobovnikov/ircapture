@@ -5,5 +5,5 @@
 
 void debug_init_gpio();
 void init_gpio_led();
-void delay_us(uint8_t delay);
-
+void delay_us(uint16_t delay);
+void delay_general(uint16_t prescaler, uint16_t delay);

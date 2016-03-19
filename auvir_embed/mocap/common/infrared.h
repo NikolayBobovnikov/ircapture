@@ -143,5 +143,6 @@ void  init_beamer_channels_gpio();
 void irreceiver_timer_prob_handler(); // for update timer
 void irreceiver_timer_up_handler(); // for update timer
 void irreceiver_timer_ic_handler(); // for input capture timer
+void setup_ic_timer();
 
 #endif //INFRARED_H

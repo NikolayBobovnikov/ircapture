@@ -34,12 +34,24 @@ void  debug_init_gpio() {
         */
     }
 }
-void delay_us(uint8_t delay)
+void delay_us(uint16_t delay)
 {
+    htim2.Init.Period = DELAY_PRESCALER;
     htim2.Instance->CNT = 0;
     // TODO: delay - 1 results in a more precise measurements
     // Why?
-    htim2.Instance->ARR = (DELAY_PRESCALER + 1) * (delay - 1) - 1;
+    htim2.Instance->ARR = delay - 1;
+    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
+}
+
+void delay_general(uint16_t prescaler, uint16_t delay)
+{
+    htim2.Init.Period = prescaler;
+    htim2.Instance->CNT = 0;
+    // TODO: delay - 1 results in a more precise measurements
+    // Why?
+    htim2.Instance->ARR = delay - 1;
     __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
     while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
 }

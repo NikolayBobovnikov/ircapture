@@ -52,8 +52,6 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
-UART_HandleTypeDef huart1;
-
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
@@ -110,31 +108,6 @@ void delay_us(uint8_t delay);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-void ReceiveDataToSend()
-{
-    command = UART_COMMAND_NOT_RECEIVED;
-    status = HAL_UART_Receive(&huart1, &command, sizeof(command), 1000);
-    if (status != HAL_OK) {
-      // TODO: process error
-      return;
-    }
-
-    // if received command, dispatch it
-    switch (command) {
-      case UART_DEBUG_DATA_TRANSMIT: {
-        // receive data to transmit
-        status = HAL_UART_Receive(&huart1, (uint8_t *)&tx_data_frame, sizeof(tx_data_frame), 1000);
-        if (status != HAL_OK) {
-          // TODO: process error
-          return;
-        }
-
-        sensor_send_data();
-
-        //notify_transmission_finished(); TODO: need?
-      }
-    }
-}
 
 const char mode = 'r'; // 't'
 /* USER CODE END 0 */
@@ -361,16 +334,6 @@ void MX_TIM4_Init(void)
 void MX_USART1_UART_Init(void)
 {
 
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  HAL_UART_Init(&huart1);
-
 }
 
 /**
@@ -416,10 +379,6 @@ void notify_transmission_finished() {
   uart_msg._ir_hub_id = 2;
   uart_msg.data = tx_data_frame;
 
-  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)&uart_msg, sizeof(uart_msg), 10);
-  if (status != HAL_OK) {
-    // TODO: process error
-  }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)

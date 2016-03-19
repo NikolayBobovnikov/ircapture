@@ -3,6 +3,7 @@
 
 /// ================== Parameters ================
 
+extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef* ptim_input_capture;
 extern TIM_HandleTypeDef* ptim_data_read;
 
@@ -153,6 +154,88 @@ inline void irreceiver_timer_ic_handler()
     // reset rising/falling edge vars
     _is_rising_edge = false;
     _is_falling_edge = false;
+
+}
+
+void setup_ic_timer()
+{
+
+    TIM_ClockConfigTypeDef sClockSourceConfig;
+    TIM_MasterConfigTypeDef sMasterConfig;
+    TIM_SlaveConfigTypeDef sSlaveConfig;
+    TIM_IC_InitTypeDef sConfigIC;
+
+    htim4.Instance = TIM4;
+    htim4.Init.Prescaler = envelop_timer_prescaler;
+    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim4.Init.Period = max_period;
+    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    HAL_TIM_IC_Init(&htim4);
+
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
+
+    /// TIM_TI1_SetConfig
+    //  ? Select the active input for TIMx_CCR1: write the CC1S bits to 01 in the TIMx_CCMR1 register (TI1 selected).
+    //  ? Select the active polarity for TI1FP1 (used both for capture in TIMx_CCR1 and counter clear):
+    //    write the CC1P bit to ‘0’ (active on rising edge).
+    sConfigIC.ICFilter = 0;
+    //TODO: cleanip?
+    if(_is_direct_logic)
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    }
+    else
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
+    }
+
+    sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+    HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1);
+
+    //  ? Select the active input for TIMx_CCR2: write the CC2S bits to 10 in the TIMx_CCMR1  register (TI1 selected).
+    //  ? Select the active polarity for TI1FP2 (used for capture in TIMx_CCR2): write the CC2P bit to ‘1’ (active on falling edge).
+    sConfigIC.ICFilter = 0;
+    //TODO: cleanip?
+    if(_is_direct_logic)
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_FALLING;
+    }
+    else
+    {
+        sConfigIC.ICPolarity = TIM_ICPOLARITY_RISING;
+    }
+
+    sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+    HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2);//TIM_CHANNEL_2? TODO
+    //  ? Select the valid trigger input: write the TS bits to 101 in the TIMx_SMCR register (TI1FP1 selected).
+    //  ? Configure the slave mode controller in reset mode: write the SMS bits to 100 in the TIMx_SMCR register.
+
+    sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
+    sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+    //sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    //TODO: cleanip?
+    if(_is_direct_logic)
+    {
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+    }
+    else
+    {
+        sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_FALLING;
+    }
+
+
+    //TODO: why configuring reset breaks the thing?
+    // why it does work without reset?
+    //HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
+    //HAL_TIM_SlaveConfigSynchronization_IT(&htim4, &sSlaveConfig); // TODO
+
+    //sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
+    HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
+
+
+    //  ? Enable the captures: write the CC1E and CC2E bits to ‘1’ in the TIMx_CCER register.
 
 }
 
@@ -485,14 +568,16 @@ static inline void process_received_data()
         debug_data_verified();
 
         {
-            TXX();
+            //TXX();
             HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_SET);
+            delay_us(1000);
+            HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
+
         }
 
         copy_data_frame_to_buffer(&rx_data_frame);
-        send_dataready_signal();
-
-        send_data_uart();
+        HAL_Delay(50);
+        //send_dataready_signal();
     }
     else
     {
@@ -608,7 +693,7 @@ static inline void send_dataready_signal()
     // So the first sensor (with ID == 1) checks if ID_msg == N, if so - it is next to send data
 
 
-    send_data_uart( (uint8_t *)&rx_data_frame, sizeof(rx_data_frame));
+    //send_data_uart( (uint8_t *)&rx_data_frame, sizeof(rx_data_frame));
 }
 
 static inline void dbg_pulse_1()

@@ -352,7 +352,7 @@ void TXX()
     if(tx_status == NRF24_TRANSMISSON_OK)
     {
         HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-        HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
+        //HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
     }
     else if(tx_status == NRF24_MESSAGE_LOST){
         //HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
