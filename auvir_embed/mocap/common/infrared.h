@@ -36,15 +36,44 @@
 #define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1)
 
 #define NUMBER_OF_BEAMER_CHANNELS 8
+#define RX_BUF_SIZE 10
 
+//======= Turn on/off particular testing pulses
+#define DEBUG   1
+
+#define DEBUG_FRAME_DELAY_1     0
+#define DEBUG_FRAME_DELAY_2     0
+
+#define DEBUG_UPD_EVENT_1       0
+#define DEBUG_UPD_EVENT_2       0
+#define DEBUG_0_to_1_EDGE_1     0
+#define DEBUG_0_to_1_EDGE_2     0
+#define DEBUG_1_to_0_EDGE_1     0
+#define DEBUG_1_to_0_EDGE_2     0
+
+#define DEBUG_PREAMBLE_END_1    0
+#define DEBUG_PREAMBLE_END_2    0
+
+#define DEBUG_EPILOGUE_BEGIN_1  0
+#define DEBUG_EPILOGUE_BEGIN_2  0
+#define DEBUG_EPILOGUE_END_1    0
+#define DEBUG_EPILOGUE_END_2    0
+
+#define DEBUG_READING_DATA_1    1
+#define DEBUG_READING_DATA_2    0
+#define DEBUG_DATA_VERIFIED_1   0
+#define DEBUG_DATA_VERIFIED_2   1
+#define DEBUG_DATA_END_1        0
+#define DEBUG_DATA_END_2        0
+#define DEBUG_DATA_RECEIVED_1   0
+#define DEBUG_DATA_RECEIVED_2   0
 
 typedef enum TransmitterStates
 {
     TX_WAITING,
     TX_PREAMBLE,
     TX_DATA,
-    TX_EPILOGUE,
-    TX_DELAY
+    TX_EPILOGUE
 } TransmitterStates;
 
 // TODO: unite

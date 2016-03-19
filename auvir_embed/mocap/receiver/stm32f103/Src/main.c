@@ -69,7 +69,7 @@ const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
 TIM_HandleTypeDef* ptim_input_capture = &htim4;
 TIM_HandleTypeDef* ptim_data_read = &htim3;
 
-const bool _is_direct_logic = false;
+extern const bool _is_direct_logic;
 const bool _debug = true;
 
 extern GPIO_TypeDef * GPIO_LED_PORT;
