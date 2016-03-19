@@ -2,55 +2,84 @@
 #define INFRARED_H
 
 #include "stm32f1xx_hal.h"
-#include "stm32f1xx.h"
-#include "stm32f1xx_it.h"
-
 #include <stdbool.h>
 
-///====================== parameters ======================
-
-#define pwm_timer_prescaler     0
-#define pwm_timer_period        (1880 - 1)
-#define pwm_pulse_width         (940 - 1)
-
-// FIXME: TODO: keep values below in sync with transmitter
+// INFO: values below has been chosen manually
+// need to work with IR receiver TL1838, and to be as low as possible,
+// but not too low - beware of jitter!
+// FIXME TODO: find mean and max for jitter  (about +- 30ns? need to check), and calculate minimum allowed values taken jitter into account
 #define envelop_timer_prescaler     (72 - 1)     // values below are for particular prescaler
 #define PreambleBitLength           (750 - 1)    // 270 works not reliably; 280 works;  chosen more
 #define PreambleDelayLength         (750 - 1)    // 270 works not reliably; 280 works;  chosen more.
 #define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
 #define InterframeDelayLength       (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
 
-#define PreambleTotalLength         (PreambleBitLength * 2 + PreambleDelayLength * 2)
+// TODO: calculate mean of delay/bit length, deviation, and find optimal shift to minimize deviation
+#define PreambleDelayShift      20//(30)
+#define PreambleBitShift        10//(20)
+#define EpilogueDelayShift      10//(20)
+#define EpilogueBitShift        0//(10)
+#define PreambleDelayCorrected  (PreambleDelayLength + PreambleDelayShift - 1)
+#define PreambleBitCorrected    (PreambleBitLength - PreambleBitShift - 1)
+#define EpilogueDelayCorrected  (PreambleDelayLength + EpilogueDelayShift - 1)
+#define EpilogueBitCorrected    (PreambleBitLength - EpilogueBitShift - 1)
+#define pwm_timer_prescaler     0
+#define pwm_timer_period        (1880 - 1)
+#define pwm_pulse_width         (940 - 1)
+
+#define PreambleTotalLength       (PreambleBitLength * 2 + PreambleDelayLength * 2)
 #define HalfDataBitLength   		((DataBitLength + 1) / 2 - 1)   //(DataBitLength + 1) / 2 - 1; // TODO: check the value
-#define max_period         			(65535 - 1)
+#define max_period                (65535 - 1)
 
 #define max_delta_interframe_delay  (int)(InterframeDelayLength * 0.1)
 #define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1)
 #define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1)
 
-///====================== Type definitions ======================
-// TODO: learn more about typedefs and structs
-typedef struct
+#define NUMBER_OF_BEAMER_CHANNELS 8
+
+
+typedef enum TransmitterStates
+{
+    TX_WAITING,
+    TX_PREAMBLE,
+    TX_DATA,
+    TX_EPILOGUE,
+    TX_DELAY
+} TransmitterStates;
+
+// TODO: unite
+typedef enum DataFrameStates
+{
+    DATAFRAME_0_NODATA,
+    DATAFRAME_1_BEAMER_ID,
+    DATAFRAME_2_ANGLE,
+    DATAFRAME_3_ANGLE_REV
+} DataFrameStates;
+
+typedef enum TxStartStopSequenceStates
+{
+    Tx_PREAMBLE_BIT_1,
+    Tx_PREAMBLE_DELAY_1,
+    Tx_PREAMBLE_BIT_2,
+    Tx_PREAMBLE_DELAY_2
+} TxStartStopSequenceStates;
+
+enum RxStartStopSequenceStates
+{
+    Rx_PREAMBLE_START,
+    Rx_PREAMBLE_BIT_1,
+    Rx_PREAMBLE_DELAY_1,
+    Rx_PREAMBLE_BIT_2,
+    Rx_PREAMBLE_DELAY_2,
+    Rx_PREAMBLE_STOP
+};
+
+typedef struct DataFrame_t
 {
     uint8_t _1_beamer_id;
     uint8_t _2_angle_code;
     uint8_t _3_angle_code_rev;
 } DataFrame_t;
-
-enum DataFrameStates
-{
-    DATAFRAME_0_NODATA,
-    DATAFRAME_1_BEAMER_ID,
-    DATAFRAME_2_ANGLE,
-    DATAFRAME_3_ANGLE_REV,
-};
-
-enum LineLevels
-{
-    LINE_UNDEFINED,
-    LINE_LOW_ON_UPDATE_EVENT,
-    LINE_HIGH_ON_UPDATE_EVENT
-};
 
 enum ReceiverStates
 {
@@ -63,16 +92,24 @@ enum ReceiverStates
     RX_STOP_BIT_DONE
 };
 
-enum RxStartStopSequenceStates
+enum LineLevels
 {
-    Rx_PREAMBLE_START,
-    Rx_PREAMBLE_BIT_1,
-    Rx_PREAMBLE_DELAY_1,
-    Rx_PREAMBLE_BIT_2,
-    Rx_PREAMBLE_DELAY_2,
-    Rx_PREAMBLE_STOP
+    LINE_UNDEFINED,
+    LINE_LOW_ON_UPDATE_EVENT,
+    LINE_HIGH_ON_UPDATE_EVENT
 };
+
+typedef struct MCU_PIN{
+    GPIO_TypeDef * pin_port;
+    uint16_t pin_number;
+} MCU_PIN;
+
 ///====================== Function prototypes ======================
+void init_data();
+void sensor_send_data();
+void transmit_handler();
+void  init_beamer_channels_gpio();
+
 // main functions used in timer interrupt handlers
 void irreceiver_timer_prob_handler(); // for update timer
 void irreceiver_timer_up_handler(); // for update timer
