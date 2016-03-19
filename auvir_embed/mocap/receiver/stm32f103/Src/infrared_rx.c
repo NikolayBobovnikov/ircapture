@@ -1,482 +1,8 @@
 #include "infrared.h"
 #include <stdbool.h>
 
-#define BEAMER
-#define SENSOR
-
 /// ================== Parameters ================
 
-#ifdef BEAMER
-//TODO: cleanup when done debugging
-extern const bool _debug;
-const bool _is_direct_logic = false;
-
-//PWM timer configuration
-extern TIM_HandleTypeDef * phtim_envelop;
-extern TIM_HandleTypeDef * phtim_pwm;
-#endif
-
-#ifdef SENSOR
-extern TIM_HandleTypeDef* ptim_input_capture;
-extern TIM_HandleTypeDef* ptim_data_read;
-
-extern GPIO_TypeDef * GPIO_PORT_IR_IN;
-extern uint16_t GPIO_PIN_IR_IN;
-#endif
-
-/// ================== Variables ================
-TxStartStopSequenceStates StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
-DataFrameStates TxDataFrameState = DATAFRAME_0_NODATA;
-TransmitterStates TransmitterState = TX_WAITING;
-DataFrame_t tx_data_frame;
-
-uint8_t tx_total_bits = 0;
-uint8_t tx_current_bit_pos = 0;
-uint8_t tx_bit = 0;
-
-
-// constant, use for transmission non-structured light data
-const MCU_PIN standard_data_pin = { GPIOB, GPIO_PIN_12};
-
-// variable, use for transmission coded angle
-MCU_PIN current_pin  = { GPIOB, GPIO_PIN_12};
-
-MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
-    { GPIOB, GPIO_PIN_0},
-    { GPIOB, GPIO_PIN_1},
-    { GPIOB, GPIO_PIN_3},
-    { GPIOB, GPIO_PIN_4},
-    { GPIOB, GPIO_PIN_5},
-    { GPIOB, GPIO_PIN_6},
-    { GPIOB, GPIO_PIN_7},
-    { GPIOB, GPIO_PIN_8}
-};
-uint8_t current_beamer_channel_index = 0;
-
-
-/// ================== External Function prototypes ================
-void RXX();
-
-/// ============================== Private function declarations ==============================
-static inline void reset_transmitter();
-static inline void switch_to_data_transmission_state();
-static inline void p_w_modulate(uint8_t bit);
-static inline void turn_off_all_beamer_pins();
-static inline void select_next_beamer_channel_index();
-static inline void reset_previous_update_current_beamer_pin();
-static inline void force_envelop_timer_output_on();
-static inline void force_envelop_timer_output_off();
-
-
-/// ============================== Function definitions ==============================
-
-void init_data()
-{
-    // sample data. TODO: use actual one
-    tx_data_frame._1_beamer_id = 0b10101010;
-    tx_data_frame._2_angle_code = 0b11111111;
-    tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
-
-    // just repetition of the same data for now.
-    // TODO: send updated time
-    if(TX_WAITING == TransmitterState)
-    {
-        TransmitterState = TX_PREAMBLE;
-    }
-    else
-    {
-        //TODO: handle this case
-        // data is still being transmitted. Need to finish previous transmission before starting next one
-    }
-}
-
-void sensor_send_data()
-{
-    // TODO: find suitable place for this
-    //tx_data_frame._3_angle_code_rev = ~(tx_data_frame._2_angle_code);
-
-    if(TX_WAITING == TransmitterState)
-    {
-        TransmitterState = TX_PREAMBLE;
-    }
-    else
-    {
-        //TODO: handle this case
-        // data is still being transmitted. Need to finish previous transmission before starting next one
-    }
-}
-
-void transmit_handler()
-{
-    /* Data packet format: [preamble] [data frame] [epilogue]
-     * preamble format: [longbit] [delay1] [bit1] [delay2]
-     * data frame format: [word1] [delay] [word2] [delay] [word3]
-     * data frame format: [delay1] [bit1] [delay2] [longbit]
-     *
-     *                      |<--     Preamble          -->|<--              data frame              -->|<--        epilogue  -->|
-     *                       ______________      ____      ________          ________          ________      ____      _____________
-     *                      |              |    |    |    |        |        |        |        |        |    |    |    |             |
-     *                      |              |    |    |    |dataword|delay   |        |        |        |    |    |    |             |
-     *                      |     750      |350 |350 |350 |  500   |   500  |        |        |  500   |350 |350 |350 |    750      |
-     *  ____________________|              |____|    |____|        |________|        |__....__|        |____|    |____|             |____
-     *
-     *
-     *  |<----------------->| DelayBetweenDataFramesTotal
-     *
-     *                      |<-->|<-->| StartStopBitLength
-     *                                                     |<------>|<------>| DataBitLength
-     *
-     *
-     *
-     * 1. start sequence
-     * 2. data
-     *  2.1 Coded angle
-     *  2.2 Coded angle reversed (to verify correctness)
-     *  2.3 Beamer ID
-     * 3. data redundancy (repeated, or use error correction code)
-     * 4. stop sequence
-     *
-     * Check data integrity. If OK, data is received
-     */
-    /// ensure carrier is not generating
-    if(TX_DATA != TransmitterState)
-    {
-        force_envelop_timer_output_off();
-        turn_off_all_beamer_pins();
-    }
-    /* Send data frame
-     * 1. start sequence
-     * 2. data
-     *  2.1 Coded angle
-     *  2.2 Time of emission
-     *  2.3 Beamer ID
-     * 3. data redundancy (repeated, or use error correction code)
-     * 4. stop sequence
-     */
-    // htim_envelop forming envelop
-    // htim2 generates PWM
-
-    switch(TransmitterState)
-    {
-        case TX_WAITING:
-        {
-            ; // do nothing
-            break;
-        }
-        case TX_PREAMBLE:
-        {
-            // Start sequence consists of signal sequence {1,0,1}
-            switch(StartStopSequenceTransmitState)
-            {
-                // First (long) bit
-                case Tx_PREAMBLE_BIT_1:
-                {
-                    force_envelop_timer_output_on();
-                    phtim_envelop->Instance->ARR = PreambleBitCorrected;
-                    StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_1;
-                    break;
-                }
-                // First short delay
-                case Tx_PREAMBLE_DELAY_1:
-                {
-                    force_envelop_timer_output_off(); //TODO done anyway in timer interrupt handler?
-                    phtim_envelop->Instance->ARR = PreambleDelayCorrected;
-                    StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_2;
-                    break;
-                }
-                // Second (short) bit
-                case Tx_PREAMBLE_BIT_2:
-                {
-                    force_envelop_timer_output_on();
-                    phtim_envelop->Instance->ARR = PreambleBitCorrected;
-                    StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_2;
-                    break;
-                }
-                // Second short delay
-                case Tx_PREAMBLE_DELAY_2:
-                {
-                    force_envelop_timer_output_off();
-                    phtim_envelop->Instance->ARR = PreambleDelayCorrected;
-
-                    StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
-                    TransmitterState = TX_DATA;
-                    TxDataFrameState = DATAFRAME_1_BEAMER_ID;
-                    tx_current_bit_pos = 0;
-                    break;
-                }
-            }
-            break;
-        }
-        case TX_DATA:
-        {
-            phtim_envelop->Instance->ARR = DataBitLength;
-
-            switch (TxDataFrameState)
-            {
-                case(DATAFRAME_1_BEAMER_ID):
-                {
-                    tx_total_bits = sizeof(tx_data_frame._1_beamer_id) * 8;
-                    tx_bit = (tx_data_frame._1_beamer_id >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-                    p_w_modulate(tx_bit);
-                    // go to next bit.
-                    if(tx_current_bit_pos < tx_total_bits)
-                    {
-                        tx_current_bit_pos++;
-                    }
-                    else
-                    {
-                        // change state to process next part of data
-                        TxDataFrameState = DATAFRAME_2_ANGLE;
-                        tx_current_bit_pos = 0;
-                    }
-                    break;
-                }
-                case(DATAFRAME_2_ANGLE):
-                {
-                    reset_previous_update_current_beamer_pin();
-
-                    tx_total_bits = sizeof(tx_data_frame._2_angle_code) * 8;
-                    tx_bit = (tx_data_frame._2_angle_code >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-                    p_w_modulate(tx_bit);
-                    // go to next bit.
-                    if(tx_current_bit_pos < tx_total_bits)
-                    {
-                        tx_current_bit_pos++;
-                    }
-                    else
-                    {
-                        // change state to process next part of data
-                        TxDataFrameState = DATAFRAME_3_ANGLE_REV;
-                        tx_current_bit_pos = 0;
-                    }
-
-                    select_next_beamer_channel_index();
-
-                    break;
-                }
-                case(DATAFRAME_3_ANGLE_REV):
-                {
-                    tx_total_bits = sizeof(tx_data_frame._3_angle_code_rev) * 8;
-                    tx_bit = (tx_data_frame._3_angle_code_rev >> (tx_total_bits - tx_current_bit_pos - 1)) & 1;
-                    p_w_modulate(tx_bit);
-                    // go to next bit.
-                    if(tx_current_bit_pos < tx_total_bits)
-                    {
-                        tx_current_bit_pos++;
-                    }
-                    else
-                    {
-                        /// start epologue
-
-                        /* Set the Autoreload value for start sequence bits*/
-                        force_envelop_timer_output_off();
-                        phtim_envelop->Instance->ARR = EpilogueDelayCorrected;
-
-                        // move on to next stage
-                        TransmitterState = TX_EPILOGUE;
-                        StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
-                        TxDataFrameState = DATAFRAME_0_NODATA;
-                        tx_current_bit_pos = 0;
-                    }
-
-                    select_next_beamer_channel_index();
-
-                    break;
-                }
-                default:
-                {
-                    reset_transmitter();
-                    return;
-                }
-            }
-
-            // TODO: check if some errors or other options are possible here?
-            break;
-        }
-        case TX_EPILOGUE:
-        {
-            reset_previous_update_current_beamer_pin();
-
-            // Start sequence consists of signal sequence {1,0,1}
-            switch(StartStopSequenceTransmitState)
-            {
-                case Tx_PREAMBLE_BIT_1:
-                {
-                    force_envelop_timer_output_on();
-                    phtim_envelop->Instance->ARR = EpilogueBitCorrected;
-                    StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_1;
-                    break;
-                }
-                case Tx_PREAMBLE_DELAY_1:
-                {
-                    reset_transmitter();
-                    break;
-                }
-                default:
-                {
-                    reset_transmitter();
-                    break;
-                }
-            }
-            break;
-        }
-        default:
-        {
-            reset_transmitter();
-            break;
-        }
-    } // switch(TransmitterState)
-}
-
-static inline void reset_transmitter()
-{
-    force_envelop_timer_output_off();
-    TransmitterState = TX_WAITING;
-    phtim_envelop->Instance->ARR = InterframeDelayLength;
-    StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
-    TxDataFrameState = DATAFRAME_0_NODATA;
-    current_pin = standard_data_pin;
-    current_beamer_channel_index = 0;
-}
-
-static inline void switch_to_data_transmission_state()
-{
-
-}
-
-static inline void p_w_modulate(uint8_t bit)
-{
-    // modulate logic 0 and 1
-    if(bit == 1){
-        force_envelop_timer_output_on();
-    }
-    else{
-        force_envelop_timer_output_off();
-    }
-}
-
-static inline void turn_off_all_beamer_pins()
-{
-
-    for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
-    {
-        HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port, beamer_channel_array[pin_index].pin_number, GPIO_PIN_RESET);
-    }
-
-    HAL_GPIO_WritePin(standard_data_pin.pin_port, standard_data_pin.pin_number,  GPIO_PIN_RESET);
-}
-
-static inline void select_next_beamer_channel_index()
-{
-    if(current_beamer_channel_index < NUMBER_OF_BEAMER_CHANNELS - 1){
-        current_beamer_channel_index++;
-    }
-    else{
-        current_beamer_channel_index = 0;
-    }
-}
-
-static inline void reset_previous_update_current_beamer_pin()
-{
-    HAL_GPIO_WritePin(current_pin.pin_port, current_pin.pin_number, GPIO_PIN_RESET);
-
-    if(DATAFRAME_2_ANGLE == TxDataFrameState){
-        current_pin = beamer_channel_array[current_beamer_channel_index];
-    }
-    else{
-        current_pin = standard_data_pin;
-    }
-}
-
-static inline void force_envelop_timer_output_on()
-{
-    if(_debug)
-    {
-        if(_is_direct_logic)
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-        }
-        else
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
-        }
-    }
-
-    // turn on current pin
-    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
-
-    // turn on carrier
-    if(_is_direct_logic)
-    {
-        HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);
-    }
-    else
-    {
-        HAL_TIM_PWM_Stop(phtim_pwm, TIM_CHANNEL_4);
-    }
-
-}
-
-static inline void force_envelop_timer_output_off()
-{
-    if(_debug)
-    {
-        if(_is_direct_logic)
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
-        }
-        else
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-        }
-    }
-
-    // turn on current pin
-    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
-
-    // turn off carrier
-    if(_is_direct_logic)
-    {
-        HAL_TIM_PWM_Stop(phtim_pwm, TIM_CHANNEL_4);
-    }
-    else
-    {
-        HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);
-    }
-
-}
-
-void init_beamer_channels_gpio()
-{
-    GPIO_InitTypeDef GPIO_InitStruct;
-    // initialize separate pins
-    for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
-    {
-        GPIO_InitStruct.Pin = beamer_channel_array[pin_index].pin_number;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-
-        HAL_GPIO_Init(beamer_channel_array[pin_index].pin_port, &GPIO_InitStruct);
-    }
-
-    // initialize common pin
-    GPIO_InitStruct.Pin = standard_data_pin.pin_number;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    HAL_GPIO_Init(standard_data_pin.pin_port, &GPIO_InitStruct);
-}
-
-
-
-// RX ========================================
-/// ============================ Functions ============================
-
-void TXX();
-/// ============================ Parameters ============================
 extern TIM_HandleTypeDef* ptim_input_capture;
 extern TIM_HandleTypeDef* ptim_data_read;
 
@@ -484,42 +10,40 @@ extern GPIO_TypeDef * GPIO_PORT_IR_IN;
 extern uint16_t GPIO_PIN_IR_IN;
 extern const bool _is_direct_logic;
 
-// TODO: parametrize values below
-
-///====================== Variables ======================
-// main buffer for storing recent data frames
-
 DataFrame_t data_frames[RX_BUF_SIZE] = {0}; // TODO: verify initialization
 uint8_t arr_index = 0;
 
 DataFrame_t rx_data_frame;
 uint8_t data_frame_delta = 0;
-volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
-volatile uint8_t StartStopSequenceReceiveState = Rx_PREAMBLE_START;
-volatile uint8_t DataFrameState = DATAFRAME_1_BEAMER_ID;
-volatile uint8_t LineLevelState = LINE_UNDEFINED;
+RxStartStopSequenceStates ReceiverState = RX_WAITING_FOR_START_BIT;
+RxStartStopSequenceStates StartStopSequenceReceiveState = Rx_PREAMBLE_START;
+DataFrameStates DataFrameState = DATAFRAME_1_BEAMER_ID;
+LineLevels LineLevelState = LINE_UNDEFINED;
 
 uint8_t rx_data = 0;
-volatile size_t rx_total_bits = 0;
-volatile uint8_t rx_current_bit_pos = 0;
-volatile uint8_t rx_bit = 0;
+uint8_t rx_total_bits = 0;
+uint8_t rx_current_bit_pos = 0;
+uint8_t rx_bit = 0;
 
-volatile bool _is_rising_edge = false;
-volatile bool _is_falling_edge = false;
-volatile bool _is_uptimer_update_event = false;
+bool _is_rising_edge = false;
+bool _is_falling_edge = false;
+bool _is_uptimer_update_event = false;
 
-volatile uint16_t _ccr1 = 0;
-volatile uint16_t _ccr2 = 0;
-volatile uint16_t _delay_counter = 0;
+uint16_t _ccr1 = 0;
+uint16_t _ccr2 = 0;
 
 GPIO_TypeDef * GPIO_LED_PORT = GPIOB;
 uint16_t GPIO_LED_PIN = GPIO_PIN_3;
 
-///====================== Private function declarations ======================
-// main routine called from timer interrupts to manage receiving process
-static inline void receive_handler();
 
-// helper functions
+/// ================== External Function declarations ================
+void RXX();
+void TXX();
+
+/// ============================== Private function declarations ==============================
+
+//receiver functions
+static inline void receive_handler();
 static inline bool is_1_to_0_edge();
 static inline bool is_0_to_1_edge();
 static inline bool is_1_on_update_event();
@@ -527,17 +51,13 @@ static inline bool is_0_on_update_event();
 static inline void reset_receiver_state();
 static inline void send_dataready_signal();
 static inline void get_logical_level();
-
-// function to process data
 static inline void decode_bit(uint8_t *data_word);
 static inline void process_received_data();
 static inline void copy_data_frame_to_buffer(DataFrame_t* df);
 void send_data_uart();
-
 static inline bool is_correct_timming_interframe_delay();
 static inline bool is_correct_timming_preamble_bit();
 static inline bool is_correct_timming_preamble_delay();
-
 
 // for debugging. TODO: cleanup when done
 static inline void dbg_pulse_1();
@@ -554,7 +74,8 @@ static inline void debug_epilogue_begin();
 static inline void debug_epilogue_end();
 static inline void debug_preamble_end();
 
-///====================== Functions ======================
+
+/// ============================== Function definitions ==============================
 
 #define DECODE_BIT_IN_WORD(word) ( word |= 1 << (rx_total_bits - rx_current_bit_pos - 1) )
 
@@ -566,6 +87,7 @@ static inline void decode_bit(uint8_t *data_word) {
         DECODE_BIT_IN_WORD( *data_word );
     }
 }
+
 inline void irreceiver_timer_up_handler()
 {
     debug_upd_event();
@@ -576,6 +98,7 @@ inline void irreceiver_timer_up_handler()
     _is_falling_edge = false;
     receive_handler();
 }
+
 inline void irreceiver_timer_ic_handler()
 {
     if(__HAL_TIM_GET_FLAG(ptim_input_capture, TIM_FLAG_CC1) != RESET)
@@ -632,7 +155,7 @@ inline void irreceiver_timer_ic_handler()
     _is_falling_edge = false;
 
 }
-// private
+
 static inline void receive_handler()
 {
     /* Data packet format: [preamble] [data frame] [epilogue]
@@ -934,6 +457,7 @@ static inline void receive_handler()
         }
     } // switch(ReceiverState)
 }
+
 static inline void reset_receiver_state()
 {
     //HAL_TIM_IC_PWM_Start_IT(&htim4); //TODO
@@ -950,6 +474,7 @@ static inline void reset_receiver_state()
 
     //HAL_TIM_Base_Stop_IT(ptim_data_read);
 }
+
 static inline void process_received_data()
 {
     /// we successfully received data, send corresponding event for listeners to read from the data buffer
@@ -974,6 +499,7 @@ static inline void process_received_data()
         //TODO
     }
 }
+
 static inline void copy_data_frame_to_buffer(DataFrame_t* df)
 {
     data_frames[arr_index]._2_angle_code = df->_2_angle_code;
@@ -982,6 +508,7 @@ static inline void copy_data_frame_to_buffer(DataFrame_t* df)
     arr_index++;
     //memcpy(df, rx_data_frame_array, sizeof(rx_data_frame));
 }
+
 static inline bool is_1_to_0_edge()
 {
     //return _is_falling_edge;
@@ -992,6 +519,7 @@ static inline bool is_1_to_0_edge()
     }
     return _is_rising_edge;
 }
+
 static inline bool is_0_to_1_edge()
 {
     //return _is_rising_edge;
@@ -1002,6 +530,7 @@ static inline bool is_0_to_1_edge()
     }
     return _is_falling_edge;
 }
+
 static inline bool is_1_on_update_event()
 {
     if(_is_direct_logic)
@@ -1010,6 +539,7 @@ static inline bool is_1_on_update_event()
     }
     return (LINE_LOW_ON_UPDATE_EVENT == LineLevelState);
 }
+
 static inline bool is_0_on_update_event()
 {
     if(_is_direct_logic)
@@ -1018,6 +548,7 @@ static inline bool is_0_on_update_event()
     }
     return (LINE_HIGH_ON_UPDATE_EVENT == LineLevelState);
 }
+
 static inline void get_logical_level()
 {
     if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_SET)
@@ -1040,12 +571,14 @@ static inline bool is_correct_timming_interframe_delay()
     // check only lower bound of delay.
     return (_ccr1 > InterframeDelayLength - max_delta_interframe_delay);
 }
+
 static inline bool is_correct_timming_preamble_bit()
 {
     return (_ccr2 < PreambleBitLength + max_delta_preamble_bit)
             &&
             (_ccr2 > PreambleBitLength - max_delta_preamble_bit);
 }
+
 static inline bool is_correct_timming_preamble_delay()
 {
     return (_ccr1 < PreambleDelayLength + max_delta_preamble_delay)
@@ -1077,6 +610,7 @@ static inline void send_dataready_signal()
 
     send_data_uart( (uint8_t *)&rx_data_frame, sizeof(rx_data_frame));
 }
+
 static inline void dbg_pulse_1()
 {
 #ifdef DEBUG
@@ -1085,6 +619,7 @@ static inline void dbg_pulse_1()
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
 #endif//DEBUG
 }
+
 static inline void dbg_pulse_2()
 {
 #ifdef DEBUG
@@ -1094,70 +629,79 @@ static inline void dbg_pulse_2()
 #endif
 }
 
-static inline void  debug_interframe_delay() {
+static inline void debug_interframe_delay() {
     if( DEBUG_FRAME_DELAY_1)
         dbg_pulse_1();
     if( DEBUG_FRAME_DELAY_2)
         dbg_pulse_2();
 }
-static inline void  debug_reading_data() {
+
+static inline void debug_reading_data() {
     if( DEBUG_READING_DATA_1)
         dbg_pulse_1();
     if( DEBUG_READING_DATA_2)
         dbg_pulse_2();
 }
-static inline void  debug_data_verified() {
+
+static inline void debug_data_verified() {
     if( DEBUG_DATA_VERIFIED_1)
         dbg_pulse_1();
     if( DEBUG_DATA_VERIFIED_2)
         dbg_pulse_2();
 }
-static inline void  debug_data_end() {
+
+static inline void debug_data_end() {
     if( DEBUG_DATA_END_1)
         dbg_pulse_1();
     if( DEBUG_DATA_END_2)
         dbg_pulse_2();
 }
-static inline void  debug_data_received() {
+
+static inline void debug_data_received() {
     if( DEBUG_DATA_RECEIVED_1)
         dbg_pulse_1();
     if( DEBUG_DATA_RECEIVED_2)
         dbg_pulse_2();
 }
-static inline void  debug_upd_event() {
+
+static inline void debug_upd_event() {
     if( DEBUG_UPD_EVENT_1)
         dbg_pulse_1();
     if( DEBUG_UPD_EVENT_2)
         dbg_pulse_2();
 }
-static inline void  debug_0_to_1_edge() {
+
+static inline void debug_0_to_1_edge() {
     if( DEBUG_0_to_1_EDGE_1)
         dbg_pulse_1();
     if( DEBUG_0_to_1_EDGE_2)
         dbg_pulse_2();
 }
-static inline void  debug_1_to_0_edge() {
+
+static inline void debug_1_to_0_edge() {
     if( DEBUG_1_to_0_EDGE_1)
         dbg_pulse_1();
     if( DEBUG_1_to_0_EDGE_2)
         dbg_pulse_2();
 }
-static inline void  debug_epilogue_begin() {
+
+static inline void debug_epilogue_begin() {
     if( DEBUG_EPILOGUE_BEGIN_1)
         dbg_pulse_1();
     if( DEBUG_EPILOGUE_BEGIN_2)
         dbg_pulse_2();
 }
-static inline void  debug_epilogue_end() {
+
+static inline void debug_epilogue_end() {
     if( DEBUG_EPILOGUE_END_1)
         dbg_pulse_1();
     if( DEBUG_EPILOGUE_END_2)
         dbg_pulse_2();
 }
-static inline void  debug_preamble_end() {
+
+static inline void debug_preamble_end() {
     if( DEBUG_PREAMBLE_END_1)
         dbg_pulse_1();
     if( DEBUG_PREAMBLE_END_2)
         dbg_pulse_2();
 }
-

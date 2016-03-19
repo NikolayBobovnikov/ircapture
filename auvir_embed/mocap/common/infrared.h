@@ -93,7 +93,7 @@ typedef enum TxStartStopSequenceStates
     Tx_PREAMBLE_DELAY_2
 } TxStartStopSequenceStates;
 
-enum RxStartStopSequenceStates
+typedef enum RxStartStopSequenceStates
 {
     Rx_PREAMBLE_START,
     Rx_PREAMBLE_BIT_1,
@@ -101,7 +101,7 @@ enum RxStartStopSequenceStates
     Rx_PREAMBLE_BIT_2,
     Rx_PREAMBLE_DELAY_2,
     Rx_PREAMBLE_STOP
-};
+} RxStartStopSequenceStates;
 
 typedef struct DataFrame_t
 {
@@ -110,7 +110,7 @@ typedef struct DataFrame_t
     uint8_t _3_angle_code_rev;
 } DataFrame_t;
 
-enum ReceiverStates
+typedef enum ReceiverStates
 {
     RX_WAITING_FOR_START_BIT,
     RX_START_BIT_PROCESSING,
@@ -119,14 +119,14 @@ enum ReceiverStates
     RX_DATA_DONE,
     RX_STOP_BIT_PROCESSING,
     RX_STOP_BIT_DONE
-};
+} ReceiverStates;
 
-enum LineLevels
+typedef enum LineLevels
 {
     LINE_UNDEFINED,
     LINE_LOW_ON_UPDATE_EVENT,
     LINE_HIGH_ON_UPDATE_EVENT
-};
+} LineLevels;
 
 typedef struct MCU_PIN{
     GPIO_TypeDef * pin_port;

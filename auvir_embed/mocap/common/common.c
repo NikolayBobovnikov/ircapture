@@ -3,10 +3,9 @@
 
 #include "common.h"
 
-
 extern const bool _debug;
 extern TIM_HandleTypeDef htim2;
-
+const bool _is_direct_logic = false;
 
 void  init_gpio_led() {
     GPIO_InitTypeDef GPIO_InitStruct;
