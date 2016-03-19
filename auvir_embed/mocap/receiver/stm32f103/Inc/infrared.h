@@ -36,6 +36,22 @@ typedef struct
     uint8_t _2_angle_code;
     uint8_t _3_angle_code_rev;
 } DataFrame_t;
+
+enum DataFrameStates
+{
+    DATAFRAME_0_NODATA,
+    DATAFRAME_1_BEAMER_ID,
+    DATAFRAME_2_ANGLE,
+    DATAFRAME_3_ANGLE_REV,
+};
+
+enum LineLevels
+{
+    LINE_UNDEFINED,
+    LINE_LOW_ON_UPDATE_EVENT,
+    LINE_HIGH_ON_UPDATE_EVENT
+};
+
 enum ReceiverStates
 {
     RX_WAITING_FOR_START_BIT,
@@ -46,29 +62,16 @@ enum ReceiverStates
     RX_STOP_BIT_PROCESSING,
     RX_STOP_BIT_DONE
 };
-enum StartStopSequenceStates
-{
-    STAGE_PREAMBLE_START,
-    STAGE_PREAMBLE_BIT_1,
-    STAGE_PREAMBLE_DELAY_1,
-    STAGE_PREAMBLE_BIT_2,
-    STAGE_PREAMBLE_DELAY_2,
-    STAGE_PREAMBLE_STOP
-};
-enum DataFrameStates
-{
-    DATAFRAME_1_BEAMER_ID,
-    DATAFRAME_2_ANGLE,
-    DATAFRAME_3_TIME,
-};
-enum LineLevels
-{
-    LINE_UNDEFINED,
-    LINE_LOW_ON_UPDATE_EVENT,
-    LINE_HIGH_ON_UPDATE_EVENT
-};
 
-
+enum RxStartStopSequenceStates
+{
+    Rx_PREAMBLE_START,
+    Rx_PREAMBLE_BIT_1,
+    Rx_PREAMBLE_DELAY_1,
+    Rx_PREAMBLE_BIT_2,
+    Rx_PREAMBLE_DELAY_2,
+    Rx_PREAMBLE_STOP
+};
 ///====================== Function prototypes ======================
 // main functions used in timer interrupt handlers
 void irreceiver_timer_prob_handler(); // for update timer

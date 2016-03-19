@@ -63,6 +63,16 @@ typedef enum TxStartStopSequenceStates
     Tx_PREAMBLE_DELAY_2
 } TxStartStopSequenceStates;
 
+enum RxStartStopSequenceStates
+{
+    Rx_PREAMBLE_START,
+    Rx_PREAMBLE_BIT_1,
+    Rx_PREAMBLE_DELAY_1,
+    Rx_PREAMBLE_BIT_2,
+    Rx_PREAMBLE_DELAY_2,
+    Rx_PREAMBLE_STOP
+};
+
 typedef struct DataFrame_t
 {
     uint8_t _1_beamer_id;

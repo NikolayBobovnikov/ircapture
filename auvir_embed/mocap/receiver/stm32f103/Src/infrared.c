@@ -23,7 +23,7 @@ uint8_t arr_index = 0;
 DataFrame_t rx_data_frame;
 uint8_t data_frame_delta = 0;
 volatile uint8_t ReceiverState = RX_WAITING_FOR_START_BIT;
-volatile uint8_t StartStopSequenceReceiveState = STAGE_PREAMBLE_START;
+volatile uint8_t StartStopSequenceReceiveState = Rx_PREAMBLE_START;
 volatile uint8_t DataFrameState = DATAFRAME_1_BEAMER_ID;
 volatile uint8_t LineLevelState = LINE_UNDEFINED;
 
@@ -243,7 +243,7 @@ static inline void receive_handler()
                     ptim_data_read->Instance->ARR = PreambleTotalLength; // will update on the "rising edge" of first data bit
                     ptim_data_read->Instance->CNT = 0;
                     ReceiverState = RX_START_BIT_PROCESSING;
-                    StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_1;
+                    StartStopSequenceReceiveState = Rx_PREAMBLE_BIT_1;
                     break;
                 }
             }
@@ -255,13 +255,13 @@ static inline void receive_handler()
             // Start sequence consists of signal sequence {1,0,1,0}, each bit of length PeriodOfStartStopBits
             switch(StartStopSequenceReceiveState)
             {
-                case STAGE_PREAMBLE_BIT_1:
+                case Rx_PREAMBLE_BIT_1:
                 {
                     if(is_1_to_0_edge()) // falling edge -> bit finished
                     {
                         if(is_correct_timming_preamble_bit()) // verify that it is within time interval boundaries
                         {
-                            StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_1;
+                            StartStopSequenceReceiveState = Rx_PREAMBLE_DELAY_1;
                             break;
                         }
                     }
@@ -270,13 +270,13 @@ static inline void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                case STAGE_PREAMBLE_DELAY_1:
+                case Rx_PREAMBLE_DELAY_1:
                 {
                     if(is_0_to_1_edge()) // rising edge -> delay finished
                     {
                         if(is_correct_timming_preamble_delay()) // verify that it is within time interval boundaries
                         {
-                            StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_2;
+                            StartStopSequenceReceiveState = Rx_PREAMBLE_BIT_2;
                             break;
                         }
                     }
@@ -285,7 +285,7 @@ static inline void receive_handler()
                     reset_receiver_state();
                     break;
                 }
-                case STAGE_PREAMBLE_BIT_2:
+                case Rx_PREAMBLE_BIT_2:
                 {
                     if(is_1_to_0_edge()) // falling edge -> bit finished
                     {
@@ -297,14 +297,14 @@ static inline void receive_handler()
                             //HAL_TIM_Base_Start_IT(ptim_data_read);
                             ptim_data_read->Instance->CNT = 0;
                             ptim_data_read->Instance->ARR = PreambleDelayLength;
-                            StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_2;
+                            StartStopSequenceReceiveState = Rx_PREAMBLE_DELAY_2;
                             break;
                         }
                     }
                     reset_receiver_state();
                     break;
                 }
-                case STAGE_PREAMBLE_DELAY_2:
+                case Rx_PREAMBLE_DELAY_2:
                 {
                     //FIXME TODO ISSUE
 
@@ -320,7 +320,7 @@ static inline void receive_handler()
                         ptim_data_read->Instance->ARR = HalfDataBitLength;//DataBitLength + DataBitLength;
                         // preamble is received, stopping timer verifying preamble bits
 
-                        StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_1; // TODO: needless?
+                        StartStopSequenceReceiveState = Rx_PREAMBLE_BIT_1; // TODO: needless?
                         ReceiverState = RX_DATA_PROCESSNG;
                         DataFrameState = DATAFRAME_1_BEAMER_ID;
                         // initialize buffer with all zeros
@@ -392,13 +392,13 @@ static inline void receive_handler()
                         else
                         {
                             // change state to process second part of the data frame
-                            DataFrameState = DATAFRAME_3_TIME;
+                            DataFrameState = DATAFRAME_3_ANGLE_REV;
                             // reset current bit position
                             rx_current_bit_pos = 0;
                         }
                         break;
                     }
-                    case DATAFRAME_3_TIME:
+                    case DATAFRAME_3_ANGLE_REV:
                     {
                         // calculate total bit number only once, when first bit is being processed
                         if(0 == rx_current_bit_pos)
@@ -422,7 +422,7 @@ static inline void receive_handler()
                             // waiting last HalfDataBitLength for beginning of epilogue
                             ptim_data_read->Instance->ARR = HalfDataBitLength;
                             ReceiverState = RX_STOP_BIT_PROCESSING;
-                            StartStopSequenceReceiveState = STAGE_PREAMBLE_START;
+                            StartStopSequenceReceiveState = Rx_PREAMBLE_START;
                         }
                         break;
                     }
@@ -442,7 +442,7 @@ static inline void receive_handler()
             switch (StartStopSequenceReceiveState)
             {
                 //low: off confirmation
-                case STAGE_PREAMBLE_START:
+                case Rx_PREAMBLE_START:
                 {
                     // start verifying first delay
                     if(_is_uptimer_update_event)
@@ -451,19 +451,19 @@ static inline void receive_handler()
                         ptim_input_capture->Instance->CNT=0;
                         ptim_data_read->Instance->CNT = 0;
                         ptim_data_read->Instance->ARR = max_period;
-                        StartStopSequenceReceiveState = STAGE_PREAMBLE_DELAY_1;
+                        StartStopSequenceReceiveState = Rx_PREAMBLE_DELAY_1;
                         break;
                     }
                     // should not reset if not update event, since on the edge of data bit and preamble delay  (may be falling edge)
                     break;
                 }
-                case STAGE_PREAMBLE_DELAY_1:
+                case Rx_PREAMBLE_DELAY_1:
                 {
                     if(is_0_to_1_edge()) // rising edge -> delay finished, bit started
                     {
                         if(is_correct_timming_preamble_delay()) // check delay length in allowed interval
                         {
-                            StartStopSequenceReceiveState = STAGE_PREAMBLE_BIT_1;
+                            StartStopSequenceReceiveState = Rx_PREAMBLE_BIT_1;
                             break;
                         }
                     }
@@ -478,7 +478,7 @@ static inline void receive_handler()
                     break;
                 }
                     // low falling edge: STAGE_ON2 -> STAGE_OFFF2
-                case STAGE_PREAMBLE_BIT_1:
+                case Rx_PREAMBLE_BIT_1:
                 {
                     if(is_1_to_0_edge())// falling edge -> bit finished
                     {
