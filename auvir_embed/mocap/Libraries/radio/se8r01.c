@@ -16,10 +16,12 @@ uint8_t gtemp[5];
 
 // Define a static TX address
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
-uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
-uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
+volatile uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
+volatile uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 
 //===============  Function prototypes
+void delay_us(uint16_t delay);
+
 static void nrf24_ce_set(uint8_t state);
 static void nrf24_csn_set(uint8_t state);
 static void radio_settings();
@@ -313,10 +315,8 @@ void TXX()
     //nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
     //delay_us(200);
 
-    //for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
-      //  tx_buf[i] = k++;
-    const char* test_str = "HelloWireless!\0";
-    memcpy(tx_buf, test_str, strlen(test_str));
+    //const char* test_str = "HelloWireless!\0";
+    //memcpy(tx_buf, test_str, strlen(test_str));
 
     SPI_RW_Reg(iRF_CMD_FLUSH_TX,0);
     SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);

@@ -37,7 +37,11 @@ GPIO_TypeDef * GPIO_LED_PORT = GPIOB;
 uint16_t GPIO_LED_PIN = GPIO_PIN_3;
 
 
-/// ================== External Function declarations ================
+/// ================== Radio interface ================
+
+extern volatile uint8_t rx_buf[32]; // initialize value
+extern volatile uint8_t tx_buf[32];
+
 void RXX();
 void TXX();
 
@@ -567,14 +571,18 @@ static inline void process_received_data()
     {
         debug_data_verified();
 
+        copy_data_frame_to_buffer(&rx_data_frame);
+        // TODO: change to the real thing
+        const char* test_str = "HelloWireless!\0";
+        memcpy(tx_buf, test_str, strlen(test_str));
+
+        //TODO: check and remove send_dataready_signal();
+
         {
             TXX();
             HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
             HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         }
-
-        copy_data_frame_to_buffer(&rx_data_frame);
-        //TODO: check and remove send_dataready_signal();
     }
     else
     {

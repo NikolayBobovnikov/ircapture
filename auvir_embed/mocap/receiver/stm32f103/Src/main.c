@@ -181,9 +181,10 @@ int main(void)
         }
 #endif
 
-        //delay_us(1000);
-        //HAL_Delay(100);
-        //HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
+        //delay_us(30000);
+        HAL_Delay(500);
+        HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
+        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
 
 
         /* USER CODE END WHILE */
