@@ -171,7 +171,7 @@ int main(void)
 
     while (1)
     {
-#if 0
+#if 1
         if(is_receiver){
             RXX();
         }
@@ -180,12 +180,6 @@ int main(void)
             HAL_Delay(100);
         }
 #endif
-
-        //delay_us(30000);
-        HAL_Delay(500);
-        HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
-        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-
 
         /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
