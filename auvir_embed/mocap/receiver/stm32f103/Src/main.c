@@ -121,7 +121,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 't'; // 't'
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -150,6 +150,8 @@ int main(void)
     MX_USART1_UART_Init();
 
     /* USER CODE BEGIN 2 */
+    //TODO: setting the timer. merge with TIM_Init
+    setup_ic_timer();
     //debug_init_gpio();
     init_gpio_led();
     nrf24_setup_gpio();
