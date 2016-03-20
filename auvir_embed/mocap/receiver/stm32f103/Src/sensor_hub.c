@@ -1,7 +1,5 @@
 #include "sensor_hub.h"
 
-extern UART_HandleTypeDef huart1;
-
 static uint8_t this_hub_id = 0;
 #define  max_number_of_sensors 128
 static uint16_t registered_sensors[max_number_of_sensors] = {0};
