@@ -171,13 +171,13 @@ int main(void)
 
     while (1)
     {
-#if 1
+#if 0
         if(is_receiver){
             RXX();
         }
         else if(is_transmitter){
             TXX();
-            HAL_Delay(100);
+            HAL_Delay(30);
         }
 #endif
 

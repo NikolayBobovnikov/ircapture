@@ -102,9 +102,6 @@ static void MX_USART1_UART_Init(void);
 void notify_transmission_finished();
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
-//TODO: refactor; merge routines with those from receiver
-#define TIMER_DELAY_ARR_DIV 72
-void delay_us(uint8_t delay);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
