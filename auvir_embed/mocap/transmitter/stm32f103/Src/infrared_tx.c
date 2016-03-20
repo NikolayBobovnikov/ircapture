@@ -6,6 +6,8 @@
 extern const bool _debug;
 extern const bool _is_direct_logic;
 
+const bool _is_direct_logic = true;
+
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;

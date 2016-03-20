@@ -11,6 +11,8 @@ extern GPIO_TypeDef * GPIO_PORT_IR_IN;
 extern uint16_t GPIO_PIN_IR_IN;
 extern const bool _is_direct_logic;
 
+const bool _is_direct_logic = false;
+
 DataFrame_t data_frames[RX_BUF_SIZE] = {0}; // TODO: verify initialization
 uint8_t arr_index = 0;
 
