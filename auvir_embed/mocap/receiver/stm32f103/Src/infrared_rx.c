@@ -552,7 +552,7 @@ static inline void reset_receiver_state()
     ptim_data_read->Instance->CNT = 0;
 
     {
-        HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
     }
 
     //HAL_TIM_Base_Stop_IT(ptim_data_read);
@@ -568,16 +568,13 @@ static inline void process_received_data()
         debug_data_verified();
 
         {
-            //TXX();
-            HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_SET);
-            delay_us(1000);
-            HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
-
+            TXX();
+            HAL_GPIO_TogglePin(GPIO_LED_PORT,GPIO_LED_PIN);
+            HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         }
 
         copy_data_frame_to_buffer(&rx_data_frame);
-        HAL_Delay(50);
-        //send_dataready_signal();
+        //TODO: check and remove send_dataready_signal();
     }
     else
     {

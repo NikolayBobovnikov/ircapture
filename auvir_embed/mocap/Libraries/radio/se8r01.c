@@ -12,7 +12,6 @@ extern char mode;      //r=rx, t=tx
 extern GPIO_TypeDef * GPIO_LED_PORT;
 extern uint16_t GPIO_LED_PIN;
 
-void delay_us(uint8_t us);
 uint8_t gtemp[5];
 
 // Define a static TX address
