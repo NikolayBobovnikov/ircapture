@@ -171,7 +171,7 @@ int main(void)
 
     while (1)
     {
-#if 0
+#if 1
         if(is_receiver){
             RXX();
         }

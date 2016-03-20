@@ -157,7 +157,7 @@ int main(void)
   while (1) {
     init_data();
     sensor_send_data();
-    //RXX();
+    RXX();
     //ReceiveDataToSend();
     //HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
 
