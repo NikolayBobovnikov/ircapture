@@ -37,6 +37,10 @@
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
+#define DelayCheckingPeriod (100 - 1)
+#define envelop_timer_prescaler (72 - 1)
+#define max_period (65535-1)
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

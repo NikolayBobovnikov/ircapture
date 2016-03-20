@@ -9,6 +9,9 @@ extern TIM_HandleTypeDef htim2;
 void  init_gpio_led() {
     GPIO_InitTypeDef GPIO_InitStruct;
 
+    // apparently need to be done before initializing GPIO
+    __GPIOC_CLK_ENABLE();
+
     GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_3;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;

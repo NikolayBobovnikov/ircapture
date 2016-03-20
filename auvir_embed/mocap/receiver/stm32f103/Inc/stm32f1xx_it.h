@@ -37,7 +37,7 @@
 
 #ifdef __cplusplus
  extern "C" {
-#endif
+#endif 
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -46,12 +46,9 @@
 /* Exported functions ------------------------------------------------------- */
 
 void SysTick_Handler(void);
-void DMA1_Channel2_IRQHandler(void);
-void DMA1_Channel3_IRQHandler(void);
 void TIM3_IRQHandler(void);
 void TIM4_IRQHandler(void);
 void SPI1_IRQHandler(void);
-void EXTI4_IRQHandler(void);
 
 #ifdef __cplusplus
 }
