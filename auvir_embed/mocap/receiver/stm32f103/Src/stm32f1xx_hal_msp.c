@@ -1,4 +1,4 @@
-/**tttttttttt
+/**
   ******************************************************************************
   * File Name          : stm32f1xx_hal_msp.c
   * Description        : This file provides code for the MSP Initialization 
@@ -52,6 +52,14 @@ void HAL_MspInit(void)
   HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
   /* System interrupt init*/
+  /* MemoryManagement_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(MemoryManagement_IRQn, 0, 0);
+  /* BusFault_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(BusFault_IRQn, 0, 0);
+  /* UsageFault_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(UsageFault_IRQn, 0, 0);
+  /* DebugMonitor_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DebugMonitor_IRQn, 0, 0);
   /* SysTick_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 
@@ -73,7 +81,7 @@ void HAL_CRC_MspInit(CRC_HandleTypeDef* hcrc)
 
   /* USER CODE END CRC_MspInit 0 */
     /* Peripheral clock enable */
-    __CRC_CLK_ENABLE();
+    __HAL_RCC_CRC_CLK_ENABLE();
   /* USER CODE BEGIN CRC_MspInit 1 */
 
   /* USER CODE END CRC_MspInit 1 */
@@ -90,7 +98,7 @@ void HAL_CRC_MspDeInit(CRC_HandleTypeDef* hcrc)
 
   /* USER CODE END CRC_MspDeInit 0 */
     /* Peripheral clock disable */
-    __CRC_CLK_DISABLE();
+    __HAL_RCC_CRC_CLK_DISABLE();
   }
   /* USER CODE BEGIN CRC_MspDeInit 1 */
 
@@ -114,12 +122,12 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
     */
     GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     __HAL_AFIO_REMAP_I2C1_ENABLE();
     /* Peripheral clock enable */
-    __I2C1_CLK_ENABLE();
+    __HAL_RCC_I2C1_CLK_ENABLE();
   /* USER CODE BEGIN I2C1_MspInit 1 */
 
   /* USER CODE END I2C1_MspInit 1 */
@@ -136,7 +144,7 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
 
   /* USER CODE END I2C1_MspDeInit 0 */
     /* Peripheral clock disable */
-    __I2C1_CLK_DISABLE();
+    __HAL_RCC_I2C1_CLK_DISABLE();
   
     /**I2C1 GPIO Configuration    
     PB8     ------> I2C1_SCL
@@ -161,7 +169,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
   /* USER CODE END SPI1_MspInit 0 */
     /* Peripheral clock enable */
-    __SPI1_CLK_ENABLE();
+    __HAL_RCC_SPI1_CLK_ENABLE();
   
     /**SPI1 GPIO Configuration    
     PA5     ------> SPI1_SCK
@@ -170,7 +178,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     */
     GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_6;
@@ -178,7 +186,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /* Peripheral interrupt init*/
+    /* Peripheral interrupt init */
     HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(SPI1_IRQn);
   /* USER CODE BEGIN SPI1_MspInit 1 */
@@ -197,7 +205,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 
   /* USER CODE END SPI1_MspDeInit 0 */
     /* Peripheral clock disable */
-    __SPI1_CLK_DISABLE();
+    __HAL_RCC_SPI1_CLK_DISABLE();
   
     /**SPI1 GPIO Configuration    
     PA5     ------> SPI1_SCK
@@ -226,7 +234,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM2_MspInit 0 */
     /* Peripheral clock enable */
-    __TIM2_CLK_ENABLE();
+    __HAL_RCC_TIM2_CLK_ENABLE();
   /* USER CODE BEGIN TIM2_MspInit 1 */
 
   /* USER CODE END TIM2_MspInit 1 */
@@ -237,8 +245,8 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM3_MspInit 0 */
     /* Peripheral clock enable */
-    __TIM3_CLK_ENABLE();
-  /* Peripheral interrupt init*/
+    __HAL_RCC_TIM3_CLK_ENABLE();
+    /* Peripheral interrupt init */
     HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(TIM3_IRQn);
   /* USER CODE BEGIN TIM3_MspInit 1 */
@@ -251,7 +259,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM4_MspInit 0 */
     /* Peripheral clock enable */
-    __TIM4_CLK_ENABLE();
+    __HAL_RCC_TIM4_CLK_ENABLE();
   
     /**TIM4 GPIO Configuration    
     PB6     ------> TIM4_CH1 
@@ -261,7 +269,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* Peripheral interrupt init*/
+    /* Peripheral interrupt init */
     HAL_NVIC_SetPriority(TIM4_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(TIM4_IRQn);
   /* USER CODE BEGIN TIM4_MspInit 1 */
@@ -280,7 +288,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM2_MspDeInit 0 */
     /* Peripheral clock disable */
-    __TIM2_CLK_DISABLE();
+    __HAL_RCC_TIM2_CLK_DISABLE();
   /* USER CODE BEGIN TIM2_MspDeInit 1 */
 
   /* USER CODE END TIM2_MspDeInit 1 */
@@ -291,7 +299,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM3_MspDeInit 0 */
     /* Peripheral clock disable */
-    __TIM3_CLK_DISABLE();
+    __HAL_RCC_TIM3_CLK_DISABLE();
 
     /* Peripheral interrupt DeInit*/
     HAL_NVIC_DisableIRQ(TIM3_IRQn);
@@ -306,7 +314,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 
   /* USER CODE END TIM4_MspDeInit 0 */
     /* Peripheral clock disable */
-    __TIM4_CLK_DISABLE();
+    __HAL_RCC_TIM4_CLK_DISABLE();
   
     /**TIM4 GPIO Configuration    
     PB6     ------> TIM4_CH1 
