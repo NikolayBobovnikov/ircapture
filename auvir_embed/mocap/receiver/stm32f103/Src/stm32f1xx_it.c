@@ -76,18 +76,17 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-* @brief This function handles EXTI line0 interrupt.
+* @brief This function handles EXTI line3 interrupt.
 */
-void EXTI0_IRQHandler(void)
+void EXTI3_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI0_IRQn 0 */
+  /* USER CODE BEGIN EXTI3_IRQn 0 */
     HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+  /* USER CODE END EXTI3_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+  /* USER CODE BEGIN EXTI3_IRQn 1 */
 
-  /* USER CODE END EXTI0_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-  /* USER CODE BEGIN EXTI0_IRQn 1 */
-
-  /* USER CODE END EXTI0_IRQn 1 */
+  /* USER CODE END EXTI3_IRQn 1 */
 }
 
 /**
@@ -96,7 +95,6 @@ void EXTI0_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-    //HAL_GPIO_TogglePin (GPIOA,GPIO_PIN_0);
     nrf_receive_handler();
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
@@ -144,4 +142,7 @@ void SPI1_IRQHandler(void)
   /* USER CODE END SPI1_IRQn 1 */
 }
 
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

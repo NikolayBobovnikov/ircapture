@@ -205,6 +205,16 @@ static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 void nrf24_setup_gpio(void)
 {
+// NRF24_IRQ_PORT   GPIOA
+// NRF24_IRQ_PIN    GPIO_PIN_4
+// NRF24_CSN_PIN
+// NRF24_CSN_PORT  GPIOA
+// NRF24_CSN_PIN   GPIO_PIN_0
+// NRF24_CE_PIN
+// NRF24_CE_PORT   GPIOA
+// NRF24_CE_PIN    GPIO_PIN_1
+
+
     GPIO_InitTypeDef GPIO_InitStruct;
 
     //Configure IRQ pin
