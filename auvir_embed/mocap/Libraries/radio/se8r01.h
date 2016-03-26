@@ -285,6 +285,7 @@ void nrf24_setup_gpio();
 void setup_radio(NRF24_InitTypeDef* settings);
 void setup();
 void nrf_receive_handler();
+void nrf_without_this_interrupts_not_work();
 
 void RXX();
 void TXX();

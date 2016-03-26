@@ -205,42 +205,6 @@ static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 void nrf24_setup_gpio(void)
 {
-// NRF24_IRQ_PORT   GPIOA
-// NRF24_IRQ_PIN    GPIO_PIN_4
-// NRF24_CSN_PIN
-// NRF24_CSN_PORT  GPIOA
-// NRF24_CSN_PIN   GPIO_PIN_0
-// NRF24_CE_PIN
-// NRF24_CE_PORT   GPIOA
-// NRF24_CE_PIN    GPIO_PIN_1
-
-
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    //Configure IRQ pin
-    GPIO_InitStruct.Pin = NRF24_IRQ_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(NRF24_IRQ_PORT, &GPIO_InitStruct);
-
-    //HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
-    //HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
-    //Configure CSN pin
-    GPIO_InitStruct.Pin = NRF24_CSN_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(NRF24_CSN_PORT, &GPIO_InitStruct);
-
-    //Configure CE pin
-    GPIO_InitStruct.Pin = NRF24_CE_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(NRF24_CE_PORT, &GPIO_InitStruct);
-
     /* CSN high = disable SPI */
     HAL_GPIO_WritePin(NRF24_CSN_PORT, NRF24_CSN_PIN, GPIO_PIN_SET);
 
@@ -268,9 +232,7 @@ void setup()
 
 void nrf_receive_handler()
 {
-    uint8_t status = SPI_Read(iRF_BANK0_STATUS);
-
-    if(status & STA_MARK_RX)                                // if receive data ready (TX_DS) interrupt
+    if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
     {
         SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
         nrf24_write_register(FLUSH_RX,0);
@@ -287,31 +249,9 @@ void nrf_receive_handler()
 
 void RXX()
 {
-    uint8_t status = SPI_Read(iRF_BANK0_STATUS);
     if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW){
-        int a = 0;
-
         delay_us(10);      //read reg too close after irq low not good
-
-        //if(status & STA_MARK_RX || !(SPI_Read(R_REGISTER | FIFO_STATUS) ))                                // if receive data ready (TX_DS) interrupt
-        if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
-        {
-            SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
-            SPI_RW_Reg(FLUSH_RX,0);
-            // clear RX_FIFO
-            for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
-            {
-            }
-            SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
-            //TODO: this is for debug
-            HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-            HAL_Delay(10);
-        }
-        else{
-
-            SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
-
-        }
+        nrf_receive_handler();
     }
 
 }
@@ -855,6 +795,7 @@ static uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 }
 /**************************************************/
 
-
-
-
+void nrf_without_this_interrupts_not_work()
+{
+    SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
+}
