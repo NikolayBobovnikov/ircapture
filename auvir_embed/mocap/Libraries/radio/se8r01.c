@@ -241,10 +241,30 @@ void nrf_receive_handler()
         {
         }
         nrf24_write_register(iRF_BANK0_STATUS,0xff);
+        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
     }
     else{
         nrf24_write_register(iRF_BANK0_STATUS,0xff);
     }
+
+    /* NOT WORKING
+    if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
+    {
+        SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
+        SPI_RW_Reg(FLUSH_RX,0);
+        // clear RX_FIFO
+        for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
+        {
+        }
+        SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
+        //TODO: this is for debug
+        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+    }
+    else{
+
+        SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
+    }
+    */
 }
 
 void RXX()
