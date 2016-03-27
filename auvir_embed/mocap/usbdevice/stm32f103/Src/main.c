@@ -147,14 +147,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
     //TODO: setting the timer. merge with TIM_Init
     setup_ic_timer();
-    //debug_init_gpio();
-    //init_gpio_led();
     nrf24_setup_gpio();
 
     //// start usec delay timer
     HAL_TIM_Base_Start(&htim2);
-    HAL_TIM_Base_Start_IT(ptim_data_read);
-    HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -358,9 +354,9 @@ void MX_TIM4_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -502,10 +498,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

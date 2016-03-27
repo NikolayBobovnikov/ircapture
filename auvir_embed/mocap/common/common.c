@@ -6,26 +6,6 @@
 extern const bool _debug;
 extern TIM_HandleTypeDef htim2;
 
-void  init_gpio_led() {
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    // apparently need to be done before initializing GPIO
-
-
-}
-
-void  debug_init_gpio() {
-    if(_debug)
-    {
-        /* these gpio are used elsewhere
-        GPIO_InitTypeDef GPIO_InitStruct;
-        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-        */
-    }
-}
 
 void delay_us(uint16_t delay)
 {
