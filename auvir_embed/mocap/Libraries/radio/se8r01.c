@@ -232,19 +232,22 @@ void setup()
 
 void nrf_receive_handler()
 {
-    if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
-    {
-        SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
-        nrf24_write_register(FLUSH_RX,0);
-        // clear RX_FIFO. TODO: verify
-        for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
+    //TODO: check mode == 'r'
+    if(mode == 'r'){
+        if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
         {
+            SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
+            nrf24_write_register(FLUSH_RX,0);
+            // clear RX_FIFO. TODO: verify
+            for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
+            {
+            }
+            nrf24_write_register(iRF_BANK0_STATUS,0xff);
+            HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         }
-        nrf24_write_register(iRF_BANK0_STATUS,0xff);
-        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-    }
-    else{
-        nrf24_write_register(iRF_BANK0_STATUS,0xff);
+        else{
+            nrf24_write_register(iRF_BANK0_STATUS,0xff);
+        }
     }
 
     /* NOT WORKING

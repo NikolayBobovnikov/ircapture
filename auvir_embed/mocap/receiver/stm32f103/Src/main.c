@@ -166,17 +166,16 @@ int main(void)
 
     while (1)
     {
-#if 0
+#if 1
         if(is_receiver){
-            RXX();
+            //RXX() - this is called on IRQ
+            nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
             TXX();
             HAL_Delay(30);
         }
 #endif
-
-    nrf_without_this_interrupts_not_work();
 
   /* USER CODE END WHILE */
 
