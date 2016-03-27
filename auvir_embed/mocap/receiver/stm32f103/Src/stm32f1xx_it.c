@@ -59,13 +59,13 @@ extern TIM_HandleTypeDef htim4;
 */
 void SysTick_Handler(void)
 {
-  /* USER CODE BEGIN SysTick_IRQn 0 */
-  /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  HAL_SYSTICK_IRQHandler();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
+    /* USER CODE BEGIN SysTick_IRQn 0 */
+    /* USER CODE END SysTick_IRQn 0 */
+    HAL_IncTick();
+    HAL_SYSTICK_IRQHandler();
+    /* USER CODE BEGIN SysTick_IRQn 1 */
 
-  /* USER CODE END SysTick_IRQn 1 */
+    /* USER CODE END SysTick_IRQn 1 */
 }
 
 /******************************************************************************/
@@ -80,13 +80,13 @@ void SysTick_Handler(void)
 */
 void EXTI4_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI4_IRQn 0 */
+    /* USER CODE BEGIN EXTI4_IRQn 0 */
     nrf_receive_handler();
-  /* USER CODE END EXTI4_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
-  /* USER CODE BEGIN EXTI4_IRQn 1 */
+    /* USER CODE END EXTI4_IRQn 0 */
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+    /* USER CODE BEGIN EXTI4_IRQn 1 */
 
-  /* USER CODE END EXTI4_IRQn 1 */
+    /* USER CODE END EXTI4_IRQn 1 */
 }
 
 /**
@@ -94,12 +94,12 @@ void EXTI4_IRQHandler(void)
 */
 void TIM3_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM3_IRQn 0 */
+    /* USER CODE BEGIN TIM3_IRQn 0 */
     irreceiver_timer_up_handler();
-  /* USER CODE END TIM3_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim3);
-  /* USER CODE BEGIN TIM3_IRQn 1 */
-  /* USER CODE END TIM3_IRQn 1 */
+    /* USER CODE END TIM3_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim3);
+    /* USER CODE BEGIN TIM3_IRQn 1 */
+    /* USER CODE END TIM3_IRQn 1 */
 }
 
 /**
@@ -107,12 +107,12 @@ void TIM3_IRQHandler(void)
 */
 void TIM4_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM4_IRQn 0 */
+    /* USER CODE BEGIN TIM4_IRQn 0 */
     irreceiver_timer_ic_handler();
-  /* USER CODE END TIM4_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim4);
-  /* USER CODE BEGIN TIM4_IRQn 1 */
-  /* USER CODE END TIM4_IRQn 1 */
+    /* USER CODE END TIM4_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim4);
+    /* USER CODE BEGIN TIM4_IRQn 1 */
+    /* USER CODE END TIM4_IRQn 1 */
 }
 
 /**
@@ -120,13 +120,13 @@ void TIM4_IRQHandler(void)
 */
 void SPI1_IRQHandler(void)
 {
-  /* USER CODE BEGIN SPI1_IRQn 0 */
+    /* USER CODE BEGIN SPI1_IRQn 0 */
 
-  /* USER CODE END SPI1_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi1);
-  /* USER CODE BEGIN SPI1_IRQn 1 */
+    /* USER CODE END SPI1_IRQn 0 */
+    HAL_SPI_IRQHandler(&hspi1);
+    /* USER CODE BEGIN SPI1_IRQn 1 */
 
-  /* USER CODE END SPI1_IRQn 1 */
+    /* USER CODE END SPI1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

@@ -41,6 +41,16 @@
 #define envelop_timer_prescaler (72 - 1)
 #define max_period (65535-1)
 
+#define LED_ONBOARD_Pin GPIO_PIN_13
+#define LED_ONBOARD_GPIO_Port GPIOC
+#define NRF_IRQ_Pin GPIO_PIN_4
+#define NRF_IRQ_GPIO_Port GPIOA
+#define DBG_OUT_1_Pin GPIO_PIN_0
+#define DBG_OUT_1_GPIO_Port GPIOB
+#define DBG_OUT_2_Pin GPIO_PIN_1
+#define DBG_OUT_2_GPIO_Port GPIOB
+#define LED_DBG_Pin GPIO_PIN_3
+#define LED_DBG_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

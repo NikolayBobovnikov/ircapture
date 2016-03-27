@@ -97,17 +97,9 @@
 			<type>1</type>
 			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi_ex.c</location>
 		</link><link>
-			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_rtc_ex.c</name>
-			<type>1</type>
-			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rtc_ex.c</location>
-		</link><link>
 			<name>Drivers/CMSIS/system_stm32f1xx.c</name>
 			<type>1</type>
 			<location>PARENT-2-PROJECT_LOC/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c</location>
-		</link><link>
-			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_rtc.c</name>
-			<type>1</type>
-			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rtc.c</location>
 		</link><link>
 			<name>Drivers/STM32F1xx_HAL_Driver/stm32f1xx_hal_cortex.c</name>
 			<type>1</type>
