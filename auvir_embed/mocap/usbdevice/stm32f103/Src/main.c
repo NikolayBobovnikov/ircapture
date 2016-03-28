@@ -41,6 +41,7 @@
 #include "sensor_hub.h"
 #include "se8r01.h"
 #include "common.h"
+#include "usbd_cdc_if.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -162,6 +163,10 @@ int main(void)
 
     setup();
 
+    uint8_t buf[32] = {0};
+    const char * str = "Hello!";
+    memcpy(buf, str, strlen(str));
+
     while (1)
     {
 #if 1
@@ -174,7 +179,9 @@ int main(void)
             HAL_Delay(30);
         }
 #endif
-
+    CDC_Transmit_FS(buf, sizeof(char)*10);
+    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+    HAL_Delay (50);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
