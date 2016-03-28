@@ -39,8 +39,6 @@
 // TODO: read more about .h and .c file including during compiling. Check if this include is needed
 // #include "infrared.h"
 
-void irreceiver_timer_up_handler();
-void irreceiver_timer_ic_handler();
 void nrf_receive_handler();
 
 /* USER CODE END 0 */
@@ -48,8 +46,6 @@ void nrf_receive_handler();
 /* External variables --------------------------------------------------------*/
 extern PCD_HandleTypeDef hpcd_USB_FS;
 extern SPI_HandleTypeDef hspi1;
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim4;
 
 /******************************************************************************/
 /*            Cortex-M3 Processor Interruption and Exception Handlers         */ 
@@ -102,32 +98,6 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
 
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
-}
-
-/**
-* @brief This function handles TIM3 global interrupt.
-*/
-void TIM3_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM3_IRQn 0 */
-    irreceiver_timer_up_handler();
-  /* USER CODE END TIM3_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim3);
-  /* USER CODE BEGIN TIM3_IRQn 1 */
-  /* USER CODE END TIM3_IRQn 1 */
-}
-
-/**
-* @brief This function handles TIM4 global interrupt.
-*/
-void TIM4_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM4_IRQn 0 */
-    irreceiver_timer_ic_handler();
-  /* USER CODE END TIM4_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim4);
-  /* USER CODE BEGIN TIM4_IRQn 1 */
-  /* USER CODE END TIM4_IRQn 1 */
 }
 
 /**

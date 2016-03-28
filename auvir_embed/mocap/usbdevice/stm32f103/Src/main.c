@@ -36,26 +36,20 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
-#include "infrared.h"
 #include "sensor.h"
 #include "sensor_hub.h"
 #include "se8r01.h"
-#include "common.h"
+#include "infrared.h"
 #include "usbd_cdc_if.h"
+#include "common.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
-CRC_HandleTypeDef hcrc;
-
-I2C_HandleTypeDef hi2c1;
-
 SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -63,10 +57,6 @@ TIM_HandleTypeDef htim4;
 const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
 const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
 
-TIM_HandleTypeDef* ptim_input_capture = &htim4;
-TIM_HandleTypeDef* ptim_data_read = &htim3;
-
-extern const bool _is_direct_logic;
 const bool _debug = true;
 
 extern GPIO_TypeDef * GPIO_LED_PORT;
@@ -78,18 +68,11 @@ extern uint16_t GPIO_LED_PIN;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_CRC_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_TIM3_Init(void);
-static void MX_TIM4_Init(void);
 static void MX_TIM2_Init(void);
-static void MX_I2C1_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
-void send_data_uart();
 
 #define TIMER_DELAY_ARR_DIV 72
 /* USER CODE END PFP */
@@ -137,21 +120,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CRC_Init();
   MX_SPI1_Init();
-  MX_TIM3_Init();
-  MX_TIM4_Init();
-  MX_TIM2_Init();
-  MX_I2C1_Init();
   MX_USB_DEVICE_Init();
+  MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
     //TODO: setting the timer. merge with TIM_Init
-    setup_ic_timer();
     nrf24_setup_gpio();
 
-    //// start usec delay timer
-    HAL_TIM_Base_Start(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -227,32 +203,6 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-/* CRC init function */
-void MX_CRC_Init(void)
-{
-
-  hcrc.Instance = CRC;
-  HAL_CRC_Init(&hcrc);
-
-}
-
-/* I2C1 init function */
-void MX_I2C1_Init(void)
-{
-
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  HAL_I2C_Init(&hi2c1);
-
-}
-
 /* SPI1 init function */
 void MX_SPI1_Init(void)
 {
@@ -283,7 +233,7 @@ void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 71;
+  htim2.Init.Period = 0;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim2);
 
@@ -296,74 +246,9 @@ void MX_TIM2_Init(void)
 
 }
 
-/* TIM3 init function */
-void MX_TIM3_Init(void)
-{
-
-  TIM_ClockConfigTypeDef sClockSourceConfig;
-  TIM_MasterConfigTypeDef sMasterConfig;
-
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = envelop_timer_prescaler;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = DelayCheckingPeriod;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  HAL_TIM_Base_Init(&htim3);
-
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
-
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
-
-}
-
-/* TIM4 init function */
-void MX_TIM4_Init(void)
-{
-
-  TIM_ClockConfigTypeDef sClockSourceConfig;
-  TIM_SlaveConfigTypeDef sSlaveConfig;
-  TIM_MasterConfigTypeDef sMasterConfig;
-  TIM_IC_InitTypeDef sConfigIC;
-
-  htim4.Instance = TIM4;
-  htim4.Init.Prescaler = envelop_timer_prescaler;
-  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
-  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  HAL_TIM_Base_Init(&htim4);
-
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig);
-
-  HAL_TIM_IC_Init(&htim4);
-
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
-  sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sSlaveConfig.TriggerFilter = 0;
-  HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
-
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
-
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
-  HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1);
-
-  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-  HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2);
-
-}
-
-/** Configure pins as
-        * Analog
-        * Input
+/** Configure pins as 
+        * Analog 
+        * Input 
         * Output
         * EVENT_OUT
         * EXTI
@@ -419,54 +304,6 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim)
-{
-    /* Check the parameters */
-    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
-    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
-
-    /* Enable the TIM Capture/Compare 1 interrupt */
-    __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC1);
-    /* Enable the TIM Capture/Compare 2 interrupt */
-    __HAL_TIM_ENABLE_IT(htim, TIM_IT_CC2);
-
-    /* Enable the Input Capture channel */
-    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_ENABLE);
-
-
-    /* Enable the Peripheral */
-    __HAL_TIM_ENABLE(htim);
-
-    /* Return function status */
-    return HAL_OK;
-}
-HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim)
-{
-    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_1));
-    assert_param(IS_TIM_CCX_INSTANCE(htim->Instance, TIM_CHANNEL_2));
-
-    __HAL_TIM_DISABLE_IT(htim, TIM_IT_CC1);
-    __HAL_TIM_DISABLE_IT(htim, TIM_IT_CC2);
-
-    /* Disable the Input Capture channel */
-    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_1, TIM_CCx_DISABLE);
-    TIM_CCxChannelCmd(htim->Instance, TIM_CHANNEL_2, TIM_CCx_DISABLE);
-
-    /* Disable the Peripheral */
-    __HAL_TIM_DISABLE(htim);
-
-    /* Return function status */
-    return HAL_OK;
-}
-void send_data_uart()
-{
-    USART_msg_t msg;
-    msg._ir_sensor_id = 1;
-    msg._ir_hub_id = 2;
-    msg.data = rx_data_frame;
-
-}
 
 /*
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -505,10 +342,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

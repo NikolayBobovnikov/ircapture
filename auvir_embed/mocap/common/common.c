@@ -3,9 +3,8 @@
 
 #include "common.h"
 
-extern const bool _debug;
-extern TIM_HandleTypeDef htim2;
 
+extern TIM_HandleTypeDef htim2;
 
 void delay_us(uint16_t delay)
 {
@@ -18,17 +17,6 @@ void delay_us(uint16_t delay)
 void delay_cycles(uint16_t delay)
 {
     while(--delay > 0);
-}
-
-void delay_timer_general(uint16_t prescaler, uint16_t delay)
-{
-    htim2.Init.Period = prescaler;
-    htim2.Instance->CNT = 0;
-    // TODO: delay - 1 results in a more precise measurements
-    // Why?
-    htim2.Instance->ARR = delay - 1;
-    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
-    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
 }
 
 
