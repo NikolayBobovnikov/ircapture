@@ -16,8 +16,8 @@ uint8_t gtemp[5];
 
 // Define a static TX address
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
-volatile uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
-volatile uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
+uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
+uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 
 //===============  Function prototypes
 void delay_us(uint16_t delay);
@@ -389,7 +389,7 @@ static void radio_settings()
     // TODO: if setup is 0 or ff then there was no response from module
     uint8_t rf_setup = 0;
     nrf24_read_register_buf(iRF_BANK0_RF_SETUP, &rf_setup, 1);
-    if(rf_setup == 0 && setup == 0xff){
+    if(rf_setup == 0 && rf_setup == 0xff){
         int error = 1;
     }
 
