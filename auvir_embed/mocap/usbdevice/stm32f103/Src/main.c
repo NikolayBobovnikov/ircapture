@@ -126,6 +126,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
     //TODO: setting the timer. merge with TIM_Init
+  	  HAL_TIM_Base_Start(&htim2);
     nrf24_setup_gpio();
 
   /* USER CODE END 2 */
@@ -157,7 +158,7 @@ int main(void)
 #endif
     CDC_Transmit_FS(buf, sizeof(char)*10);
     HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
-    HAL_Delay (50);
+    HAL_Delay (100);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
