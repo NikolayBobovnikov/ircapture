@@ -22,11 +22,10 @@ uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 //===============  Function prototypes
 void delay_us(uint16_t delay);
 
-static void nrf24_ce_set(uint8_t state);
-static void nrf24_csn_set(uint8_t state);
+static void nrf24_ce_set(GPIO_PinState state);
+static void nrf24_csn_set(GPIO_PinState state);
 static void radio_settings();
 static void set_rx_tx_mode();
-static void init_io();
 
 static void se8r01_switch_bank(uint8_t bankindex);
 static void se8r01_powerup();
@@ -161,14 +160,14 @@ void nrf24_reset()
 //========================================
 // Interface functions
 
-static void nrf24_ce_set(uint8_t state)
+static void nrf24_ce_set(GPIO_PinState state)
 {
     assert_param(state == LOW || state == HIGH);
-    HAL_GPIO_WritePin(NRF24_CE_PORT,NRF24_CE_PIN, state);
+    HAL_GPIO_WritePin(NRF24_CE_PORT,NRF24_CE_PIN,state);
     delay_us(10);
 }
 
-static void nrf24_csn_set(uint8_t state)
+static void nrf24_csn_set(GPIO_PinState state)
 {
     assert_param(state == LOW || state == HIGH);
     HAL_GPIO_WritePin(NRF24_CSN_PORT,NRF24_CSN_PIN, state);
@@ -214,8 +213,14 @@ void nrf24_setup_gpio(void)
 
 void setup()
 {
-    init_io();                        // Initialize IO port
+    nrf24_ce_set(LOW);
+    nrf24_csn_set(HIGH);
+
     HAL_Delay(5);
+
+    //TODO FIXME NOTE: Check below
+    se8r01_powerup();
+
 
     //set EN_AA, EN_RXADDR, RF_CH (needless?), RF_SETUP (needless?), AW, SETUP_RETR, TX_ADDR, RX_ADDR_P*
     radio_settings();
@@ -355,10 +360,11 @@ static void radio_settings()
     // 00 Illegal
     uint8_t SETUP_AW_value = 0x02;
     if(TX_ADR_WIDTH == 5){
-        SETUP_AW_value = 0x3;
+      //TODO:
+        //SETUP_AW_value = 0x3;
     }
     //TODO
-    nrf24_write_register(iRF_BANK0_SETUP_AW, 0x02);
+    nrf24_write_register(iRF_BANK0_SETUP_AW, SETUP_AW_value);
 
     // Auto retransmit delay and count (ARD, ARC)
     //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit
@@ -368,8 +374,7 @@ static void radio_settings()
     // Set RF channel
     nrf24_write_register(iRF_BANK0_RF_CH, RF_CHANNEL);
 
-    // RF_SETUP
-    ///RF_SETUP register
+    ///RF_SETUP
     //Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
     //CONT_WAVE | PA_PWR_3 | RF_DR_LO | Reserved | RF_DR_HIG | PA_PWR            |
 
@@ -389,10 +394,6 @@ static void radio_settings()
     // TODO: if setup is 0 or ff then there was no response from module
     uint8_t rf_setup = 0;
     nrf24_read_register_buf(iRF_BANK0_RF_SETUP, &rf_setup, 1);
-    if(rf_setup == 0 && rf_setup == 0xff){
-        int error = 1;
-    }
-
 
 #if 0
     //Dynamic length configurations:
@@ -423,33 +424,11 @@ static void radio_settings()
 static void set_rx_tx_mode()
 {
     if (mode=='r') {
-        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
-        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-        // turn on irq for receiver; turn off irq for transmitter
-        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
-        //TODO refactoring//
-        nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
-        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3f);
-        // start listening
-        delay_us(10);
-        nrf24_ce_set(HIGH);
-        delay_us(210);
+        power_on_rx();
     }
     else {
-        //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
-        //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-        //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
-        //TODO refactoring//
-        nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
-        //SPI_RW_Reg(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG, 0x3E);
-        delay_us(10);
+        power_on_tx();
     }
-}
-
-static void init_io()
-{
-    nrf24_ce_set(LOW);
-    nrf24_csn_set(HIGH);
 }
 
 /**************************************************
@@ -486,7 +465,6 @@ static void se8r01_powerup()
 
     //Setup RF channel TODO: check necessity
     nrf24_write_register(iRF_BANK0_RF_CH, RF_CHANNEL);
-
 
     ///RF_SETUP
     //Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
@@ -666,28 +644,32 @@ static void power_off()
 
 static void power_on_tx()
 {
-    uint8_t config = 0;
-    uint8_t power_on_tx_mask = 0xff & (0 << PWR_UP) | (0 << PRIM_RX);
     nrf24_ce_set(LOW);
     //CONFIG
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
     //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
-    nrf24_read_register_buf(iRF_BANK0_CONFIG, &config, 1);
-    nrf24_write_register(iRF_BANK0_CONFIG, config | power_on_tx_mask);
-    HAL_Delay(5);
-    //delay_us(150);
+    //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
+    //TODO refactoring//
+    nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
+    delay_us(10);
 }
 
 static void power_on_rx()
 {
+    //turn on irq for receiver; turn off irq for transmitter
+    //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
+    //TODO refactoring//
+
     nrf24_ce_set(LOW);
+
     //CONFIG
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
     //Reserved | MASK_RX_DR | MASK_TX_DS | MASK_MAX_RT | EN_CRC | CRCO  | PWR_UP | PRIM_RX |
     nrf24_write_register(iRF_BANK0_CONFIG, (0 << MASK_RX_DR) | (1 << MASK_TX_DS) | (1 << MASK_MAX_RT) | (1 << EN_CRC) | (0 << CRCO)  | (1 << PWR_UP) | (1 << PRIM_RX) );
-    delay_us(2);
+    // start listening
+    delay_us(10);
     nrf24_ce_set(HIGH);
-    delay_us(150);
+    delay_us(210);
 }
 
 // Clocks only one byte into the given nrf24 register //

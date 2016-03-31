@@ -126,7 +126,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
     //TODO: setting the timer. merge with TIM_Init
-      HAL_TIM_Base_Start(&htim2);
+    HAL_TIM_Base_Start(&htim2);
     nrf24_setup_gpio();
 
   /* USER CODE END 2 */
@@ -157,8 +157,8 @@ int main(void)
         }
 #endif
         HAL_Delay (1000);
-    CDC_Transmit_FS(buf, strlen(buf));
-    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+        CDC_Transmit_FS(buf, strlen(str));
+        HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -247,9 +247,9 @@ void MX_TIM2_Init(void)
 
 }
 
-/** Configure pins as
-        * Analog
-        * Input
+/** Configure pins as 
+        * Analog 
+        * Input 
         * Output
         * EVENT_OUT
         * EXTI
@@ -343,10 +343,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
