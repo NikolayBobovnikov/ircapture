@@ -1,6 +1,6 @@
 Configuration	stm32f103c8t6
-STM32CubeMX 	4.11.0
-Date	01/17/2016
+STM32CubeMX 	4.14.0
+Date	03/31/2016
 MCU	STM32F103C8Tx
 
 
@@ -11,36 +11,32 @@ RCC	Crystal/Ceramic Resonator	RCC_OSC_OUT	PD1-OSC_OUT
 SPI1	Full-Duplex Master	SPI1_MISO	PA6
 SPI1	Full-Duplex Master	SPI1_MOSI	PA7
 SPI1	Full-Duplex Master	SPI1_SCK	PA5
-SPI2	Full-Duplex Slave	SPI2_MISO	PB14
-SPI2	Full-Duplex Slave	SPI2_MOSI	PB15
-SPI2	Full-Duplex Slave	SPI2_SCK	PB13
 SYS	Serial-Wire	SYS_JTCK-SWCLK	PA14
 SYS	Serial-Wire	SYS_JTMS-SWDIO	PA13
-TIM3	Internal Clock	TIM3_VS_ClockSourceINT	VP_TIM3_VS_ClockSourceINT
-TIM4	Internal Clock	TIM4_VS_ClockSourceINT	VP_TIM4_VS_ClockSourceINT
-TIM4	PWM Generation CH1	TIM4_CH1	PB6
-USART1	Asynchronous	USART1_RX	PA10
-USART1	Asynchronous	USART1_TX	PA9
+SYS	SysTick	SYS_VS_Systick	VP_SYS_VS_Systick
+TIM2	Internal Clock	TIM2_VS_ClockSourceINT	VP_TIM2_VS_ClockSourceINT
+USB	Device (FS)	USB_DM	PA11
+USB	Device (FS)	USB_DP	PA12
 
 
 
 Pin Nb	PINs	FUNCTIONs	LABELs
+2	PC13-TAMPER-RTC	GPIO_Output	LED_ONBOARD
 5	PD0-OSC_IN	RCC_OSC_IN	
 6	PD1-OSC_OUT	RCC_OSC_OUT	
-12	PA2	GPIO_Output	
-13	PA3	GPIO_Input	
-14	PA4	GPIO_Output	
+10	PA0-WKUP	GPIO_Output	
+11	PA1	GPIO_Output	
+14	PA4	GPIO_EXTI4	NRF_IRQ
 15	PA5	SPI1_SCK	
 16	PA6	SPI1_MISO	
 17	PA7	SPI1_MOSI	
-26	PB13	SPI2_SCK	
-27	PB14	SPI2_MISO	
-28	PB15	SPI2_MOSI	
-30	PA9	USART1_TX	
-31	PA10	USART1_RX	
+18	PB0	GPIO_Output	DBG_OUT_1
+19	PB1	GPIO_Output	DBG_OUT_2
+32	PA11	USB_DM	
+33	PA12	USB_DP	
 34	PA13	SYS_JTMS-SWDIO	
 37	PA14	SYS_JTCK-SWCLK	
-42	PB6	TIM4_CH1	
+39	PB3	GPIO_Output	LED_DBG
 
 
 
@@ -48,9 +44,9 @@ SOFTWARE PROJECT
 
 Project Settings : 
 Project Name : stm32f103c8t6
-Project Folder : C:\home\dev\auvir\auvir_embed\mocap\receiver\stm32f103
-Toolchain / IDE : SW4STM32
-Firmware Package Name and Version : STM32Cube FW_F1 V1.2.0
+Project Folder : D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\usbdevice\stm32f103
+Toolchain / IDE : EWARM
+Firmware Package Name and Version : STM32Cube FW_F1 V1.3.1
 
 
 Code Generation Settings : 
