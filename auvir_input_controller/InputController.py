@@ -42,18 +42,17 @@ def serial_ports():
         except (OSError, serial.SerialException):
             pass
     return result
-
-
-
-print ("List all devices...")
-for dev in usb.core.find(find_all=True):
-    print ("Device:", dev.filename)
-    print ("  idVendor: %d (%s)" % (dev.idVendor, hex(dev.idVendor)))
-    print ("  idProduct: %d (%s)" % (dev.idProduct, hex(dev.idProduct)))
     
     
 if __name__ == "__main__":
     
+    print ("List all devices...")
+    for dev in usb.core.find(find_all=True):
+        print ("Device:", dev.filename)
+        print ("  idVendor: %d (%s)" % (dev.idVendor, hex(dev.idVendor)))
+        print ("  idProduct: %d (%s)" % (dev.idProduct, hex(dev.idProduct)))
+    
+    print ("List all serial ports...")
     ports = serial_ports()
     print(ports)
     
