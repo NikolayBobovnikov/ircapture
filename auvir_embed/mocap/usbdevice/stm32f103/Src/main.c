@@ -140,10 +140,16 @@ int main(void)
 
     setup();
 
+    //wait_for_usb_device_is_configured();
+
+    //TODO: cleanup
     uint8_t buf[32] = {0};
     const char * str = "Hello!";
     memcpy(buf, str, strlen(str));
 
+    //wait for usb device is configured
+    while(!is_usb_configured());
+    
     while (1)
     {
 #if 1
@@ -156,7 +162,7 @@ int main(void)
             HAL_Delay(30);
         }
 #endif
-        HAL_Delay (1000);
+        HAL_Delay (100);
         CDC_Transmit_FS(buf, strlen(str));
         HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
   /* USER CODE END WHILE */

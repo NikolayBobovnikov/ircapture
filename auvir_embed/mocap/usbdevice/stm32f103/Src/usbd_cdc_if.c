@@ -290,6 +290,16 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+bool is_usb_configured()
+{
+    if(hUsbDevice_0 == NULL){
+        return false;
+    }
+    if(hUsbDevice_0->dev_state != USBD_STATE_CONFIGURED){
+        return false;
+    }
+    return true;
+}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**
@@ -301,4 +311,6 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   */ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+
 
