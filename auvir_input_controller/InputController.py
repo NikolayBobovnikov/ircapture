@@ -47,7 +47,7 @@ def serial_ports():
 	
 def process_serial_device(device):
     if cdc_device.isOpen():
-        data_to_write = "Hello!"
+        data_to_write = b"Hello!"
         cdc_device.write(data_to_write)
         cdc_device.write(data_to_write)
         #line = cdc_device.read(7)
@@ -79,8 +79,8 @@ if __name__ == "__main__":
     
     #Get correct port name. Need to identify among others if there are many
     #just use first port from the list, using one of 2 options below. TODO: fix that, determine required port somehow
-    #port_name = port_names[0]
-    port_name = ports[0].device
+    port_name = port_names[0]
+    #port_name = ports[0].device
     print(port_name)
     
      #Tried with and without the last 3 parameters, and also at 1Mbps, same happens.
