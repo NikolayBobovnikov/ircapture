@@ -100,6 +100,10 @@ typedef struct
 
 USART_msg_t uart_msg;
 
+
+// USB buffer
+extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
+
 const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
@@ -162,9 +166,9 @@ int main(void)
             HAL_Delay(30);
         }
 #endif
-        HAL_Delay (100);
-        CDC_Transmit_FS(buf, strlen(str));
-        HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+        //HAL_Delay (10);
+        //CDC_Transmit_FS(buf, strlen(str));
+        //HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */

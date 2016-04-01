@@ -700,27 +700,27 @@ static void nrf24_write_register_buf(uint8_t reg, uint8_t* value, uint8_t len)
 }
 
 
-/**************************************************
- * Function: SPI_RW();
- *
- * Description:
- * Writes one uint8_t to nRF24L01, and return the uint8_t read
- * from nRF24L01 during write, according to SPI protocol
- **************************************************/
+//
+// Function: SPI_RW();
+//
+// Description:
+// Writes one uint8_t to nRF24L01, and return the uint8_t read
+// from nRF24L01 during write, according to SPI protocol
+//
 static uint8_t SPI_RW(uint8_t tx)
 {
     uint8_t rx = 0;
     HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
     return rx;
 }
-/**************************************************/
 
-/**************************************************
- * Function: SPI_RW_Reg();
- *
- * Description:
- * Writes value 'value' to register 'reg'
-/**************************************************/
+
+//
+//  Function: SPI_RW_Reg();
+// 
+//  Description:
+//  Writes value 'value' to register 'reg'
+//
 static uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value)
 {
     uint8_t status;
@@ -732,14 +732,13 @@ static uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value)
 
     return(status);                   // return nRF24L01 status uint8_t
 }
-/**************************************************/
 
-/**************************************************
- * Function: SPI_Read();
- *
- * Description:
- * Read one uint8_t from nRF24L01 register, 'reg'
-/**************************************************/
+//
+//  Function: SPI_Read();
+// 
+//  Description:
+//  Read one uint8_t from nRF24L01 register, 'reg'
+//
 uint8_t SPI_Read(uint8_t reg)
 {
     uint8_t reg_val;
@@ -751,15 +750,14 @@ uint8_t SPI_Read(uint8_t reg)
 
     return(reg_val);               // return register value
 }
-/**************************************************/
 
-/**************************************************
- * Function: SPI_Read_Buf();
- *
- * Description:
- * Reads 'uint8_ts' #of uint8_ts from register 'reg'
- * Typically used to read RX payload, Rx/Tx address
-/**************************************************/
+//
+//  Function: SPI_Read_Buf();
+// 
+//  Description:
+//  Reads 'uint8_ts' #of uint8_ts from register 'reg'
+//  Typically used to read RX payload, Rx/Tx address
+//
 static uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 {
     uint8_t status,i;
@@ -778,13 +776,13 @@ static uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 }
 /**************************************************/
 
-/**************************************************
- * Function: SPI_Write_Buf();
- *
- * Description:
- * Writes contents of buffer '*pBuf' to nRF24L01
- * Typically used to write TX payload, Rx/Tx address
-/**************************************************/
+//
+//  Function: SPI_Write_Buf();
+// 
+//  Description:
+//  Writes contents of buffer '*pBuf' to nRF24L01
+//  Typically used to write TX payload, Rx/Tx address
+//
 static uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 {
     uint8_t status,i;
@@ -798,7 +796,7 @@ static uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
     nrf24_csn_set(HIGH);                   // Set CSN high again
     return(status);                  // return nRF24L01 status uint8_t
 }
-/**************************************************/
+
 
 void nrf_without_this_interrupts_not_work()
 {
