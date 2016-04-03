@@ -152,13 +152,13 @@ int main(void)
     memcpy(buf, str, strlen(str));
 
     //wait for usb device is configured
-    while(!is_usb_configured());
-    
+    //while(!is_usb_configured());
+
     while (1)
     {
 #if 1
         if(is_receiver){
-            //RXX() - this is called on IRQ
+            //RXX();// - this is called on IRQ
             nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
@@ -166,7 +166,7 @@ int main(void)
             HAL_Delay(30);
         }
 #endif
-        //HAL_Delay (10);
+        //HAL_Delay (100);
         //CDC_Transmit_FS(buf, strlen(str));
         //HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
   /* USER CODE END WHILE */
@@ -257,9 +257,9 @@ void MX_TIM2_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -282,7 +282,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, DBG_OUT_1_Pin|DBG_OUT_2_Pin|LED_DBG_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, DBG_OUT_2_Pin|LED_DBG_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_ONBOARD_Pin */
   GPIO_InitStruct.Pin = LED_ONBOARD_Pin;
@@ -302,15 +302,15 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(NRF_IRQ_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DBG_OUT_1_Pin DBG_OUT_2_Pin LED_DBG_Pin */
-  GPIO_InitStruct.Pin = DBG_OUT_1_Pin|DBG_OUT_2_Pin|LED_DBG_Pin;
+  /*Configure GPIO pins : DBG_OUT_2_Pin LED_DBG_Pin */
+  GPIO_InitStruct.Pin = DBG_OUT_2_Pin|LED_DBG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 }
 
@@ -353,10 +353,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -309,5 +309,3 @@ bool is_usb_configured()
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
-
-

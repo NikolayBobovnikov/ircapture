@@ -135,7 +135,6 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-  debug_init_gpio();
   init_beamer_channels_gpio();
   HAL_TIM_Base_Start_IT(phtim_envelop);      // envelop
   HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);  // pwm
@@ -143,8 +142,6 @@ int main(void)
   // TODO: this is requred. Refactor to avoid possible mistakes in the future
   // start usec delay timer
   HAL_TIM_Base_Start(&htim2);
-
-  init_gpio_led();
 
   bool is_transmitter = (mode =='t');
   bool is_receiver = !is_transmitter;
@@ -157,7 +154,7 @@ int main(void)
   while (1) {
     init_data();
     sensor_send_data();
-    RXX();
+    //RXX();
     //ReceiveDataToSend();
     //HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
 
