@@ -16,11 +16,12 @@ uint8_t gtemp[5];
 
 // Define a static TX address
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
-uint8_t rx_buf[TX_PLOAD_WIDTH] = {0}; // initialize value
+uint8_t rx_buf[TX_PLOAD_WIDTH] = {0};
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
 
 //===============  Function prototypes
 void delay_us(uint16_t delay);
+void nrf_receive_callback();
 
 static void nrf24_ce_set(GPIO_PinState state);
 static void nrf24_csn_set(GPIO_PinState state);
@@ -219,7 +220,7 @@ void setup()
     HAL_Delay(5);
 
     //TODO FIXME NOTE: Check below
-    se8r01_powerup();
+    //se8r01_powerup();
 
 
     //set EN_AA, EN_RXADDR, RF_CH (needless?), RF_SETUP (needless?), AW, SETUP_RETR, TX_ADDR, RX_ADDR_P*
@@ -248,7 +249,8 @@ void nrf_receive_handler()
             {
             }
             nrf24_write_register(iRF_BANK0_STATUS,0xff);
-            HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+
+            nrf_receive_callback();
         }
         else{
             nrf24_write_register(iRF_BANK0_STATUS,0xff);
@@ -292,9 +294,6 @@ void TXX()
     //By setting one of the MASK bits high, the corresponding IRQ source is disabled. By default all IRQ sources are enabled.
     //nrf24_write_register(iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
     //delay_us(200);
-
-    //const char* test_str = "HelloWireless!\0";
-    //memcpy(tx_buf, test_str, strlen(test_str));
 
     SPI_RW_Reg(iRF_CMD_FLUSH_TX,0);
     SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
@@ -717,7 +716,7 @@ static uint8_t SPI_RW(uint8_t tx)
 
 //
 //  Function: SPI_RW_Reg();
-// 
+//
 //  Description:
 //  Writes value 'value' to register 'reg'
 //
@@ -735,7 +734,7 @@ static uint8_t SPI_RW_Reg(uint8_t reg, uint8_t value)
 
 //
 //  Function: SPI_Read();
-// 
+//
 //  Description:
 //  Read one uint8_t from nRF24L01 register, 'reg'
 //
@@ -753,7 +752,7 @@ uint8_t SPI_Read(uint8_t reg)
 
 //
 //  Function: SPI_Read_Buf();
-// 
+//
 //  Description:
 //  Reads 'uint8_ts' #of uint8_ts from register 'reg'
 //  Typically used to read RX payload, Rx/Tx address
@@ -778,7 +777,7 @@ static uint8_t SPI_Read_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 
 //
 //  Function: SPI_Write_Buf();
-// 
+//
 //  Description:
 //  Writes contents of buffer '*pBuf' to nRF24L01
 //  Typically used to write TX payload, Rx/Tx address

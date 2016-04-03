@@ -47,11 +47,12 @@ def serial_ports():
 	
 def process_serial_device(device):
     if cdc_device.isOpen():
-        data_to_write = b"Hello!"
-        cdc_device.write(data_to_write)
-        cdc_device.write(data_to_write)
-        #line = cdc_device.read(7)
-        #print(line)
+        #data_to_write = b"Hello!"
+        #cdc_device.write(data_to_write)
+        #cdc_device.write(data_to_write)
+        for i in range(1,5):
+            line = cdc_device.read(7)
+            print(line)
             
             
 			

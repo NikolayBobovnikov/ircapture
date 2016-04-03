@@ -89,7 +89,10 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
 
-#define TIMER_DELAY_ARR_DIV 72
+void nrf_receive_callback();
+extern uint8_t rx_buf[TX_PLOAD_WIDTH];
+extern uint8_t tx_buf[TX_PLOAD_WIDTH];
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -170,6 +173,9 @@ int main(void)
             nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
+            const char* test_str = "HelloWireless!\0";
+            memcpy(tx_buf, test_str, strlen(test_str));
+
             TXX();
             HAL_Delay(30);
         }
@@ -455,7 +461,10 @@ void send_data_uart()
     msg.data = rx_data_frame;
 
 }
-
+void nrf_receive_callback()
+{
+    HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+}
 /*
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {

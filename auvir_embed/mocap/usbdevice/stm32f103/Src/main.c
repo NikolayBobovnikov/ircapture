@@ -74,7 +74,11 @@ static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
-#define TIMER_DELAY_ARR_DIV 72
+/// Interface with radio
+void nrf_receive_callback();
+extern uint8_t rx_buf[TX_PLOAD_WIDTH];
+extern uint8_t tx_buf[TX_PLOAD_WIDTH];
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -152,7 +156,7 @@ int main(void)
     memcpy(buf, str, strlen(str));
 
     //wait for usb device is configured
-    //while(!is_usb_configured());
+    while(!is_usb_configured());
 
     while (1)
     {
@@ -316,18 +320,14 @@ void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-/*
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void nrf_receive_callback()
 {
-    // handle tim2 event since it is delay event
-  if(htim->Instance == TIM2)
-  {
-      if(us_cnt > us_delay_value - 1){
-        HAL_TIM_Base_Stop_IT(&htim2);
-      }
-  }
+    HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+
+    if(is_usb_configured()){
+        CDC_Transmit_FS(&rx_buf[0], TX_PLOAD_WIDTH);
+    }
 }
-*/
 
 /* USER CODE END 4 */
 
