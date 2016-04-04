@@ -286,6 +286,10 @@ void setup_radio(NRF24_InitTypeDef* settings);
 void setup();
 void nrf_receive_handler();
 void nrf_without_this_interrupts_not_work();
+void nrf_ResetStatusIRQ(uint8_t flags);
+
+#define nrf_GetStatus() (SPI_Read(iRF_BANK0_STATUS))
+
 
 void RXX();
 void TXX();

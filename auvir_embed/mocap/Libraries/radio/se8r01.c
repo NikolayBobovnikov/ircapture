@@ -78,10 +78,11 @@ bool nrf24_is_data_ready()
 {
     // See note in getData() function - just checking RX_DR isn't good enough
     uint8_t status = SPI_Read(iRF_BANK0_STATUS);
+    uint8_t status2 = nrf_GetStatus();
 
     // We can short circuit on RX_DR, but if it's not set, we still need
     // to check the FIFO for any pending packets
-    if ( status & (1 << RX_DR) )
+    if ( status & status2 & (1 << RX_DR) )
     {
         return true;
     }
@@ -804,8 +805,9 @@ void nrf_ResetStatusIRQ(uint8_t flags) {
   delay_us (10);
   nrf24_csn_set(LOW);                  // Set CSN low, init SPI tranaction
   delay_us(10);
-  RF_WriteRegister(iRF_BANK0_STATUS, flags); /* reset all IRQ in status register */
+  nrf24_write_register(iRF_BANK0_STATUS, flags); /* reset all IRQ in status register */
   delay_us(10);
   nrf24_csn_set(HIGH);                  // Set CSN low, init SPI tranaction
   delay_us(10);
 }
+
