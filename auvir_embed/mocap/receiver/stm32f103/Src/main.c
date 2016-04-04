@@ -164,10 +164,11 @@ int main(void)
     bool is_receiver = !is_transmitter;
 
     setup();
-
+    nrf_without_this_interrupts_not_work();
+    HAL_Delay(100);
     while (1)
     {
-#if 1
+#if 0
         if(is_receiver){
             //RXX() - this is called on IRQ
             nrf_without_this_interrupts_not_work();
