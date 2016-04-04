@@ -248,12 +248,12 @@ void nrf_receive_handler()
             for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
             {
             }
-            nrf24_write_register(iRF_BANK0_STATUS,0xff);
-
-            nrf_receive_callback();
+            //nrf24_write_register(iRF_BANK0_STATUS,0xff);
+            //SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
+            //nrf_receive_callback();
         }
         else{
-            nrf24_write_register(iRF_BANK0_STATUS,0xff);
+            //nrf24_write_register(iRF_BANK0_STATUS,0xff);
         }
     }
 
