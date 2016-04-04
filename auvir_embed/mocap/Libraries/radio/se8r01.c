@@ -78,11 +78,9 @@ bool nrf24_is_data_ready()
 {
     // See note in getData() function - just checking RX_DR isn't good enough
     uint8_t status = SPI_Read(iRF_BANK0_STATUS);
-    uint8_t status2 = nrf_GetStatus();
-
     // We can short circuit on RX_DR, but if it's not set, we still need
     // to check the FIFO for any pending packets
-    if ( status & status2 & (1 << RX_DR) )
+    if ( status & (1 << RX_DR) )
     {
         return true;
     }
@@ -241,17 +239,22 @@ void nrf_receive_handler()
 {
     //TODO: check mode == 'r'
     if(mode == 'r'){
+        uint8_t status = nrf_GetStatus();
+
         if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
         {
             SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
             nrf24_write_register(FLUSH_RX,0);
             // clear RX_FIFO. TODO: verify
             nrf_ResetStatusIRQ(1<<RX_DR);
+            delay_us (10);
+            status = nrf_GetStatus();
+            int a = 0;
             //SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
-            //nrf_receive_callback();
+            nrf_receive_callback();
         }
         else{
-            //nrf24_write_register(iRF_BANK0_STATUS,0xff);
+            nrf24_write_register(iRF_BANK0_STATUS,0xff);
         }
     }
 
@@ -281,7 +284,6 @@ void RXX()
         delay_us(10);      //read reg too close after irq low not good
         nrf_receive_handler();
         delay_us(10);      //read reg too close after irq low not good
-
     }
 }
 
