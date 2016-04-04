@@ -245,10 +245,7 @@ void nrf_receive_handler()
             SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
             nrf24_write_register(FLUSH_RX,0);
             // clear RX_FIFO. TODO: verify
-            for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
-            {
-            }
-            //nrf24_write_register(iRF_BANK0_STATUS,0xff);
+            nrf24_write_register(iRF_BANK0_STATUS,0xff);
             //SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
             //nrf_receive_callback();
         }
@@ -282,6 +279,8 @@ void RXX()
     if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == LOW){
         delay_us(10);      //read reg too close after irq low not good
         nrf_receive_handler();
+        delay_us(10);      //read reg too close after irq low not good
+
     }
 }
 
