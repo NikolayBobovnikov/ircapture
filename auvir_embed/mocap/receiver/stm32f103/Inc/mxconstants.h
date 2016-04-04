@@ -45,8 +45,8 @@
 #define LED_ONBOARD_GPIO_Port GPIOC
 #define DBG_OUT_1_Pin GPIO_PIN_4
 #define DBG_OUT_1_GPIO_Port GPIOA
-#define NRF_IRQ_Pin_Pin GPIO_PIN_0
-#define NRF_IRQ_Pin_GPIO_Port GPIOB
+#define NRF24_IRQ_Pin GPIO_PIN_0
+#define NRF24_IRQ_GPIO_Port GPIOB
 #define DBG_OUT_2_Pin GPIO_PIN_1
 #define DBG_OUT_2_GPIO_Port GPIOB
 #define LED_DBG_Pin GPIO_PIN_3

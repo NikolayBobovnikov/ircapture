@@ -279,7 +279,7 @@ void nrf_receive_handler()
 
 void RXX()
 {
-    if( HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN) == LOW){
+    if( HAL_GPIO_ReadPin(NRF24_IRQ_GPIO_Port,NRF24_IRQ_Pin) == LOW){
         delay_us(10);      //read reg too close after irq low not good
         nrf_receive_handler();
     }
@@ -320,7 +320,7 @@ void TXX()
     //==============
 
     TransmissionStatus tx_status = nrf24_last_messageStatus();
-    GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_PORT,NRF24_IRQ_PIN);
+    GPIO_PinState irq = HAL_GPIO_ReadPin(NRF24_IRQ_GPIO_Port,NRF24_IRQ_Pin);
     uint8_t status = SPI_Read(iRF_BANK0_STATUS);
 
     //TODO: this is for debug

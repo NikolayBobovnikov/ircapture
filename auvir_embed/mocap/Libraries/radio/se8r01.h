@@ -239,10 +239,10 @@
 #endif
 
 // NRF IRQ pin//
-#ifndef NRF24_IRQ_PIN
-#define NRF24_IRQ_PORT   GPIOB
-#define NRF24_IRQ_PIN    GPIO_PIN_0
-#endif
+//#ifndef NRF24_IRQ_PIN
+//#define NRF24_IRQ_PORT   GPIOB
+//#define NRF24_IRQ_PIN    GPIO_PIN_0
+//#endif
 
 #define LOW GPIO_PIN_RESET
 #define HIGH GPIO_PIN_SET
