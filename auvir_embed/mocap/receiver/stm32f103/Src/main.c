@@ -164,14 +164,14 @@ int main(void)
     bool is_receiver = !is_transmitter;
 
     setup();
-    nrf_without_this_interrupts_not_work();
+    //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
     while (1)
     {
-#if 0
+#if 1
         if(is_receiver){
-            //RXX() - this is called on IRQ
-            nrf_without_this_interrupts_not_work();
+            RXX();// - this is called on IRQ
+            //nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
             const char* test_str = "HelloWireless!\0";
@@ -397,7 +397,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : NRF_IRQ_Pin_Pin */
   GPIO_InitStruct.Pin = NRF_IRQ_Pin_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;//GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(NRF_IRQ_Pin_GPIO_Port, &GPIO_InitStruct);
 
@@ -408,8 +408,8 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+  //HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  //HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 }
 

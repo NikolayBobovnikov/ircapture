@@ -283,7 +283,6 @@ void RXX()
         delay_us(10);      //read reg too close after irq low not good
         nrf_receive_handler();
     }
-
 }
 
 void TXX()
