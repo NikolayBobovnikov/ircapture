@@ -706,18 +706,14 @@ static inline void send_dataready_signal()
 static inline void dbg_pulse_1()
 {
 #ifdef DEBUG
-    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_SET);
-    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7,GPIO_PIN_RESET);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    HAL_GPIO_TogglePin(DBG_OUT_1_GPIO_Port, DBG_OUT_1_Pin);
 #endif//DEBUG
 }
 
 static inline void dbg_pulse_2()
 {
 #ifdef DEBUG
-    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET);
-    //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+    HAL_GPIO_TogglePin(DBG_OUT_2_GPIO_Port, DBG_OUT_2_Pin);
 #endif
 }
 
