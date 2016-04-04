@@ -245,7 +245,7 @@ void nrf_receive_handler()
             SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
             nrf24_write_register(FLUSH_RX,0);
             // clear RX_FIFO. TODO: verify
-            nrf24_write_register(iRF_BANK0_STATUS,0xff);
+            nrf_ResetStatusIRQ(1<<RX_DR);
             //SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
             //nrf_receive_callback();
         }
@@ -798,4 +798,14 @@ static uint8_t SPI_Write_Buf(uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 void nrf_without_this_interrupts_not_work()
 {
     SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
+}
+
+void nrf_ResetStatusIRQ(uint8_t flags) {
+  delay_us (10);
+  nrf24_csn_set(LOW);                  // Set CSN low, init SPI tranaction
+  delay_us(10);
+  RF_WriteRegister(iRF_BANK0_STATUS, flags); /* reset all IRQ in status register */
+  delay_us(10);
+  nrf24_csn_set(HIGH);                  // Set CSN low, init SPI tranaction
+  delay_us(10);
 }
