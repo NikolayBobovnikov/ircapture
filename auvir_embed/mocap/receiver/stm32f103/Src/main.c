@@ -166,6 +166,11 @@ int main(void)
     setup();
     //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
+
+    const char* test_str = "HelloWireless!\0";
+    memcpy(&tx_buf[1], test_str, strlen(test_str));
+    uint8_t salt = 0;
+
     while (1)
     {
 #if 1
@@ -174,8 +179,8 @@ int main(void)
             //nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
-            const char* test_str = "HelloWireless!\0";
-            memcpy(tx_buf, test_str, strlen(test_str));
+            memcpy(&tx_buf[0], &salt, 1);
+            salt++;
 
             TXX();
             HAL_Delay(30);

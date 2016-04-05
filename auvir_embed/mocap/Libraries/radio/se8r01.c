@@ -239,23 +239,26 @@ void nrf_receive_handler()
 {
     //TODO: check mode == 'r'
     if(mode == 'r'){
-        uint8_t status = nrf_GetStatus();
 
-        if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
+    	// volatile is used to prevent optimizing out
+        volatile uint8_t status = nrf_GetStatus();
+
+        //if(nrf24_is_data_ready())
+        if ( status & (1 << RX_DR) )
         {
-            SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
-            nrf24_write_register(FLUSH_RX,0);
+        	 // read playload to rx_buf
+            SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);
+            // TODO: flushing breaks rx stuff
+            //nrf24_write_register(FLUSH_RX,0);
             // clear RX_FIFO. TODO: verify
-            nrf_ResetStatusIRQ(1<<RX_DR);
-            delay_us (10);
-            status = nrf_GetStatus();
-            int a = 0;
-            //SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
             nrf_receive_callback();
         }
         else{
-            nrf24_write_register(iRF_BANK0_STATUS,0xff);
+
         }
+
+        // Clear IRQ bits
+        nrf24_write_register(iRF_BANK0_STATUS,status);
     }
 
     /* NOT WORKING
@@ -280,12 +283,13 @@ void nrf_receive_handler()
 
 void RXX()
 {
+
     if( HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0) == LOW){
         delay_us(10);      //read reg too close after irq low not good
         nrf_receive_handler();
-        delay_us(10);      //read reg too close after irq low not good
     }
 }
+
 
 void TXX()
 {
