@@ -76,6 +76,7 @@ static void MX_TIM2_Init(void);
 
 /// Interface with radio
 void nrf_receive_callback();
+bool is_registration_request();
 extern uint8_t rx_buf[TX_PLOAD_WIDTH];
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 
@@ -111,6 +112,16 @@ extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
+typedef enum UsbDeviceStates{
+    USBState_None,
+    USBState_Listening,
+    USBState_RegistrationOpen,
+    USBState_RegistrationClosed,
+    USBState_N
+}UsbDeviceStates;
+
+UsbDeviceStates usb_state = USBState_Listening;
+
 int main(void)
 {
 
@@ -142,13 +153,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-    // use identical bytes
-    bool is_transmitter = (mode =='t');
-    bool is_receiver = !is_transmitter;
-
     setup();
-
-    //wait_for_usb_device_is_configured();
 
     //TODO: cleanup
     uint8_t buf[32] = {0};
@@ -158,21 +163,25 @@ int main(void)
     //wait for usb device is configured
     while(!is_usb_configured());
 
+
     while (1)
     {
-#if 1
-        if(is_receiver){
-            RXX();// - this is called on IRQ
-            //nrf_without_this_interrupts_not_work();
-        }
-        else if(is_transmitter){
-            TXX();
-            HAL_Delay(30);
-        }
-#endif
         //HAL_Delay (100);
         //CDC_Transmit_FS(buf, strlen(str));
         //HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+
+        switch(usb_state){
+            case USBState_Listening:
+                RXX();
+                break;
+            case USBState_RegistrationOpen:
+                break;
+            case USBState_RegistrationClosed:
+                break;
+            default:
+                break;
+        }
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -324,9 +333,23 @@ void nrf_receive_callback()
 {
     HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
 
-    if(is_usb_configured()){
-        CDC_Transmit_FS(&rx_buf[0], TX_PLOAD_WIDTH);
+    if(is_registration_request()){
+        if(is_usb_configured()){
+            CDC_Transmit_FS(&rx_buf[0], TX_PLOAD_WIDTH);
+        }
     }
+
+
+}
+
+bool is_registration_request()
+{
+    //TODO
+    if(rx_buf[0] != 2){
+        return true;
+    }
+    return false;
+
 }
 
 /* USER CODE END 4 */
