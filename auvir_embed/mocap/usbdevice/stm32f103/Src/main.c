@@ -162,8 +162,8 @@ int main(void)
     {
 #if 1
         if(is_receiver){
-            //RXX();// - this is called on IRQ
-            nrf_without_this_interrupts_not_work();
+            RXX();// - this is called on IRQ
+            //nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
             TXX();
