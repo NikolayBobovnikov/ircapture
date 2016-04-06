@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-
 extern TIM_HandleTypeDef htim2;
 
 void delay_us(uint16_t delay)

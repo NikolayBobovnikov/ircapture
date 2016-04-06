@@ -29,13 +29,6 @@ void sensorhub_process_states()
     }
 }
 
-void main_loop(){
-
-    sensorhub_receive_uart_msg();
-    sensorhub_send_msg();
-
-}
-
 void sensorhub_receive_uart_msg()
 {
     //TODO

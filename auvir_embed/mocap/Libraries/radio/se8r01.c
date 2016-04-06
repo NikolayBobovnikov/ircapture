@@ -2,6 +2,7 @@
 
 #include "stm32f1xx_hal.h"
 #include "se8r01.h"
+#include "common.h"
 
 ///
 /// on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
@@ -15,13 +16,15 @@ extern uint16_t GPIO_LED_PIN;
 uint8_t gtemp[5];
 
 // Define a static TX address
+const uint8_t BROADCAST_DEFAULT_ADDRESS[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0};
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
+RadioMessage rx_message = {0};
+RadioMessage tx_message = {0};
+
 
 //===============  Function prototypes
-void delay_us(uint16_t delay);
-void nrf_receive_callback();
 
 static void nrf24_ce_set(GPIO_PinState state);
 static void nrf24_csn_set(GPIO_PinState state);
@@ -237,48 +240,25 @@ void setup()
 
 void nrf_receive_handler()
 {
-    //TODO: check mode == 'r'
-    if(mode == 'r'){
+    // volatile is used to prevent optimizing out
+    volatile uint8_t status = nrf_GetStatus();
 
-    	// volatile is used to prevent optimizing out
-        volatile uint8_t status = nrf_GetStatus();
-
-        //if(nrf24_is_data_ready())
-        if ( status & (1 << RX_DR) )
-        {
-        	 // read playload to rx_buf
-            SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);
-            // TODO: flushing breaks rx stuff
-            //nrf24_write_register(FLUSH_RX,0);
-            // clear RX_FIFO. TODO: verify
-            nrf_receive_callback();
-        }
-        else{
-
-        }
-
-        // Clear IRQ bits
-        nrf24_write_register(iRF_BANK0_STATUS,status);
-    }
-
-    /* NOT WORKING
-    if(nrf24_is_data_ready())                                // if receive data ready (TX_DS) interrupt
-    {
-        SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);    // read playload to rx_buf
-        SPI_RW_Reg(FLUSH_RX,0);
-        // clear RX_FIFO
-        for(uint8_t i=0; i<TX_PLOAD_WIDTH; i++)
-        {
-        }
-        SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
-        //TODO: this is for debug
-        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+    //if(nrf24_is_data_ready())
+    if ( status & (1 << RX_DR) ){
+         // read playload to rx_buf
+        //SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);
+    	SPI_Read_Buf(R_RX_PAYLOAD, (uint8_t*)&rx_message, TX_PLOAD_WIDTH);
+        // TODO: flushing breaks rx stuff
+        //nrf24_write_register(FLUSH_RX,0);
+        // clear RX_FIFO. TODO: verify
+    	status = nrf_GetStatus();
+        nrf_receive_callback();
     }
     else{
 
-        SPI_RW_Reg(iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
     }
-    */
+    // Clear IRQ bits
+    nrf24_write_register(iRF_BANK0_STATUS,status);
 }
 
 void RXX()
@@ -290,7 +270,6 @@ void RXX()
     }
 }
 
-
 void TXX()
 {
     //power on
@@ -301,7 +280,8 @@ void TXX()
     //delay_us(200);
 
     SPI_RW_Reg(iRF_CMD_FLUSH_TX,0);
-    SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
+    //SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
+    SPI_Write_Buf(iRF_CMD_WR_TX_PLOAD,(uint8_t*)&tx_message,TX_PLOAD_WIDTH);
 
     //start transmission by toggling SE high for more than 10 us
     nrf24_ce_set(HIGH);

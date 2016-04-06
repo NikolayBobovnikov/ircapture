@@ -92,6 +92,8 @@ void send_data_uart();
 void nrf_receive_callback();
 extern uint8_t rx_buf[TX_PLOAD_WIDTH];
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
+extern RadioMessage rx_message;
+extern RadioMessage tx_message;
 
 /* USER CODE END PFP */
 
@@ -118,7 +120,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 'r'; // 't'
+const char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -169,7 +171,19 @@ int main(void)
 
     const char* test_str = "HelloWireless!\0";
     memcpy(&tx_buf[1], test_str, strlen(test_str));
-    uint8_t salt = 0;
+
+
+#define RM_SyncSensor       6 // 1 if sync signal for sensor, 0 otherwise
+#define RM_SyncBeamer       5 // 1 if sync signal for beamer, 0 otherwise
+#define RM_SendSensorData   4 // 1 if "is sensor data", 0 otherwise
+#define RM_SendRegisterReq  3 // 1 if "is registration request", 0 otherwise
+#define RM_WhoAmI_Sensor    2 // 1 for Sensor, 0 otherwise
+#define RM_WhoAmI_Beamer    1 // 1 for Beamer, 0 otherwise
+#define RM_WhoAmI_UsbDevice 0 // 1 if this is usbdevice, 0 otherwise
+
+    tx_message.type = (1 << RM_WhoAmI_Sensor) | (1 << RM_SendSensorData);
+    memcpy(&(tx_message.data), test_str, strlen(test_str));
+
 
     while (1)
     {
@@ -179,8 +193,8 @@ int main(void)
             //nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
-            memcpy(&tx_buf[0], &salt, 1);
-            salt++;
+            //memcpy(&tx_buf[0], &salt, 1);
+            //salt++;
 
             TXX();
             HAL_Delay(30);

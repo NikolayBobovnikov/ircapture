@@ -137,7 +137,7 @@ typedef struct MCU_PIN{
 void init_data();
 void sensor_send_data();
 void transmit_handler();
-void  init_beamer_channels_gpio();
+void init_beamer_channels_gpio();
 
 // main functions used in timer interrupt handlers
 void irreceiver_timer_prob_handler(); // for update timer

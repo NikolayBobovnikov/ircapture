@@ -42,6 +42,7 @@
 #include "infrared.h"
 #include "usbd_cdc_if.h"
 #include "common.h"
+#include "mocap_device.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -73,13 +74,6 @@ static void MX_TIM2_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-
-/// Interface with radio
-void nrf_receive_callback();
-bool is_registration_request();
-extern uint8_t rx_buf[TX_PLOAD_WIDTH];
-extern uint8_t tx_buf[TX_PLOAD_WIDTH];
-
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -108,19 +102,10 @@ USART_msg_t uart_msg;
 
 // USB buffer
 extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
+extern UsbDeviceStates usb_state;
 
 const char mode = 'r'; // 't'
 /* USER CODE END 0 */
-
-typedef enum UsbDeviceStates{
-    USBState_None,
-    USBState_Listening,
-    USBState_RegistrationOpen,
-    USBState_RegistrationClosed,
-    USBState_N
-}UsbDeviceStates;
-
-UsbDeviceStates usb_state = USBState_Listening;
 
 int main(void)
 {
@@ -163,6 +148,7 @@ int main(void)
     //wait for usb device is configured
     while(!is_usb_configured());
 
+    usb_state = USBState_Registration;
 
     while (1)
     {
@@ -170,17 +156,8 @@ int main(void)
         //CDC_Transmit_FS(buf, strlen(str));
         //HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
 
-        switch(usb_state){
-            case USBState_Listening:
-                RXX();
-                break;
-            case USBState_RegistrationOpen:
-                break;
-            case USBState_RegistrationClosed:
-                break;
-            default:
-                break;
-        }
+        //listening...
+        RXX();
 
   /* USER CODE END WHILE */
 
@@ -328,30 +305,6 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-void nrf_receive_callback()
-{
-    HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-
-    if(is_registration_request()){
-        if(is_usb_configured()){
-            CDC_Transmit_FS(&rx_buf[0], TX_PLOAD_WIDTH);
-        }
-    }
-
-
-}
-
-bool is_registration_request()
-{
-    //TODO
-    if(rx_buf[0] != 2){
-        return true;
-    }
-    return false;
-
-}
-
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT
