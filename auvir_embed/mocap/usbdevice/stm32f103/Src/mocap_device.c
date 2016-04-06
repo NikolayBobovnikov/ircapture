@@ -41,29 +41,15 @@ uint32_t delay_after_sync_signal = 0;
 
 void process_sensor_data()
 {
-    switch(usb_state){
-        case USBState_ReceiveingData:
-        {
-            // process data
-            // TODO
-            HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-            if(is_usb_configured()){
-                CDC_Transmit_FS(&(rx_message.data), TX_PLOAD_WIDTH);
-            }
-            break;
+    if(is_sensor_registration_complete && is_beamer_registration_complete){
+        // process data
+        // TODO
+        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+        if(is_usb_configured()){
+            CDC_Transmit_FS(&(rx_message.data), TX_PLOAD_WIDTH);
         }
-        case USBState_Registration:
-        {
-            // do nothing (ignore data)
-        	HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-        	            if(is_usb_configured()){
-        	                CDC_Transmit_FS(&(rx_message.data), TX_PLOAD_WIDTH);
-        	            }
-            break;
-        }
-        default:
-            break;
     }
+
 }
 void process_registration_request()
 {

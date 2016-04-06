@@ -173,7 +173,7 @@ static void nrf24_ce_set(GPIO_PinState state)
 static void nrf24_csn_set(GPIO_PinState state)
 {
     assert_param(state == LOW || state == HIGH);
-    HAL_GPIO_WritePin(NRF24_CSN_PORT,NRF24_CSN_PIN, state);
+    HAL_GPIO_WritePin(NRF24_CSN_PORT, NRF24_CSN_PIN, state);
     if(state == HIGH){
         delay_us(100);
     }
@@ -247,11 +247,11 @@ void nrf_receive_handler()
     if ( status & (1 << RX_DR) ){
          // read playload to rx_buf
         //SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);
-    	SPI_Read_Buf(R_RX_PAYLOAD, (uint8_t*)&rx_message, TX_PLOAD_WIDTH);
+        SPI_Read_Buf(R_RX_PAYLOAD, (uint8_t*)&rx_message, TX_PLOAD_WIDTH);
         // TODO: flushing breaks rx stuff
         //nrf24_write_register(FLUSH_RX,0);
         // clear RX_FIFO. TODO: verify
-    	status = nrf_GetStatus();
+        status = nrf_GetStatus();
         nrf_receive_callback();
     }
     else{

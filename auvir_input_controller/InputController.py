@@ -51,7 +51,7 @@ def process_serial_device(device):
         #cdc_device.write(data_to_write)
         #cdc_device.write(data_to_write)
         for i in range(1,5):
-            line = cdc_device.read(7)
+            line = cdc_device.read(32)
             print(line)
             
             
