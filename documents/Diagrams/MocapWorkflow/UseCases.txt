@@ -1,0 +1,9 @@
+1. Starting to work
+	1. Beamer registration
+	2. Turning on DataRadioModule
+	3. Working
+2. Working
+3. Working, sensor registration
+4. Working, sensor lost connection
+5. Working, beamer lost connection
+6. Working, beamer registration
