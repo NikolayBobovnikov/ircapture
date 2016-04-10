@@ -14,6 +14,8 @@
 #define DataBitLength               (500 - 1)    // TODO: Need to be distinguishable from start/stop bits. Start/Stop bit should on and off in less than data bit length
 #define InterframeDelayLength       (15000 - 1)  //12900 doesn't work; 13000 works; chosen more
 
+#define DelayCheckingPeriod     (100 - 1)
+
 // TODO: calculate mean of delay/bit length, deviation, and find optimal shift to minimize deviation
 #define PreambleDelayShift      20//(30)
 #define PreambleBitShift        10//(20)
@@ -39,7 +41,7 @@
 #define RX_BUF_SIZE 10
 
 //======= Turn on/off particular testing pulses
-#define DEBUG   1
+#define DEBUG   0
 
 #define DEBUG_FRAME_DELAY_1     0
 #define DEBUG_FRAME_DELAY_2     0

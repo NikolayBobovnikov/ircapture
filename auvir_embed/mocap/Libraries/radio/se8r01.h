@@ -229,6 +229,13 @@
 #define LOW GPIO_PIN_RESET
 #define HIGH GPIO_PIN_SET
 
+
+typedef enum{
+    NRF24_TRANSMISSON_OK,
+    NRF24_MESSAGE_LOST,
+    NRF24_MESSAGE_SENDING
+}TransmissionStatus;
+
 typedef struct GPIO_PIN{
     GPIO_TypeDef * Port;
     uint16_t Pin;
@@ -247,14 +254,12 @@ typedef enum {
  Power_minus12dBm1,
  Power_minus18dBm1
 } NRF24_Power;
-
 typedef enum {
  DataRate_2mbps,
  DataRate_1mbps,
  DataRate_500kbps,
  DataRate_250kbps
 } NRF24_Rate;
-
 //TODO
 typedef struct NRF24_InitTypeDef{
  uint8_t frequency;
@@ -267,41 +272,25 @@ typedef struct NRF24_InitTypeDef{
  uint8_t num_retries;
  uint8_t pipe;
 } NRF24_InitTypeDef;
-
-typedef enum{
-    NRF24_TRANSMISSON_OK,
-    NRF24_MESSAGE_LOST,
-    NRF24_MESSAGE_SENDING
-}TransmissionStatus;
-
-// description for bits in the message type byte
-#define RM_SyncSensor       6 // 1 if sync signal for sensor, 0 otherwise
-#define RM_SyncBeamer       5 // 1 if sync signal for beamer, 0 otherwise
-#define RM_SendSensorData   4 // 1 if "is sensor data", 0 otherwise
-#define RM_SendRegisterReq  3 // 1 if "is registration request", 0 otherwise
-#define RM_WhoAmI_Sensor    2 // 1 for Sensor, 0 otherwise
-#define RM_WhoAmI_Beamer    1 // 1 for Beamer, 0 otherwise
-#define RM_WhoAmI_UsbDevice 0 // 1 if this is usbdevice, 0 otherwise
-
-#define is_usb_device(byte) ((byte) & (1 << RM_WhoAmI_UsbDevice))
-#define is_beamer(byte)     ((byte) & (1 << RM_WhoAmI_Beamer))
-#define is_sensor(byte)     ((byte) & (1 << RM_WhoAmI_Sensor))
-#define is_reg_request(byte)((byte) & (1 << RM_SendRegisterReq))
-#define is_sensor_data(byte)((byte) & (1 << RM_SendSensorData))
-#define is_sync_beamer(byte)((byte) & (1 << RM_SyncBeamer))
-#define is_sync_sensor(byte)((byte) & (1 << RM_SyncSensor))
+//TODO
+void setup_radio(NRF24_InitTypeDef* settings);
 
 //Need to specify this callback in application code
 void nrf_receive_callback();
 
 // interface with radio
-void setup_radio(NRF24_InitTypeDef* settings);//TODO
 void setup(NRF_Module * radiomodule);
-void nrf_receive_handler(NRF_Module * radiomodule);
-void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule);
-uint8_t nrf_getStatus(NRF_Module * radiomodule);
 
+// is intended to be used in GPIO interrupt handler
+void nrf_receive_handler(NRF_Module * radiomodule);
+
+// hack
+void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule);
+
+// receive data
 void RXX(NRF_Module *radiomodule);
+
+// transmit data
 void TXX(NRF_Module * radiomodule, uint8_t * data);
 
 // state check functions

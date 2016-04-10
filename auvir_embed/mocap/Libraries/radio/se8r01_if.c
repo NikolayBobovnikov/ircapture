@@ -15,7 +15,7 @@
 #define NRF24_IRQ2_GPIO_Port GPIOB
 
 
-// Use 2 separate radiomodules for usb device
+// Use two separate radiomodules for usb device
 NRF_Module default_module = {0};
 NRF_Module data_module = {0};
 

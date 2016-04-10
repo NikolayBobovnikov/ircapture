@@ -90,7 +90,6 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Start_IT (const TIM_HandleTypeDef *htim);
 HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim);
 void send_data_uart();
 
-void nrf_receive_callback();
 extern uint8_t rx_buf[TX_PLOAD_WIDTH];
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 extern RadioMessage rx_message;

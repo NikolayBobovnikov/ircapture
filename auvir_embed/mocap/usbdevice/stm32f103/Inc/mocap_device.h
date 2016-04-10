@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include "se8r01.h"
+#include "se8r01_if.h"
 #include "common.h"
 
 typedef enum UsbDeviceStates{

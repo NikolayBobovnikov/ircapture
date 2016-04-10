@@ -41,6 +41,9 @@ static void power_on_tx(NRF_Module * radiomodule);
 static void power_on_rx(NRF_Module * radiomodule);
 
 static bool interrupt_happened(NRF_Module * radiomodule);
+
+static uint8_t nrf_getStatus(NRF_Module * radiomodule);
+
 //
 
 // use in dynamic length mode //
@@ -749,7 +752,7 @@ void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule)
 }
 
 
-uint8_t nrf_getStatus(NRF_Module * radiomodule)
+static uint8_t nrf_getStatus(NRF_Module * radiomodule)
 {
     return SPI_Read(radiomodule, iRF_BANK0_STATUS);
 }
