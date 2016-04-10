@@ -1,6 +1,7 @@
 //this is a copy and paste job made by F2k
 
 #include "se8r01.h"
+#include "se8r01_if.h"
 #include "common.h"
 
 ///
@@ -11,9 +12,6 @@ extern SPI_HandleTypeDef hspi1;
 extern char mode;      //r=rx, t=tx
 extern GPIO_TypeDef * GPIO_LED_PORT;
 extern uint16_t GPIO_LED_PIN;
-
-NRF_Module default_module = {0};
-NRF_Module data_module = {0};
 
 uint8_t gtemp[5];
 
@@ -41,6 +39,8 @@ static void se8r01_setup(NRF_Module * radiomodule);
 static void power_off(NRF_Module * radiomodule);
 static void power_on_tx(NRF_Module * radiomodule);
 static void power_on_rx(NRF_Module * radiomodule);
+
+static bool interrupt_happened(NRF_Module * radiomodule);
 //
 
 // use in dynamic length mode //
@@ -55,15 +55,13 @@ static void nrf24_powerDown(NRF_Module * radiomodule);
 static void nrf24_reset(NRF_Module * radiomodule);
 
 // low level interface ... //
-static uint8_t SPI_RW(uint8_t tx);
+uint8_t SPI_RW(uint8_t tx);
 static uint8_t SPI_RW_Reg(NRF_Module * radiomodule, uint8_t reg, uint8_t value);
 static uint8_t SPI_Read(NRF_Module * radiomodule, uint8_t reg);
 static uint8_t SPI_Read_Buf(NRF_Module * radiomodule, uint8_t reg, uint8_t *pBuf, uint8_t bytes);
 static uint8_t SPI_Write_Buf(NRF_Module * radiomodule, uint8_t reg, uint8_t *pBuf, uint8_t bytes);
-
 static void nrf24_transmitSync(uint8_t* dataout,uint8_t len);
 static void nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
-
 static void nrf24_read_register_buf(NRF_Module * radiomodule, uint8_t reg, uint8_t* value, uint8_t len);
 static void nrf24_write_register_buf(NRF_Module * radiomodule, uint8_t reg, uint8_t* value, uint8_t len);
 static void nrf24_write_register(NRF_Module * radiomodule, uint8_t reg, uint8_t value);
@@ -215,23 +213,10 @@ static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 }
 
-void nrf24_setup_gpio(void)
-{
-    init_module_pins();
-
-    /* CSN high = disable SPI */
-    nrf24_csn_set(&default_module, HIGH);
-    nrf24_csn_set(&data_module, HIGH);
-
-    /* CE low = disable TX/RX */
-    nrf24_ce_set(&default_module, LOW);
-    nrf24_ce_set(&data_module, LOW);
-
-}
-
 void setup(NRF_Module * radiomodule)
 {
-    nrf24_setup_gpio();
+    nrf24_setup_modules_gpio();
+
     nrf24_csn_set(radiomodule, HIGH);
     nrf24_ce_set(radiomodule, LOW);
 
@@ -277,22 +262,15 @@ void nrf_receive_handler(NRF_Module * radiomodule)
     nrf24_write_register(radiomodule, iRF_BANK0_STATUS,status);
 }
 
-void RXX()
+void RXX(NRF_Module * radiomodule)
 {
-    volatile uint8_t status =  nrf_getStatus(&default_module);
-
-    if( HAL_GPIO_ReadPin(default_module.IRQ.Port,default_module.IRQ.Pin) == LOW){
+    if( interrupt_happened(radiomodule)){
         delay_us(10);      //read reg too close after irq low not good
-        nrf_receive_handler(&default_module);
-    }
-
-    if( HAL_GPIO_ReadPin(data_module.IRQ.Port,data_module.IRQ.Pin) == LOW){
-        delay_us(10);      //read reg too close after irq low not good
-        nrf_receive_handler(&data_module);
+        nrf_receive_handler(radiomodule);
     }
 }
 
-void TXX(NRF_Module * radiomodule)
+void TXX(NRF_Module * radiomodule, uint8_t *data)
 {
     //power on
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
@@ -436,6 +414,10 @@ static void set_rx_tx_mode(NRF_Module * radiomodule)
     }
 }
 
+static bool interrupt_happened(NRF_Module * radiomodule)
+{
+    return (HAL_GPIO_ReadPin(radiomodule->IRQ.Port, radiomodule->IRQ.Pin) == LOW);
+}
 /**************************************************
  * Function: TX_Mode();
  *
@@ -701,28 +683,13 @@ static void nrf24_write_register_buf(NRF_Module * radiomodule, uint8_t reg, uint
     SPI_Write_Buf(radiomodule, iRF_CMD_WRITE_REG | (REGISTER_MASK & reg), value, len);
 }
 
-
-//
-// Function: SPI_RW();
-//
-// Description:
-// Writes one uint8_t to nRF24L01, and return the uint8_t read
-// from nRF24L01 during write, according to SPI protocol
-//
-static uint8_t SPI_RW(uint8_t tx)
+uint8_t SPI_RW(uint8_t tx)
 {
     uint8_t rx = 0;
     HAL_SPI_TransmitReceive_IT(&hspi1, &tx, &rx, 1);
     return rx;
 }
 
-
-//
-//  Function: SPI_RW_Reg();
-//
-//  Description:
-//  Writes value 'value' to register 'reg'
-//
 static uint8_t SPI_RW_Reg(NRF_Module * radiomodule, uint8_t reg, uint8_t value)
 {
     uint8_t status;
@@ -733,12 +700,6 @@ static uint8_t SPI_RW_Reg(NRF_Module * radiomodule, uint8_t reg, uint8_t value)
     return(status);                   // return nRF24L01 status uint8_t
 }
 
-//
-//  Function: SPI_Read();
-//
-//  Description:
-//  Read one uint8_t from nRF24L01 register, 'reg'
-//
 static uint8_t SPI_Read(NRF_Module * radiomodule, uint8_t reg)
 {
     uint8_t reg_val;
@@ -751,13 +712,6 @@ static uint8_t SPI_Read(NRF_Module * radiomodule, uint8_t reg)
     return(reg_val);               // return register value
 }
 
-//
-//  Function: SPI_Read_Buf();
-//
-//  Description:
-//  Reads 'uint8_ts' #of uint8_ts from register 'reg'
-//  Typically used to read RX payload, Rx/Tx address
-//
 static uint8_t SPI_Read_Buf(NRF_Module * radiomodule, uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 {
     uint8_t status,i;
@@ -774,15 +728,7 @@ static uint8_t SPI_Read_Buf(NRF_Module * radiomodule, uint8_t reg, uint8_t *pBuf
 
     return(status);                  // return nRF24L01 status uint8_t
 }
-/**************************************************/
 
-//
-//  Function: SPI_Write_Buf();
-//
-//  Description:
-//  Writes contents of buffer '*pBuf' to nRF24L01
-//  Typically used to write TX payload, Rx/Tx address
-//
 static uint8_t SPI_Write_Buf(NRF_Module * radiomodule, uint8_t reg, uint8_t *pBuf, uint8_t bytes)
 {
     uint8_t status,i;
@@ -797,43 +743,14 @@ static uint8_t SPI_Write_Buf(NRF_Module * radiomodule, uint8_t reg, uint8_t *pBu
     return(status);                  // return nRF24L01 status uint8_t
 }
 
-
 void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule)
 {
     nrf24_write_register(radiomodule, iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
-}
-
-void nrf_ResetStatusIRQ(NRF_Module * radiomodule, uint8_t flags) {
-  delay_us (10);
-  nrf24_csn_set(radiomodule, LOW);                  // Set CSN low, init SPI tranaction
-  delay_us(10);
-  nrf24_write_register(radiomodule, iRF_BANK0_STATUS, flags); /* reset all IRQ in status register */
-  delay_us(10);
-  nrf24_csn_set(radiomodule, HIGH);                  // Set CSN low, init SPI tranaction
-  delay_us(10);
 }
 
 
 uint8_t nrf_getStatus(NRF_Module * radiomodule)
 {
     return SPI_Read(radiomodule, iRF_BANK0_STATUS);
-}
-
-
-void init_module_pins()
-{
-    default_module.CE.Pin = NRF24_CE1_Pin;
-    default_module.CE.Port = NRF24_CE1_GPIO_Port;
-    default_module.CSN.Pin = NRF24_CSN1_Pin;
-    default_module.CSN.Port = NRF24_CSN1_GPIO_Port;
-    default_module.IRQ.Pin = NRF24_IRQ1_Pin;
-    default_module.IRQ.Port = NRF24_IRQ1_GPIO_Port;
-
-    data_module.CE.Pin  = NRF24_CE2_Pin;
-    data_module.CE.Port = NRF24_CE2_GPIO_Port;
-    data_module.CSN.Pin = NRF24_CSN2_Pin;
-    data_module.CSN.Port= NRF24_CSN2_GPIO_Port;
-    data_module.IRQ.Pin = NRF24_IRQ2_Pin;
-    data_module.IRQ.Port= NRF24_IRQ2_GPIO_Port;
 }
 

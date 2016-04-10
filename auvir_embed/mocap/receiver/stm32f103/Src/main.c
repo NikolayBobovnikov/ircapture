@@ -39,6 +39,7 @@
 #include "sensor.h"
 #include "sensor_hub.h"
 #include "se8r01.h"
+#include "se8r01_if.h"
 #include "common.h"
 
 // TODO: cleanup when done debugging
@@ -120,7 +121,10 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-const char mode = 't'; // 't'
+extern NRF_Module default_module;
+extern NRF_Module data_module;
+
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -150,7 +154,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
     //TODO: setting the timer. merge with TIM_Init
     setup_ic_timer();
-    nrf24_setup_gpio();
 
     //// start usec delay timer
     HAL_TIM_Base_Start(&htim2);
@@ -165,7 +168,7 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
-    setup();
+    setup(&default_module);
     //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
 
@@ -189,14 +192,14 @@ int main(void)
     {
 #if 1
         if(is_receiver){
-            RXX();// - this is called on IRQ
+            RXX(&default_module);// - this is called on IRQ
             //nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
             //memcpy(&tx_buf[0], &salt, 1);
             //salt++;
 
-            TXX();
+            TXX(&default_module, &tx_message);
             HAL_Delay(30);
         }
 #endif

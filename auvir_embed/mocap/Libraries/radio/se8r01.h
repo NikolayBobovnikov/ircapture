@@ -226,6 +226,9 @@
 #define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
 #define RF_CHANNEL      40  //
 
+#define LOW GPIO_PIN_RESET
+#define HIGH GPIO_PIN_SET
+
 typedef struct GPIO_PIN{
     GPIO_TypeDef * Port;
     uint16_t Pin;
@@ -236,9 +239,6 @@ typedef struct NRF_Module{
     GPIO_PIN CSN;
     GPIO_PIN IRQ;
 } NRF_Module;
-
-#define LOW GPIO_PIN_RESET
-#define HIGH GPIO_PIN_SET
 
 typedef enum {
  Power_plus5dBm1,
@@ -274,18 +274,7 @@ typedef enum{
     NRF24_MESSAGE_SENDING
 }TransmissionStatus;
 
-
-// TODO: choose between 2 options for identify type of message:
-// 1st option
-typedef enum RadioMessageType{
-    RadioMsg_None,
-    RadioMsg_RegistrationRequest,
-    RadioMsg_SensorData,
-    RadioMsg_SyncBeamer,
-    RadioMsg_SyncSensor
-} RadioMessageType;
-
-// 2nd option
+// description for bits in the message type byte
 #define RM_SyncSensor       6 // 1 if sync signal for sensor, 0 otherwise
 #define RM_SyncBeamer       5 // 1 if sync signal for beamer, 0 otherwise
 #define RM_SendSensorData   4 // 1 if "is sensor data", 0 otherwise
@@ -302,29 +291,18 @@ typedef enum RadioMessageType{
 #define is_sync_beamer(byte)((byte) & (1 << RM_SyncBeamer))
 #define is_sync_sensor(byte)((byte) & (1 << RM_SyncSensor))
 
-typedef struct RadioMessage{
-    RadioMessageType type;
-    uint8_t data[30];
-    const uint8_t check_zero;
-}RadioMessage;
-
 //Need to specify this callback in application code
 void nrf_receive_callback();
-void init_module_pins();
-
 
 // interface with radio
-void nrf24_setup_gpio();
-void setup_radio(NRF24_InitTypeDef* settings);
+void setup_radio(NRF24_InitTypeDef* settings);//TODO
 void setup(NRF_Module * radiomodule);
 void nrf_receive_handler(NRF_Module * radiomodule);
 void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule);
-void nrf_ResetStatusIRQ(NRF_Module * radiomodule, uint8_t flags);
 uint8_t nrf_getStatus(NRF_Module * radiomodule);
 
-
-void RXX();
-void TXX();
+void RXX(NRF_Module *radiomodule);
+void TXX(NRF_Module * radiomodule, uint8_t * data);
 
 // state check functions
 bool nrf24_is_data_ready();

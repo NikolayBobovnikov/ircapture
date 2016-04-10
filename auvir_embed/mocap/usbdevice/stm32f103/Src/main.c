@@ -54,10 +54,6 @@ TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-/// parameters for receiver ===================
-const GPIO_TypeDef * GPIO_PORT_IR_IN = GPIOB;
-const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
-
 const bool _debug = true;
 
 extern GPIO_TypeDef * GPIO_LED_PORT;
@@ -77,28 +73,6 @@ static void MX_TIM2_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-/// ======================= USART stuff =======================
-HAL_StatusTypeDef status;
-extern DataFrame_t rx_data_frame;
-
-enum UART_Commands {
-    UART_COMMAND_NOT_RECEIVED = 0,
-    UART_DEBUG_DATA_TRANSMIT,
-    UART_DEBUG_DATA_TRANSMIT_OK,
-    UART_ECHO
-};
-uint8_t command = UART_COMMAND_NOT_RECEIVED;
-uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
-
-typedef struct
-{
-    uint8_t _ir_hub_id;
-    uint8_t _ir_sensor_id;
-    DataFrame_t data;
-} USART_msg_t;
-
-USART_msg_t uart_msg;
-
 
 // USB buffer
 extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
@@ -159,7 +133,7 @@ int main(void)
         //HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
 
         //listening...
-        RXX();
+        RXX(&default_module);
 
   /* USER CODE END WHILE */
 
