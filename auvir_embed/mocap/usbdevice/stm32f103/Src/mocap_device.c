@@ -4,6 +4,8 @@
 extern uint8_t rx_buf[TX_PLOAD_WIDTH];
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 extern RadioMessage rx_message;
+extern NRF_Module default_module;
+extern NRF_Module data_module;
 
 // ==================== for usb device
 // Beamers
@@ -41,15 +43,17 @@ uint32_t delay_after_sync_signal = 0;
 
 void process_sensor_data()
 {
-    if(is_sensor_registration_complete && is_beamer_registration_complete){
+    //TODO: remove
+    is_beamer_registration_complete = true;
+
+    if(is_beamer_registration_complete){
         // process data
         // TODO
         HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         if(is_usb_configured()){
-            CDC_Transmit_FS(&(rx_message.data), TX_PLOAD_WIDTH);
+            CDC_Transmit_FS((uint8_t*)&(rx_message.data), TX_PLOAD_WIDTH);
         }
     }
-
 }
 void process_registration_request()
 {
@@ -107,4 +111,3 @@ void nrf_receive_callback()
     }
 
 }
-

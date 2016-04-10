@@ -5,6 +5,7 @@
 /// TODO: on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
 ///
 
+#include "stm32f1xx_hal.h"
 #include <stdbool.h>
 
 // Memory Map //
@@ -223,26 +224,18 @@
 ///==========================================================================
 #define TX_ADR_WIDTH    5   // 5 uint8_ts TX(RX) address width
 #define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
-#define RF_CHANNEL      110  //
+#define RF_CHANNEL      40  //
 
+typedef struct GPIO_PIN{
+    GPIO_TypeDef * Port;
+    uint16_t Pin;
+}GPIO_PIN;
 
-// SPI chip enable pin //
-#ifndef NRF24_CSN_PIN
-#define NRF24_CSN_PORT  GPIOA
-#define NRF24_CSN_PIN   GPIO_PIN_0
-#endif
-
-// Chip enable for transmitting //
-#ifndef NRF24_CE_PIN
-#define NRF24_CE_PORT   GPIOA
-#define NRF24_CE_PIN    GPIO_PIN_1
-#endif
-
-// NRF IRQ pin//
-//#ifndef NRF24_IRQ_PIN
-//#define NRF24_IRQ_PORT   GPIOB
-//#define NRF24_IRQ_PIN    GPIO_PIN_0
-//#endif
+typedef struct NRF_Module{
+    GPIO_PIN CE;
+    GPIO_PIN CSN;
+    GPIO_PIN IRQ;
+} NRF_Module;
 
 #define LOW GPIO_PIN_RESET
 #define HIGH GPIO_PIN_SET
@@ -317,16 +310,17 @@ typedef struct RadioMessage{
 
 //Need to specify this callback in application code
 void nrf_receive_callback();
+void init_module_pins();
+
 
 // interface with radio
 void nrf24_setup_gpio();
 void setup_radio(NRF24_InitTypeDef* settings);
-void setup();
-void nrf_receive_handler();
-void nrf_without_this_interrupts_not_work();
-void nrf_ResetStatusIRQ(uint8_t flags);
-
-#define nrf_GetStatus() (SPI_Read(iRF_BANK0_STATUS))
+void setup(NRF_Module * radiomodule);
+void nrf_receive_handler(NRF_Module * radiomodule);
+void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule);
+void nrf_ResetStatusIRQ(NRF_Module * radiomodule, uint8_t flags);
+uint8_t nrf_getStatus(NRF_Module * radiomodule);
 
 
 void RXX();

@@ -104,6 +104,9 @@ USART_msg_t uart_msg;
 extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 extern UsbDeviceStates usb_state;
 
+extern NRF_Module default_module;
+extern NRF_Module data_module;
+
 const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
@@ -131,14 +134,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
     //TODO: setting the timer. merge with TIM_Init
     HAL_TIM_Base_Start(&htim2);
-    nrf24_setup_gpio();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-    setup();
+    setup(&default_module);
 
     //TODO: cleanup
     uint8_t buf[32] = {0};
@@ -269,10 +271,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, NRF24_CSN1_Pin|NRF24_CE1_Pin|NRF24_CSN2_Pin|NRF24_CE2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, DBG_OUT_2_Pin|LED_DBG_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_DBG_GPIO_Port, LED_DBG_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_ONBOARD_Pin */
   GPIO_InitStruct.Pin = LED_ONBOARD_Pin;
@@ -280,27 +282,29 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_ONBOARD_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CSN2_Pin NRF24_CE2_Pin */
+  GPIO_InitStruct.Pin = NRF24_CSN1_Pin|NRF24_CSN2_Pin|NRF24_CE2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : NRF_IRQ_Pin */
-  GPIO_InitStruct.Pin = NRF_IRQ_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(NRF_IRQ_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : DBG_OUT_2_Pin LED_DBG_Pin */
-  GPIO_InitStruct.Pin = DBG_OUT_2_Pin|LED_DBG_Pin;
+  /*Configure GPIO pin : NRF24_CE1_Pin */
+  GPIO_InitStruct.Pin = NRF24_CE1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(NRF24_CE1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : NRF24_IRQ1_Pin NRF24_IRQ2_Pin */
+  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin|NRF24_IRQ2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+  /*Configure GPIO pin : LED_DBG_Pin */
+  GPIO_InitStruct.Pin = LED_DBG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(LED_DBG_GPIO_Port, &GPIO_InitStruct);
 
 }
 
