@@ -76,7 +76,6 @@ static void MX_TIM2_Init(void);
 
 // USB buffer
 extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
-extern UsbDeviceStates usb_state;
 
 extern NRF_Module default_module;
 extern NRF_Module data_module;
@@ -124,7 +123,7 @@ int main(void)
     //wait for usb device is configured
     while(!is_usb_configured());
 
-    usb_state = USBState_Registration;
+    register_usb_device();
 
     while (1)
     {

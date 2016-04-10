@@ -11,10 +11,8 @@
 #include "se8r01_if.h"
 #include "common.h"
 
-typedef enum UsbDeviceStates{
-    USBState_None,
-    USBState_Registration,
-    USBState_ReceiveingData,
-} UsbDeviceStates;
+typedef struct USB_Message USB_Message;
+
+void register_usb_device();
 
 #endif //MOCAP_DEV_H

@@ -16,7 +16,7 @@ extern uint16_t GPIO_LED_PIN;
 uint8_t gtemp[5];
 
 // Define a static TX address
-const uint8_t BROADCAST_DEFAULT_ADDRESS[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
+const uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0};
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
