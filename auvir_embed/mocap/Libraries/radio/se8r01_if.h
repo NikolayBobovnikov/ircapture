@@ -33,7 +33,8 @@ typedef enum RM_Dest_e{
 }RM_Dest_e;
 
 typedef enum RM_Typ_e{
-    Typ_RequestRegistration,
+    Typ_BeamerRequestRegistration,
+    Typ_SensorRequestRegistration,
     Typ_RespondRegistration,
     Typ_SensorData,
     Typ_UpdateLastBeamerID,
@@ -41,16 +42,30 @@ typedef enum RM_Typ_e{
     Typ_Reset
 }RM_Typ_e;
 
-// Bit      Description     Value
-// 0:1      WhoAmI(Src)     0       UsbDevice   1 - Sensor  2 - Beamer  3 - <preserved>
-// 2:3      Dst             0       UsbDevice   1 - Sensor  2 - Beamer  3 - <preserved>
-// 4:6      Typ             0   000     RequestRegistration
-//                          1   001     RespondRegistration
-//                          2   010     SendData
-//                          3   011     UpdateLastBeamerID
-//                          4   100     SyncBeamer
-//                          5   101     Reset
-//                          6   110     <preserved>
+/// Notes:
+/// Typ_Reset can be sent only from a usbdevice
+/// RM_WhoAmI_e cannot be equal to RM_Dest_e
+/// RM_WhoAmI_e probably not needed, RM_Dest_e is enough:
+/// To Beamer/Sensor from only usbdevice; To Usbdevice from only Beamer/sensor
+/// Redundancy is probably not bad, can do additional check
+
+
+// Bit      Description     Value       Detailed description
+// 0:1      WhoAmI(Src)     0   00      UsbDevice
+//                          1   01      Sensor
+//                          2   01      Beamer
+//                          3   11      <preserved>
+// 2:3      Dst             0   00      UsbDevice
+//                          1   01      Sensor
+//                          2   01      Beamer
+//                          3   11      <preserved>
+// 4:6      Typ             0   000     BeamerRequestRegistration
+//                          1   001     SensorRequestRegistration
+//                          2   010     RespondRegistration
+//                          3   011     SensorData
+//                          4   100     UpdateLastBeamerID
+//                          5   101     SyncBeamer
+//                          6   110     Reset
 //                          7   111     <preserved>
 // 7        <preserved>
 

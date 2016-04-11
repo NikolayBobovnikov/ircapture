@@ -75,7 +75,8 @@ uint32_t delay_after_sync_signal = 0;
 void register_usb_device();
 void nrf_receive_callback();
 void process_sensor_data();
-void process_registration_request();
+void process_beamer_registration_request();
+void process_sensor_registration_request();
 
 /// ============================== Function definitions ==============================
 
@@ -118,19 +119,21 @@ void register_usb_device()
 
 void nrf_receive_callback()
 {
-    uint8_t t = 0;
-    radio_set_msgtype(&t, Typ_SensorData);
-
     // get type of the message to determine its content and how to process it
-    //RM_Typ_e type = radio_get_msgtype(rx_message.type);
-    RM_Typ_e type = radio_get_msgtype(t);
+    RM_Typ_e type = radio_get_msgtype(rx_message.type);
+
+    //TODO: remove blinking
+    HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
 
     switch (type) {
         case Typ_SensorData:
             process_sensor_data();
             break;
-        case Typ_RequestRegistration:
-            process_registration_request();
+        case Typ_BeamerRequestRegistration:
+            process_beamer_registration_request();
+            break;
+        case Typ_SensorRequestRegistration:
+            process_beamer_registration_request();
             break;
         default:
             break;
@@ -146,44 +149,44 @@ void process_sensor_data()
     if(is_beamer_registration_complete){
         // process data
         // TODO
-        HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
         if(is_usb_configured()){
             CDC_Transmit_FS((uint8_t*)&(rx_message.data), TX_PLOAD_WIDTH);
         }
     }
 }
 
-void process_registration_request()
+void process_beamer_registration_request()
 {
     // Determine source of packet
     RM_WhoAmI_e whoami = radio_get_whoami(rx_message.type);
-    switch (whoami) {
-        case WhoAmI_UsbDevice:
-            //do nothing
-            //TODO: check for redundancy
-            break;
-        case WhoAmI_Sensor:
-            //register sensor
-            last_sensor_id++;
-            sensor_ids[last_sensor_id] = last_sensor_id;
-            // broadcast sensor ID
-            // TODO
-            break;
-        case WhoAmI_Beamer:
-            //register beamer
-            if(!is_beamer_registration_complete){
-                last_beamer_id++;
-                beamer_ids[last_beamer_id] = last_beamer_id;
-                if(last_beamer_id == MAX_BEAMER_NUM){
-                    is_beamer_registration_complete = true;
-                }
-            }
-            // broadcast beamer ID
-            // TODO
-            break;
-        default:
-            break;
+    if (whoami != WhoAmI_Beamer){
+        return;
     }
+
+    //register beamer
+    if(!is_beamer_registration_complete){
+        last_beamer_id++;
+        beamer_ids[last_beamer_id] = last_beamer_id;
+        if(last_beamer_id == MAX_BEAMER_NUM){
+            is_beamer_registration_complete = true;
+        }
+    }
+    // broadcast beamer ID
+    // TODO
+}
+
+void process_sensor_registration_request()
+{
+    // Determine source of packet
+    RM_WhoAmI_e whoami = radio_get_whoami(rx_message.type);
+    if(whoami != WhoAmI_Sensor) {
+        return;
+    }
+    //register sensor
+    last_sensor_id++;
+    sensor_ids[last_sensor_id] = last_sensor_id;
+    // broadcast sensor ID
+    // TODO
 }
 
 
