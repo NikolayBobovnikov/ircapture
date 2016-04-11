@@ -42,15 +42,10 @@ uint8_t UsbDeviceID = 0;
 uint8_t UsbDeviceAddress[5] = {0};
 bool is_beamer_registration_complete = false;
 
-typedef struct BeamerInfo{
+typedef struct RadioDevInfo{
     uint8_t ID;// used to check if Beamer is registered and not lost connection
     uint8_t Address[TX_ADR_WIDTH];
-}BeamerInfo;
-
-typedef struct SensorInfo{
-    uint8_t ID;
-    uint8_t Address[TX_ADR_WIDTH];
-}SensorInfo;
+}RadioDevInfo;
 
 
 /// Description of data:
@@ -64,14 +59,14 @@ typedef struct SensorInfo{
 #define MAX_BEAMER_NUM 256 // TODO
 // TODO: change beamer_ids to bitset (so to store 256 bits will need 32 bytes, instead of 256)
 #define MAX_BEAMER_IDS (256/8)
-BeamerInfo registered_beamers[MAX_BEAMER_NUM] = {0};
+RadioDevInfo registered_beamers[MAX_BEAMER_NUM] = {0};
 uint8_t last_beamer_id = 0;
 
 // Sensors
 #define MAX_SENSOR_NUM 256 // TODO
 // TODO: change sensor_ids to bitset (so to store 256 bits will need 32 bytes, instead of 256)
 #define MAX_SENSOR_IDS (256/8)
-SensorInfo registered_sensors[MAX_SENSOR_NUM] = {0};
+RadioDevInfo registered_sensors[MAX_SENSOR_NUM] = {0};
 uint8_t last_sensor_id = 0;
 
 // ==================== for beamer
@@ -193,26 +188,27 @@ void process_beamer_registration_request()
         //assign ID and address
         registered_beamers[last_beamer_id].ID = last_beamer_id;
 
-        // TODO FIXME: use actual beamer info
-        BeamerInfo new_beamer_info;
-        memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(new_beamer_info.Address[0]), TX_ADR_WIDTH);
+        // TODO FIXME: verify it works
+        memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(rx_message.data[0]), TX_ADR_WIDTH);
     }
-
-    for (uint8_t index = 0; index <= last_beamer_id; ++index){
+    else for (uint8_t index = 1; index <= last_beamer_id; ++index){
         if(registered_beamers[index].ID == 0){
             //this beamer is in the list of lost connection
-            //assign its ID and address to new beamer
-            ++last_beamer_id;
-            //assign ID and address
-            registered_beamers[last_beamer_id].ID = last_beamer_id;
-
-            // TODO FIXME: use actual beamer info
-            BeamerInfo new_beamer_info;
-            memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(new_beamer_info.Address[0]), TX_ADR_WIDTH);
-            //TODO: check if break really works
+            //assign its ID new beamer
+            registered_beamers[index].ID = index;
+            //no need to assign address - just use existent address from beamer/sensor which lost connection
+            // TODO FIXME: verify it works
+            // stop registration procedure
             break;
         }
+        // if no beamer whic lost connection was reused, register new beamer
+        // increment last beamer id, assign it to new beamer
+        ++last_beamer_id;
+        registered_beamers[last_beamer_id].ID = last_beamer_id;
+        // TODO FIXME: verify it works
+        memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(rx_message.data[0]), TX_ADR_WIDTH);
     }
+
 
     // broadcast beamer ID
     // TODO
@@ -230,7 +226,7 @@ void process_sensor_registration_request()
     last_sensor_id++;
     registered_sensors[last_sensor_id].ID = last_sensor_id;
     // TODO FIXME: use actual beamer info
-    SensorInfo new_sensor_info;
+    RadioDevInfo new_sensor_info;
     memcpy(&(registered_sensors[last_sensor_id].Address[0]), &(new_sensor_info.Address[0]), TX_ADR_WIDTH);
     // broadcast sensor ID
     // TODO

@@ -76,11 +76,18 @@ typedef struct RadioMessage{
 
 //Contents of data depending of the message type:
 //Typ_BeamerRequestRegistration
+//  none
 //Typ_SensorRequestRegistration
+//  none
 //Typ_RespondRegistration
+//  RadioDevInfo
 //Typ_SensorData
+//  uint8_t *
 //Typ_UpdateLastBeamerID
+//  uint8_t
 //Typ_SyncBeamer
+//  none
 //Typ_Reset
+//  none
 
 void nrf24_setup_modules_gpio();
