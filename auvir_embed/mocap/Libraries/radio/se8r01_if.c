@@ -37,3 +37,33 @@ void nrf24_setup_modules_gpio()
     data_module.IRQ.Port= NRF24_IRQ2_GPIO_Port;
 }
 
+
+RM_WhoAmI_e radio_get_whoami(uint8_t byte)
+{
+    return ((byte & RM_Mask_WhoAmI) >> RM_Bit_WhoAmI) ;
+}
+RM_Dest_e radio_get_dst(uint8_t byte)
+{
+    return ((byte & RM_Mask_Dst) >> RM_Bit_Dst) ;
+}
+RM_Typ_e radio_get_msgtype(uint8_t byte)
+{
+    return ((byte & RM_Mask_Typ) >> RM_Bit_Typ);
+}
+
+void radio_set_whoami(uint8_t * byte, RM_WhoAmI_e whoami)
+{
+    (*byte) |= (whoami << RM_Bit_WhoAmI);
+}
+void radio_set_dst(uint8_t * byte, RM_Dest_e dst)
+{
+    (*byte) |= (dst << RM_Bit_Dst);
+}
+void radio_set_msgtype(uint8_t * byte, RM_Typ_e typ)
+{
+    uint8_t mask = typ << RM_Bit_Typ;
+    uint8_t b = *byte;
+    b |= typ << RM_Bit_Typ;
+    (*byte) = (*byte) | (typ << RM_Bit_Typ);
+}
+

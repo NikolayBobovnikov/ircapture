@@ -115,11 +115,6 @@ int main(void)
 
     setup(&default_module);
 
-    //TODO: cleanup
-    uint8_t buf[32] = {0};
-    const char * str = "Hello!";
-    memcpy(buf, str, strlen(str));
-
     //wait for usb device is configured
     while(!is_usb_configured());
 
