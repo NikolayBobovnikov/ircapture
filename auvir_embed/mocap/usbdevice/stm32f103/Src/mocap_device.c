@@ -1,6 +1,6 @@
 #include "mocap_device.h"
 
-/// Interface with radio
+/// Interface with radio ================================
 extern uint8_t rx_buf[TX_PLOAD_WIDTH];
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 extern RadioMessage rx_message;
@@ -8,7 +8,7 @@ extern RadioMessage tx_message;
 extern NRF_Module default_module;
 extern NRF_Module data_module;
 
-/// Interface with USB host
+/// Interface with USB host ================================
 extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 extern uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 bool received_usb_host_responce = false;
@@ -28,7 +28,6 @@ typedef struct RegistrationInfo{
     uint8_t address[TX_PLOAD_WIDTH];
 } RegistrationInfo;
 
-
 // TODO FIXME: connect size of USB_Message with APP_RX_DATA_SIZE
 typedef struct USB_Message{
     USBMessageType msgType;
@@ -38,21 +37,42 @@ typedef struct USB_Message{
 USB_Message tx_usb_message = {0};
 USB_Message rx_usb_message = {0};
 
-// ==================== for usb device
+/// usb device ================================
 uint8_t UsbDeviceID = 0;
 uint8_t UsbDeviceAddress[5] = {0};
+bool is_beamer_registration_complete = false;
+
+typedef struct BeamerInfo{
+    uint8_t ID;// used to check if Beamer is registered and not lost connection
+    uint8_t Address[TX_ADR_WIDTH];
+}BeamerInfo;
+
+typedef struct SensorInfo{
+    uint8_t ID;
+    uint8_t Address[TX_ADR_WIDTH];
+}SensorInfo;
+
+
+/// Description of data:
+/// ID of Sensor/Beamer = array index
+/// Sensor/Beamer with corresponding ID registered <=> ID of array's element at (index==ID) != 0
+/// Sensor/Beamer with corresponding ID is lost connection <=> ID of array's element at (index==ID) == 0 for  index==ID <= LastBeamerID
+/// All Sensors/Beamers with ID > LastBeamerID has ID == 0 and not registered
+/// Element at index 0 is special
 
 // Beamers
-#define MAX_BEAMER_NUM 10 // TODO
-uint8_t beamer_ids[MAX_BEAMER_NUM] = {0};
+#define MAX_BEAMER_NUM 256 // TODO
+// TODO: change beamer_ids to bitset (so to store 256 bits will need 32 bytes, instead of 256)
+#define MAX_BEAMER_IDS (256/8)
+BeamerInfo registered_beamers[MAX_BEAMER_NUM] = {0};
 uint8_t last_beamer_id = 0;
 
 // Sensors
-#define MAX_SENSOR_NUM 10 // TODO
-uint8_t sensor_ids[MAX_SENSOR_NUM] = {0};
+#define MAX_SENSOR_NUM 256 // TODO
+// TODO: change sensor_ids to bitset (so to store 256 bits will need 32 bytes, instead of 256)
+#define MAX_SENSOR_IDS (256/8)
+SensorInfo registered_sensors[MAX_SENSOR_NUM] = {0};
 uint8_t last_sensor_id = 0;
-
-bool is_beamer_registration_complete = false;
 
 // ==================== for beamer
 uint8_t my_id = 0;
@@ -133,7 +153,7 @@ void nrf_receive_callback()
             process_beamer_registration_request();
             break;
         case Typ_SensorRequestRegistration:
-            process_beamer_registration_request();
+            process_sensor_registration_request();
             break;
         default:
             break;
@@ -163,14 +183,37 @@ void process_beamer_registration_request()
         return;
     }
 
-    //register beamer
-    if(!is_beamer_registration_complete){
-        last_beamer_id++;
-        beamer_ids[last_beamer_id] = last_beamer_id;
-        if(last_beamer_id == MAX_BEAMER_NUM){
-            is_beamer_registration_complete = true;
+    //check beamers which lost connection
+
+    //special case: first registration
+    if(last_beamer_id == 0){
+        //no beamers has been registered yet
+        //increment last beamer id
+        ++last_beamer_id;
+        //assign ID and address
+        registered_beamers[last_beamer_id].ID = last_beamer_id;
+
+        // TODO FIXME: use actual beamer info
+        BeamerInfo new_beamer_info;
+        memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(new_beamer_info.Address[0]), TX_ADR_WIDTH);
+    }
+
+    for (uint8_t index = 0; index <= last_beamer_id; ++index){
+        if(registered_beamers[index].ID == 0){
+            //this beamer is in the list of lost connection
+            //assign its ID and address to new beamer
+            ++last_beamer_id;
+            //assign ID and address
+            registered_beamers[last_beamer_id].ID = last_beamer_id;
+
+            // TODO FIXME: use actual beamer info
+            BeamerInfo new_beamer_info;
+            memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(new_beamer_info.Address[0]), TX_ADR_WIDTH);
+            //TODO: check if break really works
+            break;
         }
     }
+
     // broadcast beamer ID
     // TODO
 }
@@ -182,9 +225,13 @@ void process_sensor_registration_request()
     if(whoami != WhoAmI_Sensor) {
         return;
     }
+
     //register sensor
     last_sensor_id++;
-    sensor_ids[last_sensor_id] = last_sensor_id;
+    registered_sensors[last_sensor_id].ID = last_sensor_id;
+    // TODO FIXME: use actual beamer info
+    SensorInfo new_sensor_info;
+    memcpy(&(registered_sensors[last_sensor_id].Address[0]), &(new_sensor_info.Address[0]), TX_ADR_WIDTH);
     // broadcast sensor ID
     // TODO
 }
