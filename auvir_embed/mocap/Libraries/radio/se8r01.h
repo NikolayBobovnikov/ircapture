@@ -222,13 +222,23 @@
 #define iFIFO_STATUS_RX_EMPTY   0x01
 
 ///==========================================================================
-#define TX_ADR_WIDTH    5   // 5 uint8_ts TX(RX) address width
-#define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
-#define RF_CHANNEL      40  //
 
 #define LOW GPIO_PIN_RESET
 #define HIGH GPIO_PIN_SET
 
+
+#define NRF24_CSN1_Pin GPIO_PIN_0
+#define NRF24_CSN1_GPIO_Port GPIOA
+#define NRF24_CE1_Pin GPIO_PIN_1
+#define NRF24_CE1_GPIO_Port GPIOA
+#define NRF24_CSN2_Pin GPIO_PIN_2
+#define NRF24_CSN2_GPIO_Port GPIOA
+#define NRF24_CE2_Pin GPIO_PIN_3
+#define NRF24_CE2_GPIO_Port GPIOA
+#define NRF24_IRQ1_Pin GPIO_PIN_0
+#define NRF24_IRQ1_GPIO_Port GPIOB
+#define NRF24_IRQ2_Pin GPIO_PIN_1
+#define NRF24_IRQ2_GPIO_Port GPIOB
 
 typedef enum{
     NRF24_TRANSMISSON_OK,
@@ -254,6 +264,7 @@ typedef enum {
  Power_minus12dBm1,
  Power_minus18dBm1
 } NRF24_Power;
+
 typedef enum {
  DataRate_2mbps,
  DataRate_1mbps,
@@ -291,7 +302,7 @@ void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule);
 void RXX(NRF_Module *radiomodule);
 
 // transmit data
-void TXX(NRF_Module * radiomodule, uint8_t * data);
+void TXX(NRF_Module * radiomodule);
 
 // state check functions
 bool nrf24_is_data_ready();

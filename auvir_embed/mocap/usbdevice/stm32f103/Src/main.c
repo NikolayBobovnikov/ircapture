@@ -128,6 +128,7 @@ int main(void)
 
         //listening...
         RXX(&default_module);
+        RXX(&data_module);
 
   /* USER CODE END WHILE */
 

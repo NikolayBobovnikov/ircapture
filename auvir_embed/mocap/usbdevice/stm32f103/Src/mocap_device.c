@@ -1,6 +1,7 @@
 #include "mocap_device.h"
 
-/// Interface with radio ================================
+/// ================================ Interface with radio ================================================================
+extern const uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH];
 extern uint8_t rx_buf[TX_PLOAD_WIDTH];
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 extern RadioMessage rx_message;
@@ -8,7 +9,7 @@ extern RadioMessage tx_message;
 extern NRF_Module default_module;
 extern NRF_Module data_module;
 
-/// Interface with USB host ================================
+/// ================================ Interface with USB host ================================================================
 extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 extern uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 bool received_usb_host_responce = false;
@@ -22,12 +23,6 @@ typedef enum USBMessageType{
     USB_Command,
 } USBMessageType;
 
-typedef struct RegistrationInfo{
-    uint8_t ID;
-    uint8_t radiochannel;
-    uint8_t address[TX_PLOAD_WIDTH];
-} RegistrationInfo;
-
 // TODO FIXME: connect size of USB_Message with APP_RX_DATA_SIZE
 typedef struct USB_Message{
     USBMessageType msgType;
@@ -37,51 +32,57 @@ typedef struct USB_Message{
 USB_Message tx_usb_message = {0};
 USB_Message rx_usb_message = {0};
 
-/// usb device ================================
+
+/// ================================ USB device ================================================================
 uint8_t UsbDeviceID = 0;
 uint8_t UsbDeviceAddress[5] = {0};
 bool is_beamer_registration_complete = false;
+bool is_already_receiving_data = false;
+// this id for tracking sensors which lost connection
+uint8_t expected_sensor_id = 0;
 
-typedef struct RadioDevInfo{
-    uint8_t ID;// used to check if Beamer is registered and not lost connection
-    uint8_t Address[TX_ADR_WIDTH];
-}RadioDevInfo;
-
+// stuff below is used to convert uint8_t* data to specific format, depending on message type
+extern RadioDevInfo radiodevinfo;
+extern SensorData sensordata;
+extern uint16_t TmpID;
 
 /// Description of data:
-/// ID of Sensor/Beamer = array index
-/// Sensor/Beamer with corresponding ID registered <=> ID of array's element at (index==ID) != 0
+/// ID of Sensor/Beamer = its index in the array
+/// Sensor/Beamer with corresponding ID is registered <=> ID of array's element at (index==ID) != 0
 /// Sensor/Beamer with corresponding ID is lost connection <=> ID of array's element at (index==ID) == 0 for  index==ID <= LastBeamerID
-/// All Sensors/Beamers with ID > LastBeamerID has ID == 0 and not registered
-/// Element at index 0 is special
+/// All Sensors/Beamers with ID > LastBeamerID are not registered and thus has ID == 0
+/// Element at index 0 is special (can be used to check if list of registered devices is empty (LastID==0))
 
 // Beamers
-#define MAX_BEAMER_NUM 256 // TODO
+#define MAX_BEAMER_NUM 10 // TODO
 // TODO: change beamer_ids to bitset (so to store 256 bits will need 32 bytes, instead of 256)
-#define MAX_BEAMER_IDS (256/8)
+#define MAX_BEAMER_IDS (MAX_BEAMER_NUM/8) // one bit per beamer
 RadioDevInfo registered_beamers[MAX_BEAMER_NUM] = {0};
 uint8_t last_beamer_id = 0;
+uint8_t assigned_beamer_id = 0;
 
 // Sensors
-#define MAX_SENSOR_NUM 256 // TODO
+#define MAX_SENSOR_NUM 10 // TODO
 // TODO: change sensor_ids to bitset (so to store 256 bits will need 32 bytes, instead of 256)
-#define MAX_SENSOR_IDS (256/8)
+#define MAX_SENSOR_IDS (MAX_SENSOR_NUM/8) // one bit per sensor
 RadioDevInfo registered_sensors[MAX_SENSOR_NUM] = {0};
 uint8_t last_sensor_id = 0;
+uint8_t assigned_sensor_id = 0;
 
+#if 0
 // ==================== for beamer
 uint8_t my_id = 0;
 uint8_t usbdevice_id = 0;
 uint8_t USBDEVICE_ADDRESS[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
-extern uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH];
+extern const uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH];
 uint32_t delay_after_sync_signal = 0;
 
 // ==================== for sensor
-#if 0
 uint8_t my_id = 0;
 uint8_t usbdevice_id = 0;
 uint8_t last_beamer_id = 0;
 uint8_t USBDEVICE_ADDRESS[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
+extern const uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH];
 uint32_t delay_after_sync_signal = 0;
 #endif
 
@@ -93,52 +94,67 @@ void process_sensor_data();
 void process_beamer_registration_request();
 void process_sensor_registration_request();
 
+void send_assigned_radiodevinfo_back();
+void start_receiving_sensor_data();
+
+void try_register_beamer();
+bool try_reassign_beamer();
+void register_new_beamer_in_array();
+
+void try_register_sensor();
+void try_reassign_sensor();
+void register_new_sensor_in_array();
+
+void broadcast_startbeaming_sync_signal();
+
 /// ============================== Function definitions ==============================
 
+// Registering of usb device in usb host
 void register_usb_device()
 {
-#define usb_host_done 0
+    bool UsbHostDone = false;//TODO
+	//Send registration request to usb host
+	//Get UsbDeviceID and Address
+    if(UsbHostDone){
+        //
+        USB_Message msg = {0};
+        msg.msgType = USB_DeviceRegistrationRequest;
 
-#if usb_host_done
-    //Send registration request to usb host
-    //
-    USB_Message msg = {0};
-    msg.msgType = USB_DeviceRegistrationRequest;
+        if(is_usb_configured()){
+            CDC_Transmit_FS((uint8_t*)&msg, APP_RX_DATA_SIZE);
 
-    if(is_usb_configured()){
-        CDC_Transmit_FS((uint8_t*)&msg, APP_RX_DATA_SIZE);
+            // wait for host responce
+            while(!received_usb_host_responce){}
 
-        // wait for host responce
-        while(!received_usb_host_responce){}
+            //get usb device ID, usb device address
+            memcpy(&rx_usb_message, &UserRxBufferFS[0], APP_RX_DATA_SIZE);
 
-        //get usb device ID, usb device address
-        memcpy(&rx_usb_message, &UserRxBufferFS[0], APP_RX_DATA_SIZE);
-
-        if(rx_usb_message.msgType == USB_DeviceRegistrationInfo){
-            RegistrationInfo * reg_info = (RegistrationInfo * )&(rx_usb_message.data);
-            reg_info->ID;
-            reg_info->address;
-            reg_info->radiochannel;
+            if(rx_usb_message.msgType == USB_DeviceRegistrationInfo){
+                RadioDevInfo * reg_info = (RadioDevInfo * )&(rx_usb_message.data);
+                reg_info->id;
+                reg_info->address;
+                reg_info->radio_channel;
+            }
         }
     }
-#else //mock routine
-    UsbDeviceID = 1;
-    UsbDeviceAddress[0] = 11;
-    UsbDeviceAddress[1] = 22;
-    UsbDeviceAddress[2] = 33;
-    UsbDeviceAddress[3] = 44;
-    UsbDeviceAddress[4] = 55;
-
-#endif
+    else{ //mock routine
+        UsbDeviceID = 1;
+        UsbDeviceAddress[0] = 11;
+        UsbDeviceAddress[1] = 22;
+        UsbDeviceAddress[2] = 33;
+        UsbDeviceAddress[3] = 44;
+        UsbDeviceAddress[4] = 55;
+    }
 }
 
+// process message received from radiochannel depending on its type (header)
 void nrf_receive_callback()
 {
-    // get type of the message to determine its content and how to process it
-    RM_Typ_e type = radio_get_msgtype(rx_message.type);
-
     //TODO: remove blinking
     HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+
+    // get type of the message to determine its content and how to process it
+    RM_Typ_e type = radio_get_msgtype();
 
     switch (type) {
         case Typ_SensorData:
@@ -156,80 +172,261 @@ void nrf_receive_callback()
 
 }
 
-void process_sensor_data()
+// process message if message type is "sensor data"
+void send_sensor_data_to_usb_host(SensorData* snsrdata)
 {
-    //TODO: remove
-    is_beamer_registration_complete = true;
-
-    if(is_beamer_registration_complete){
-        // process data
-        // TODO
-        if(is_usb_configured()){
-            CDC_Transmit_FS((uint8_t*)&(rx_message.data), TX_PLOAD_WIDTH);
-        }
+    if(is_usb_configured()){
+        CDC_Transmit_FS((uint8_t*)snsrdata, sizeof(SensorData));
     }
 }
 
-void process_beamer_registration_request()
+void process_sensor_data()
 {
     // Determine source of packet
-    RM_WhoAmI_e whoami = radio_get_whoami(rx_message.type);
+    RM_WhoAmI_e whoami = radio_get_whoami();
+
+    // verify that sender of request is beamer
+    if (whoami != WhoAmI_Sensor){
+        return;
+    }
+
+    // Monitor sensors which lost connection (compare receiveid id with expected id)
+    // TODO
+    ++expected_sensor_id;
+
+    uint8_t curr_sensor_id = radio_rx_get_id();
+    if(curr_sensor_id != expected_sensor_id){
+        // expected_sensor_id is lost;
+        registered_sensors[expected_sensor_id].id = 0;
+        expected_sensor_id = curr_sensor_id;
+    }
+
+    // Check sensor's data to identify beamers which doens't work
+    // TODO
+
+    // send data to usb host
+    radio_rx_get_sensordata(&sensordata);
+
+    send_sensor_data_to_usb_host(&sensordata);
+
+    // If all sensors has sent data, send StartBeam sync signal
+    if (curr_sensor_id == last_sensor_id){
+        broadcast_startbeaming_sync_signal();
+    }
+
+}
+
+// process message if message type is "registration request from beamer"
+void process_beamer_registration_request()
+{
+    // get beamer's temporary id
+    radio_rx_get_tmp_id(&TmpID);
+
+    // Determine source of packet
+    RM_WhoAmI_e whoami = radio_get_whoami();
+
+    // verify that sender of request is beamer
     if (whoami != WhoAmI_Beamer){
         return;
     }
 
-    //check beamers which lost connection
+    //Register beamer and save its array index to assigned_beamer_id
+    try_register_beamer();
 
-    //special case: first registration
-    if(last_beamer_id == 0){
-        //no beamers has been registered yet
-        //increment last beamer id
-        ++last_beamer_id;
-        //assign ID and address
-        registered_beamers[last_beamer_id].ID = last_beamer_id;
+    // beamer has been registered <=> its ID > 0
+    if(assigned_beamer_id > 0){
+        // prepare radio message
+        radio_tx_set_message_header(WhoAmI_UsbDevice, Dest_Beamer, Typ_RespondRegistration);
+        radio_tx_set_radiodevinfo(&(registered_beamers[assigned_beamer_id]));
 
-        // TODO FIXME: verify it works
-        memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(rx_message.data[0]), TX_ADR_WIDTH);
+        // and send back to beamer
+        send_assigned_radiodevinfo_back();
     }
-    else for (uint8_t index = 1; index <= last_beamer_id; ++index){
-        if(registered_beamers[index].ID == 0){
-            //this beamer is in the list of lost connection
-            //assign its ID new beamer
-            registered_beamers[index].ID = index;
-            //no need to assign address - just use existent address from beamer/sensor which lost connection
-            // TODO FIXME: verify it works
-            // stop registration procedure
-            break;
+
+    // return if beamer registration is not complete
+    if(!is_beamer_registration_complete){
+        return;
+    }else{
+        //otherwise, start working mode if not already there
+        if(!is_already_receiving_data){
+            start_receiving_sensor_data();
         }
-        // if no beamer whic lost connection was reused, register new beamer
-        // increment last beamer id, assign it to new beamer
-        ++last_beamer_id;
-        registered_beamers[last_beamer_id].ID = last_beamer_id;
-        // TODO FIXME: verify it works
-        memcpy(&(registered_beamers[last_beamer_id].Address[0]), &(rx_message.data[0]), TX_ADR_WIDTH);
     }
 
-
-    // broadcast beamer ID
-    // TODO
+    // broadcast beamer ID - TODO
 }
 
+// process message if message type is "registration request from sensor"
 void process_sensor_registration_request()
 {
+    // get sensor's temporary id
+    radio_rx_get_tmp_id(&TmpID);
+
     // Determine source of packet
-    RM_WhoAmI_e whoami = radio_get_whoami(rx_message.type);
+    RM_WhoAmI_e whoami = radio_get_whoami();
+
+    // verify that sender of request is sensor
     if(whoami != WhoAmI_Sensor) {
         return;
     }
 
-    //register sensor
-    last_sensor_id++;
-    registered_sensors[last_sensor_id].ID = last_sensor_id;
-    // TODO FIXME: use actual beamer info
-    RadioDevInfo new_sensor_info;
-    memcpy(&(registered_sensors[last_sensor_id].Address[0]), &(new_sensor_info.Address[0]), TX_ADR_WIDTH);
-    // broadcast sensor ID
-    // TODO
+    // only register sensors if beamers are registered
+    if(!is_beamer_registration_complete){
+        return;
+    }
+
+    //Register sensor and save its array index to assigned_beamer_id
+    try_register_sensor();
+
+    // sensor has been registered <=> its ID > 0
+    if(assigned_sensor_id > 0){
+        // prepare radio message
+        radio_tx_set_message_header(WhoAmI_UsbDevice, Dest_Sensor, Typ_RespondRegistration);
+        radio_tx_set_radiodevinfo(&(registered_sensors[assigned_sensor_id]));
+
+        // and send back to sensor
+        send_assigned_radiodevinfo_back();
+    }
+
 }
 
+// finish processing message if message type is "registration request" (beamer/sensor)
+void send_assigned_radiodevinfo_back()
+{
+    TXX(&default_module);
+}
 
+// turn on data receiving radiomodule in rx mode
+void start_receiving_sensor_data()
+{
+    //TODO
+    // for now, use default radiomodule
+}
+
+// beamer registration routines
+void try_register_beamer()
+{
+    //initialize ID to zero
+    assigned_beamer_id = 0;
+
+    if(last_beamer_id == 0){
+        //no beamers has been registered yet
+        // increment last beamer id, assign it to new beamer
+        register_new_beamer_in_array();
+    }
+    else {
+        //check if there are beamers that marked as lost connection, if so - reuse one of them
+        try_reassign_beamer();
+        //check if succeeded
+        if(assigned_sensor_id == 0){
+            // if there was no beamer which lost connection, and there is a place for new beamer, register new beamer
+            if(last_beamer_id < MAX_BEAMER_NUM){
+                register_new_beamer_in_array();
+            }
+        }
+    }
+
+    // beamer has been registered <=> its ID > 0
+}
+bool try_reassign_beamer()
+{
+    //initialize ID to zero
+    assigned_beamer_id = 0;
+
+    for (uint8_t index = 1; index <= last_beamer_id; ++index){
+        if(registered_beamers[index].id == 0){
+            //use its ID and address for new beamer (will send them to new beamer afterwards)
+            assigned_beamer_id = index;
+            registered_beamers[assigned_beamer_id].id = assigned_beamer_id;
+            registered_beamers[assigned_beamer_id].prev_id = TmpID;
+
+            //no need to change address - just use existent address from beamer/sensor which lost connection
+            // TODO FIXME: verify that using existent address from the array works
+            // stop registration procedure
+            // TODO FIXME: verify that break
+            return;
+        }
+    }
+}
+void register_new_beamer_in_array()
+{
+    // increment last beamer id, assign it to new beamer
+    ++last_beamer_id;
+    assigned_beamer_id = last_beamer_id;
+
+    registered_beamers[assigned_beamer_id].id = assigned_beamer_id;
+    registered_beamers[assigned_beamer_id].prev_id = TmpID;
+    // TODO FIXME: verify it works
+    // use default address for now
+    memcpy(&(registered_beamers[assigned_beamer_id].address[0]), &(SENSORBEAM_DEFAULT_ADDRESS[0]), TX_ADR_WIDTH);
+}
+
+// sensor registration routines
+void try_register_sensor()
+{
+    //initialize ID to zero
+    assigned_sensor_id = 0;
+
+    if(last_sensor_id == 0){
+        //no sensors has been registered yet
+        // increment last sensor id, assign it to new beamer
+        register_new_sensor_in_array();
+    }
+    else {
+        //check if there are sensors that marked as lost connection, if so - reuse one of them
+        try_reassign_sensor();
+
+        //check if succeeded
+        if(assigned_sensor_id == 0){
+            // if there was no sensor which lost connection, and there is a place for new sensor, register new sensor
+            if(last_sensor_id < MAX_SENSOR_NUM){
+                register_new_sensor_in_array();
+            }
+        }
+    }
+    // sensor has been registered <=> its ID > 0
+}
+void try_reassign_sensor()
+{
+    //initialize ID to zero TODO: redundant?
+    assigned_sensor_id = 0;
+
+    // TODO FIXME: check that below works for last_sensor_id==0
+    // it will allow to remove separate routine for first registration
+    for (uint8_t index = 1; index <= last_sensor_id; ++index){
+        if(registered_sensors[index].id == 0){
+            //use its ID and address for new beamer (will send them to new beamer afterwards)
+            assigned_sensor_id = index;
+            registered_sensors[assigned_sensor_id].id = assigned_sensor_id;
+            registered_sensors[assigned_sensor_id].prev_id = TmpID;
+
+            //no need to change address - just use existent address from beamer/sensor which lost connection
+            // TODO FIXME: verify that using existent address from the array works
+            // stop registration procedure
+            // TODO FIXME: verify that break
+            return;
+        }
+    }
+}
+void register_new_sensor_in_array()
+{
+    // increment last beamer id, assign it to new beamer
+    ++last_sensor_id;
+    assigned_sensor_id = last_sensor_id;
+
+    registered_sensors[assigned_sensor_id].id = assigned_sensor_id;
+    registered_sensors[assigned_sensor_id].prev_id = TmpID;
+    // TODO FIXME: verify it works
+    // use default address for now
+    memcpy(&(registered_sensors[assigned_sensor_id].address[0]), &(SENSORBEAM_DEFAULT_ADDRESS[0]), TX_ADR_WIDTH);
+}
+
+void broadcast_startbeaming_sync_signal()
+{
+    // set header to tx_message
+    radio_tx_set_message_header(WhoAmI_UsbDevice,Dest_Beamer,Typ_SyncBeamer);
+
+    // transmit it using... datamodule? TODO - define which module to use
+    // for now, use default module anyway
+    TXX(&default_module);
+}

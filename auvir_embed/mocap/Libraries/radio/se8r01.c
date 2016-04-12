@@ -1,7 +1,7 @@
 //this is a copy and paste job made by F2k
 
 #include "se8r01.h"
-#include "se8r01_if.h"
+#include "radio_data_formats.h"
 #include "common.h"
 
 ///
@@ -15,16 +15,23 @@ extern uint16_t GPIO_LED_PIN;
 
 uint8_t gtemp[5];
 
+// Use two separate radiomodules for usb device
+NRF_Module default_module = {0};
+NRF_Module data_module = {0};
+
 // Define a static TX address
 const uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0};
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
-RadioMessage rx_message = {0};
-RadioMessage tx_message = {0};
+
+extern RadioMessage rx_message;
+extern RadioMessage tx_message;
 
 
 //===============  Function prototypes
+// should be defined in the application interface
+static void nrf24_setup_modules_gpio();
 
 static void nrf24_ce_set(NRF_Module * module, GPIO_PinState state);
 static void nrf24_csn_set(NRF_Module * module, GPIO_PinState state);
@@ -166,6 +173,24 @@ void nrf24_reset(NRF_Module * radiomodule)
 //========================================
 // Interface functions
 
+static void nrf24_setup_modules_gpio()
+{
+    default_module.CE.Pin = NRF24_CE1_Pin;
+    default_module.CE.Port = NRF24_CE1_GPIO_Port;
+    default_module.CSN.Pin = NRF24_CSN1_Pin;
+    default_module.CSN.Port = NRF24_CSN1_GPIO_Port;
+    default_module.IRQ.Pin = NRF24_IRQ1_Pin;
+    default_module.IRQ.Port = NRF24_IRQ1_GPIO_Port;
+
+    data_module.CE.Pin  = NRF24_CE2_Pin;
+    data_module.CE.Port = NRF24_CE2_GPIO_Port;
+    data_module.CSN.Pin = NRF24_CSN2_Pin;
+    data_module.CSN.Port= NRF24_CSN2_GPIO_Port;
+    data_module.IRQ.Pin = NRF24_IRQ2_Pin;
+    data_module.IRQ.Port= NRF24_IRQ2_GPIO_Port;
+}
+
+
 static void nrf24_ce_set(NRF_Module * module, GPIO_PinState state)
 {
     assert_param(state == LOW || state == HIGH);
@@ -269,11 +294,13 @@ void RXX(NRF_Module * radiomodule)
 {
     if( interrupt_happened(radiomodule)){
         delay_us(10);      //read reg too close after irq low not good
+        //TODO: pause receiving on current radiomodule
+        // ...
         nrf_receive_handler(radiomodule);
     }
 }
 
-void TXX(NRF_Module * radiomodule, uint8_t *data)
+void TXX(NRF_Module * radiomodule)
 {
     //power on
     //Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1  | Bit 0   |
