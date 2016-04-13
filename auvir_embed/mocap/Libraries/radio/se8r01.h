@@ -6,6 +6,7 @@
 ///
 
 #include "stm32f1xx_hal.h"
+#include "radio_data_formats.h"
 #include <stdbool.h>
 
 // Memory Map //
@@ -257,6 +258,11 @@ typedef struct NRF_Module{
     GPIO_PIN IRQ;
 } NRF_Module;
 
+typedef enum NRF_PowerState{
+    PowerOFF,
+    PowerON
+}NRF_PowerState;
+
 typedef enum {
  Power_plus5dBm1,
  Power_0dBm1,
@@ -283,6 +289,7 @@ typedef struct NRF24_InitTypeDef{
  uint8_t num_retries;
  uint8_t pipe;
 } NRF24_InitTypeDef;
+
 //TODO
 void setup_radio(NRF24_InitTypeDef* settings);
 
@@ -292,16 +299,18 @@ void nrf_receive_callback();
 // interface with radio
 void setup(NRF_Module * radiomodule);
 
+void update_radiochannel_settings(NRF_Module * radiomodule, RadioDevInfo * addr);
+
 // is intended to be used in GPIO interrupt handler
 void nrf_receive_handler(NRF_Module * radiomodule);
 
 // hack
 void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule);
 
-// receive data
-void RXX(NRF_Module *radiomodule);
+// receive rx_message
+void RXX(NRF_Module * radiomodule);
 
-// transmit data
+// transmit tx_message
 void TXX(NRF_Module * radiomodule);
 
 // state check functions

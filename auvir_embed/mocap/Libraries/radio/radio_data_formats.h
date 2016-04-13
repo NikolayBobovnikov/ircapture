@@ -13,6 +13,17 @@
 #define TX_PLOAD_WIDTH  32  // 32 uint8_ts TX payload
 #define RF_CHANNEL      40  //
 
+// for single person on motion platform, sensor will receive angles from all beamers.
+// In this case all registered beamers are nearby
+// But for multi person with arena platform, sensor won't be able to receive angles from all beamers,
+// Instead, each sensor should receive data from subset of beamers (e.g. which are nearby)
+// So we need to limit number of beamers for each sensor to get data from
+#define MAX_BEAMERS_PER_SENSOR 10 /// should be less or equal to MAX_BEAMER_NUM
+
+typedef struct RadioAddress{
+    uint8_t byte_array[TX_ADR_WIDTH];
+} RadioAddress;
+
 
 typedef struct RadioMessage{
     uint8_t header;
@@ -36,19 +47,57 @@ typedef struct RadioMessage{
 
 typedef struct RadioDevInfo{
     uint8_t id;
-    uint16_t prev_id; //TODO: workaround this. Need extra space and processing for prev_id
-    uint8_t usbdevice_id;
     uint8_t radio_channel;
-    uint8_t address[TX_PLOAD_WIDTH];
+    RadioAddress address;
+
+    uint16_t prev_id; //TODO: workaround this. Need extra space and processing for prev_id
+
+    uint8_t id_usbdevice;
+    RadioAddress address_usbdevice;
 } RadioDevInfo;
 
+typedef struct SingleBeamerData{
+    // TODO: get rid of beamer id, use array index instead. Low priority
+    uint8_t beamer_id;
+    uint16_t angle;
+}SingleBeamerData;
+
+
+typedef struct BeamerData{
+    SingleBeamerData beamer_data_array[MAX_BEAMERS_PER_SENSOR];
+}BeamerData;
+
+typedef struct IMUData{
+    //accel
+    uint16_t ax;
+    uint16_t ay;
+    uint16_t az;
+    //gyro
+    uint16_t gx;
+    uint16_t gy;
+    uint16_t gz;
+    //magnet
+    uint16_t mx;
+    uint16_t my;
+    uint16_t mz;
+}IMUData;
+
+typedef enum SensorDataType{
+    SDT_None,
+    SDT_IMUData,
+    SDT_BeamerData
+}SensorDataType;
+
+//TODO: make sure size of SensorData is the same as size of radio buffer (rx/tx payload) if it is not dynamic
 typedef struct SensorData{
-    uint8_t id;
-    // TODO
-    // to be specified
-    uint8_t beamer_id[10];
-    uint16_t angle[10];
-    uint16_t mpu_data[9];
+    uint8_t sensor_id;
+    SensorDataType datatype;
+    uint8_t data[30];
+    //Contents of data depends on the message type:
+    //SDT_BeamerData:
+    //BeamerData beamer_data[MAX_BEAMERS_PER_SENSOR]; //30 bytes
+    //SDT_IMUData:
+    //IMUData imu_data;                               //18 bytes
 } SensorData;
 
 
@@ -135,6 +184,8 @@ void radio_rx_get_sensordata(SensorData *snsrdata);
 void radio_tx_set_sensordata(SensorData * sensordata);
 
 
+/// ===================================== Sensor data type =====================================
+void get_sensordata_type();
 
 
 #endif //RADIO_DATA_FORMATS_H

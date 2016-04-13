@@ -60,9 +60,10 @@ void radio_tx_set_id(uint8_t id)
 
 void radio_rx_get_radiodevinfo(RadioDevInfo * rdinfo)
 {
-    memcpy(rdinfo, &(rx_message.data[0]), sizeof(RadioDevInfo));
+    //memcpy(rdinfo, &(rx_message.data[0]), sizeof(RadioDevInfo));
+
     // TODO FIXME: read on casting if it truncates redundant stuff - try simple casting like
-    //rdinfo = (RadioDevInfo*)&(rx_message.data[0]);
+    rdinfo = (RadioDevInfo*)&(rx_message.data[0]);
 }
 void radio_tx_set_radiodevinfo(RadioDevInfo* rdinfo)
 {
@@ -71,9 +72,9 @@ void radio_tx_set_radiodevinfo(RadioDevInfo* rdinfo)
 
 void radio_rx_get_sensordata(SensorData * snsrdata)
 {
-    memcpy(snsrdata, &(rx_message.data[0]), sizeof(SensorData));
+    //memcpy(snsrdata, &(rx_message.data[0]), sizeof(SensorData));
     // TODO FIXME: read on casting if it truncates redundant stuff - try simple casting like
-    //snsrdata = (SensorData*)&(rx_message.data[0]);
+    snsrdata = (SensorData*)&(rx_message.data[0]);
 }
 void radio_tx_set_sensordata(SensorData * snsrdata)
 {
@@ -82,3 +83,8 @@ void radio_tx_set_sensordata(SensorData * snsrdata)
 
 
 
+
+void get_sensordata_type()
+{
+
+}

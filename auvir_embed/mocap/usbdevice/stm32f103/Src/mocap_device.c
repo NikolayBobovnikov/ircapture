@@ -1,7 +1,7 @@
 #include "mocap_device.h"
 
 /// ================================ Interface with radio ================================================================
-extern const uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH];
+extern const RadioAddress Sensor_Beamer_DefaultAddress;
 extern uint8_t rx_buf[TX_PLOAD_WIDTH];
 extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 extern RadioMessage rx_message;
@@ -35,7 +35,7 @@ USB_Message rx_usb_message = {0};
 
 /// ================================ USB device ================================================================
 uint8_t UsbDeviceID = 0;
-uint8_t UsbDeviceAddress[5] = {0};
+RadioAddress UsbDeviceAddress = {0};
 bool is_beamer_registration_complete = false;
 bool is_already_receiving_data = false;
 // this id for tracking sensors which lost connection
@@ -45,6 +45,7 @@ uint8_t expected_sensor_id = 0;
 extern RadioDevInfo radiodevinfo;
 extern SensorData sensordata;
 extern uint16_t TmpID;
+BeamerData beamerdata = {0};
 
 /// Description of data:
 /// ID of Sensor/Beamer = its index in the array
@@ -54,7 +55,13 @@ extern uint16_t TmpID;
 /// Element at index 0 is special (can be used to check if list of registered devices is empty (LastID==0))
 
 // Beamers
-#define MAX_BEAMER_NUM 10 // TODO
+/// MAX_BEAMER_NUM should be greater or equal to MAX_BEAMERS_PER_SENSOR
+#if MAX_BEAMERS_PER_SENSOR > 10
+#define MAX_BEAMER_NUM MAX_BEAMERS_PER_SENSOR
+#else
+#define MAX_BEAMER_NUM 10
+#endif
+
 // TODO: change beamer_ids to bitset (so to store 256 bits will need 32 bytes, instead of 256)
 #define MAX_BEAMER_IDS (MAX_BEAMER_NUM/8) // one bit per beamer
 RadioDevInfo registered_beamers[MAX_BEAMER_NUM] = {0};
@@ -97,6 +104,7 @@ void process_sensor_registration_request();
 void send_assigned_radiodevinfo_back();
 void start_receiving_sensor_data();
 
+// registration
 void try_register_beamer();
 bool try_reassign_beamer();
 void register_new_beamer_in_array();
@@ -105,7 +113,12 @@ void try_register_sensor();
 void try_reassign_sensor();
 void register_new_sensor_in_array();
 
+// signals
 void broadcast_startbeaming_sync_signal();
+void send_reset_signal(RM_Dest_e dest, uint8_t id);
+
+// processing data
+void update_lost_beamers_from_sensordata();
 
 /// ============================== Function definitions ==============================
 
@@ -113,8 +126,8 @@ void broadcast_startbeaming_sync_signal();
 void register_usb_device()
 {
     bool UsbHostDone = false;//TODO
-	//Send registration request to usb host
-	//Get UsbDeviceID and Address
+    //Send registration request to usb host
+    //Get UsbDeviceID and Address
     if(UsbHostDone){
         //
         USB_Message msg = {0};
@@ -139,11 +152,11 @@ void register_usb_device()
     }
     else{ //mock routine
         UsbDeviceID = 1;
-        UsbDeviceAddress[0] = 11;
-        UsbDeviceAddress[1] = 22;
-        UsbDeviceAddress[2] = 33;
-        UsbDeviceAddress[3] = 44;
-        UsbDeviceAddress[4] = 55;
+        UsbDeviceAddress.byte_array[0] = 11;
+        UsbDeviceAddress.byte_array[1] = 22;
+        UsbDeviceAddress.byte_array[2] = 33;
+        UsbDeviceAddress.byte_array[3] = 44;
+        UsbDeviceAddress.byte_array[4] = 55;
     }
 }
 
@@ -157,17 +170,17 @@ void nrf_receive_callback()
     RM_Typ_e type = radio_get_msgtype();
 
     switch (type) {
-        case Typ_SensorData:
-            process_sensor_data();
-            break;
-        case Typ_BeamerRequestRegistration:
-            process_beamer_registration_request();
-            break;
-        case Typ_SensorRequestRegistration:
-            process_sensor_registration_request();
-            break;
-        default:
-            break;
+    case Typ_SensorData:
+        process_sensor_data();
+        break;
+    case Typ_BeamerRequestRegistration:
+        process_beamer_registration_request();
+        break;
+    case Typ_SensorRequestRegistration:
+        process_sensor_registration_request();
+        break;
+    default:
+        break;
     }
 
 }
@@ -180,6 +193,7 @@ void send_sensor_data_to_usb_host(SensorData* snsrdata)
     }
 }
 
+// receive data from sensor, either beamerdata of imudata
 void process_sensor_data()
 {
     // Determine source of packet
@@ -195,24 +209,29 @@ void process_sensor_data()
     ++expected_sensor_id;
 
     uint8_t curr_sensor_id = radio_rx_get_id();
-    if(curr_sensor_id != expected_sensor_id){
+    if(expected_sensor_id < curr_sensor_id){
         // expected_sensor_id is lost;
         registered_sensors[expected_sensor_id].id = 0;
         expected_sensor_id = curr_sensor_id;
     }
 
-    // Check sensor's data to identify beamers which doens't work
-    // TODO
-
-    // send data to usb host
+    // get sensordata
     radio_rx_get_sensordata(&sensordata);
 
-    send_sensor_data_to_usb_host(&sensordata);
+    // check type of data (beamer/sensor)
+    // do stuff special for beamer data
+    if(sensordata.datatype == SDT_BeamerData){
+        // Check sensor's data to identify beamers which doens't work
+        update_lost_beamers_from_sensordata();
 
-    // If all sensors has sent data, send StartBeam sync signal
-    if (curr_sensor_id == last_sensor_id){
-        broadcast_startbeaming_sync_signal();
+        // If all sensors has sent data, send StartBeam sync signal
+        if (curr_sensor_id == last_sensor_id){
+            broadcast_startbeaming_sync_signal();
+        }
     }
+
+    // send data to usb host
+    send_sensor_data_to_usb_host(&sensordata);
 
 }
 
@@ -340,7 +359,7 @@ bool try_reassign_beamer()
             registered_beamers[assigned_beamer_id].id = assigned_beamer_id;
             registered_beamers[assigned_beamer_id].prev_id = TmpID;
 
-            //no need to change address - just use existent address from beamer/sensor which lost connection
+            //no need to change address (both beamer and usbdevice) - just use existent address from beamer/sensor which lost connection
             // TODO FIXME: verify that using existent address from the array works
             // stop registration procedure
             // TODO FIXME: verify that break
@@ -356,9 +375,12 @@ void register_new_beamer_in_array()
 
     registered_beamers[assigned_beamer_id].id = assigned_beamer_id;
     registered_beamers[assigned_beamer_id].prev_id = TmpID;
-    // TODO FIXME: verify it works
+    registered_beamers[assigned_beamer_id].id_usbdevice = UsbDeviceID;
+
     // use default address for now
-    memcpy(&(registered_beamers[assigned_beamer_id].address[0]), &(SENSORBEAM_DEFAULT_ADDRESS[0]), TX_ADR_WIDTH);
+    memcpy(&(registered_beamers[assigned_beamer_id].address), &Sensor_Beamer_DefaultAddress, sizeof(RadioAddress));
+    memcpy(&(registered_beamers[assigned_beamer_id].address_usbdevice), &UsbDeviceAddress, sizeof(RadioAddress));
+
 }
 
 // sensor registration routines
@@ -418,7 +440,8 @@ void register_new_sensor_in_array()
     registered_sensors[assigned_sensor_id].prev_id = TmpID;
     // TODO FIXME: verify it works
     // use default address for now
-    memcpy(&(registered_sensors[assigned_sensor_id].address[0]), &(SENSORBEAM_DEFAULT_ADDRESS[0]), TX_ADR_WIDTH);
+    memcpy(&(registered_sensors[assigned_sensor_id].address), &Sensor_Beamer_DefaultAddress, sizeof(RadioAddress));
+    memcpy(&(registered_sensors[assigned_sensor_id].address), &UsbDeviceAddress, sizeof(RadioAddress));
 }
 
 void broadcast_startbeaming_sync_signal()
@@ -430,3 +453,40 @@ void broadcast_startbeaming_sync_signal()
     // for now, use default module anyway
     TXX(&default_module);
 }
+
+void send_reset_signal(RM_Dest_e dest, uint8_t id){
+    radio_tx_set_message_header(WhoAmI_UsbDevice, dest, Typ_Reset);
+    radio_tx_set_id(id);
+
+    //TODO: use data_module
+    TXX(&default_module);
+}
+
+void update_lost_beamers_from_sensordata()
+{
+    //TODO FIXME: check that typecasting works
+    //no deep copy, according to http://stackoverflow.com/questions/2302351/assign-one-struct-to-another-in-c#comment2268076_2302359
+    //http://stackoverflow.com/questions/2302351/assign-one-struct-to-another-in-c
+    beamerdata = *((BeamerData*)&sensordata.data[0]);
+    for (uint8_t index = 0; index < MAX_BEAMERS_PER_SENSOR; ++index)
+    {
+        // check if actual beamer data is filled with zero
+        // or fast way which is sufficient: check that beamer's ID is zero
+        // TODO: this works for "motion" platform
+        // TODO - how to determine beamer's ID in the future case of arena planform?
+        // for "arena" platform its impossible to infere beamer id from beamer_data_array index
+        if(beamerdata.beamer_data_array[index].beamer_id == 0)
+        {
+            // mark beamer as one which 'lost connection' or stopped to work
+            registered_beamers[index].id = 0;
+
+            // reset this beamer
+            send_reset_signal(Dest_Beamer, index);
+        }
+    }
+}
+
+
+
+
+

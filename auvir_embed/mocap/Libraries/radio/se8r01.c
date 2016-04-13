@@ -1,7 +1,6 @@
 //this is a copy and paste job made by F2k
 
 #include "se8r01.h"
-#include "radio_data_formats.h"
 #include "common.h"
 
 ///
@@ -20,7 +19,7 @@ NRF_Module default_module = {0};
 NRF_Module data_module = {0};
 
 // Define a static TX address
-const uint8_t SENSORBEAM_DEFAULT_ADDRESS[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
+const uint8_t Sensor_Beamer_DefaultAddress[TX_ADR_WIDTH] = {0x10,0x20,0x30,0xab,0xab};
 uint8_t TX_ADDRESS[TX_ADR_WIDTH]  = {0x10,0x20,0x30,0xab,0xab};
 uint8_t rx_buf[TX_PLOAD_WIDTH] = {0};
 uint8_t tx_buf[TX_PLOAD_WIDTH] = {0};
@@ -43,7 +42,7 @@ static void se8r01_powerup();
 static void se8r01_calibration(NRF_Module * radiomodule);
 static void se8r01_setup(NRF_Module * radiomodule);
 
-static void power_off(NRF_Module * radiomodule);
+static void set_power(NRF_Module * radiomodule, NRF_PowerState power_state);
 static void power_on_tx(NRF_Module * radiomodule);
 static void power_on_rx(NRF_Module * radiomodule);
 
@@ -245,7 +244,9 @@ void setup(NRF_Module * radiomodule)
 {
     nrf24_setup_modules_gpio();
 
+    // choose required module using SPI
     nrf24_csn_set(radiomodule, HIGH);
+    // disable module (go to STANDBY-1 mode)
     nrf24_ce_set(radiomodule, LOW);
 
     HAL_Delay(5);
@@ -267,6 +268,28 @@ void setup(NRF_Module * radiomodule)
     set_rx_tx_mode(radiomodule);
 }
 
+void radio_update_settings(NRF_Module *radiomodule, RadioDevInfo * devinfo)
+{
+    // deselect module using SPI
+    nrf24_csn_set(radiomodule, HIGH);
+    // disable module (go to STANDBY-1 mode)
+    nrf24_ce_set(radiomodule, LOW);
+
+
+    //Transmit address
+    nrf24_write_register_buf(radiomodule, iRF_BANK0_TX_ADDR, devinfo->address_usbdevice.byte_array, TX_ADR_WIDTH);
+
+    //Receive address
+    nrf24_write_register_buf(radiomodule, iRF_BANK0_RX_ADDR_P0, devinfo->address.byte_array, TX_ADR_WIDTH);
+
+    //RF channel
+    nrf24_write_register(radiomodule, iRF_BANK0_RF_CH, devinfo->radio_channel);
+
+    //resume listening
+    nrf24_ce_set(radiomodule, HIGH);
+
+}
+
 void nrf_receive_handler(NRF_Module * radiomodule)
 {
     // volatile is used to prevent optimizing out
@@ -274,7 +297,7 @@ void nrf_receive_handler(NRF_Module * radiomodule)
 
     //if(nrf24_is_data_ready())
     if ( status & (1 << RX_DR) ){
-         // read playload to rx_buf
+        // read playload to rx_buf
         //SPI_Read_Buf(R_RX_PAYLOAD, rx_buf, TX_PLOAD_WIDTH);
         SPI_Read_Buf(radiomodule, R_RX_PAYLOAD, (uint8_t*)&rx_message, TX_PLOAD_WIDTH);
         // TODO: flushing breaks rx stuff
@@ -296,7 +319,18 @@ void RXX(NRF_Module * radiomodule)
         delay_us(10);      //read reg too close after irq low not good
         //TODO: pause receiving on current radiomodule
         // ...
+
+        //pause receiving. TODO: redundant in the case of polling?
+        //set_power(radiomodule, PowerOFF);
+        nrf24_ce_set(radiomodule, LOW);
+
+        //process data
         nrf_receive_handler(radiomodule);
+
+        //resume receiving. TODO: redundant in the case of polling?
+        //set_power(radiomodule, PowerON);
+        nrf24_ce_set(radiomodule, HIGH);
+
     }
 }
 
@@ -315,7 +349,7 @@ void TXX(NRF_Module * radiomodule)
     //start transmission by toggling SE high for more than 10 us
     nrf24_ce_set(radiomodule, HIGH);
 
-//============== TODO: investigate
+    //============== TODO: investigate
     delay_us(10);
     //HAL_Delay(2);
 #if 1
@@ -366,6 +400,7 @@ static void radio_settings(NRF_Module * radiomodule)
     nrf24_write_register(radiomodule, iRF_BANK0_EN_RXADDR,(1<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
 
 
+    // SETUP_AW number of bytes for address
     //4 byte adress, but use 5 byte address! TODO: research http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
     // 11 5 bytes
     // 10 4 bytes
@@ -373,7 +408,7 @@ static void radio_settings(NRF_Module * radiomodule)
     // 00 Illegal
     uint8_t SETUP_AW_value = 0x02;
     if(TX_ADR_WIDTH == 5){
-      //TODO:
+        //TODO:
         //SETUP_AW_value = 0x3;
     }
     //TODO
@@ -448,18 +483,7 @@ static bool interrupt_happened(NRF_Module * radiomodule)
 {
     return (HAL_GPIO_ReadPin(radiomodule->IRQ.Port, radiomodule->IRQ.Pin) == LOW);
 }
-/**************************************************
- * Function: TX_Mode();
- *
- * Description:
- * This function initializes one IRQqRF24L01 device to
- * TX mode, set TX address, set RX address for auto.ack,
- * fill TX payload, select RF channel, datarate & TX pwr.
- * PWR_UP is set, CRC(2 uint8_ts) is enabled, & PRIM:TX.
- *
- * ToDo: One high pulse(>10us) on CE will now send this
- * packet and expext an acknowledgment from the RX device.
- **************************************************/
+
 static void se8r01_switch_bank(NRF_Module * radiomodule, uint8_t bankindex)
 {
     uint8_t temp0,temp1;
@@ -554,15 +578,15 @@ static void se8r01_calibration(NRF_Module * radiomodule)
     gtemp[3]=0x81;
     nrf24_write_register_buf(radiomodule, iRF_BANK1_RF_IVGEN, gtemp, 4);
 
-//    iBANK0
-//    CE 1
-//    Delay 30 us
-//    CE 0
-//    Delay 15 ms
-//    CE 1
-//    Delay 30 us
-//    CE 0
-//    Delay 15 ms
+    //    iBANK0
+    //    CE 1
+    //    Delay 30 us
+    //    CE 0
+    //    Delay 15 ms
+    //    CE 1
+    //    Delay 30 us
+    //    CE 0
+    //    Delay 15 ms
     se8r01_switch_bank(radiomodule, iBANK0);
     nrf24_ce_set(radiomodule, HIGH);
     delay_us(30);
@@ -653,9 +677,17 @@ static void se8r01_setup(NRF_Module * radiomodule)
     delay_us(2);
 }
 
-static void power_off(NRF_Module * radiomodule)
+static void set_power(NRF_Module * radiomodule, NRF_PowerState power_state)
 {
-    SPI_RW_Reg(radiomodule, W_REGISTER + CONFIG, 0x0D);//0x0D=1101
+    // TODO FIXME: check if it works
+    uint8_t config_reg = SPI_Read(radiomodule,CONFIG);
+    if(power_state == PowerOFF){
+        config_reg &= (~(1 << PWR_UP));//(~(1 << PWR_UP)) -  PWR_UP bit to 0 and all other bits to 1
+    }
+    else{
+        config_reg |= (1 << PWR_UP);//(1 << PWR_UP) -  PWR_UP bit to 1 and all other bits to 0
+    }
+    SPI_RW_Reg(radiomodule, W_REGISTER + CONFIG, config_reg);
     delay_us(20);
 }
 
@@ -783,4 +815,6 @@ static uint8_t nrf_getStatus(NRF_Module * radiomodule)
 {
     return SPI_Read(radiomodule, iRF_BANK0_STATUS);
 }
+
+
 
