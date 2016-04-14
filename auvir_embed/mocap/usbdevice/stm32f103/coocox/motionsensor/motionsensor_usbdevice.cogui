@@ -74,8 +74,7 @@
 </view>
 <view id="org.coocox.coassistant.view.CoAssistantView_debug" partName="Peripherals">
 <viewState horizontalPosition="0" verticalPosition="3">
-<selection>
-<element name="GPIOA"/>
+<selection>&#x0A;<element name="GPIOA"/>
 </selection>
 <registerValues baseAddress="Base Address: 0x40010800" description="Description:  General purpose I/O"/>
 </viewState>
@@ -148,8 +147,8 @@
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryBrowserAction"/>
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showVariablesAction"/>
 <hide_menu_item_id id="org.coocox.builder.ui.openProjectExplorerAction"/>
-<hide_menu_item_id id="org.coocox.codebugger.trace.actions.ShowTraceControlAction"/>
 <hide_menu_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
+<hide_menu_item_id id="org.coocox.codebugger.trace.actions.ShowTraceControlAction"/>
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showRegistersAction"/>
 <hide_toolbar_item_id id="org.eclipse.cdt.debug.internal.ui.actions.ToggleInstructionStepModeAction"/>
 <hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
@@ -258,44 +257,31 @@
 <view id="org.coocox.builder.ui.views.ProjectView"/>
 <fastViewBars/>
 <viewLayoutRec closeable="false" id="org.eclipse.debug.ui.DebugView"/>
-<layout>
-<mainWindow>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">
-<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<layout>&#x0A;<mainWindow>&#x0A;<info folder="true" part="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">&#x0A;<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="stickyFolderRight" ratio="0.74984205" ratioLeft="1187" ratioRight="396" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder appearance="2" expanded="2">
-<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
+<info folder="true" part="stickyFolderRight" ratio="0.74984205" ratioLeft="1187" ratioRight="396" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder appearance="2" expanded="2">&#x0A;<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@4501cf" ratio="0.7390841" ratioLeft="694" ratioRight="245" relationship="4" relative="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">
-<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@4501cf" ratio="0.7390841" ratioLeft="694" ratioRight="245" relationship="4" relative="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.debug.ui.DebugView" label="Debug"/>
 <page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 <part id="1"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@d5d4c6" ratio="0.48559454" ratioLeft="927" ratioRight="982" relationship="2" relative="org.eclipse.ui.internal.ViewStack@4501cf">
-<folder activePageID="org.eclipse.debug.ui.VariableView" appearance="2" expanded="2">
-<page content="org.coocox.codebugger.trace.ui.traceview" label="Semihosting"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@d5d4c6" ratio="0.48559454" ratioLeft="927" ratioRight="982" relationship="2" relative="org.eclipse.ui.internal.ViewStack@4501cf">&#x0A;<folder activePageID="org.eclipse.debug.ui.VariableView" appearance="2" expanded="2">&#x0A;<page content="org.coocox.codebugger.trace.ui.traceview" label="Semihosting"/>
 <page content="org.eclipse.debug.ui.VariableView" label="Variables"/>
 <page content="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser" label="Memory Browser"/>
 <page content="org.eclipse.debug.ui.ExpressionView" label="Expressions"/>
 <page content="org.eclipse.ui.views.ProblemView" label="Problems"/>
 <page content="org.eclipse.debug.ui.MemoryView" label="LabelNotFound"/>
 <page content="org.eclipse.debug.ui.ModuleView" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 <part id="1"/>
 <part id="2"/>
 <part id="3"/>
@@ -303,14 +289,11 @@
 </presentation>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@13d123f" ratio="0.71922475" ratioLeft="1373" ratioRight="536" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">
-<folder activePageID="org.eclipse.debug.ui.RegisterView" appearance="2" expanded="2">
-<page content="org.eclipse.cdt.dsf.debug.ui.disassembly.view" label="Disassembly"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@13d123f" ratio="0.71922475" ratioLeft="1373" ratioRight="536" relationship="2" relative="org.eclipse.ui.internal.ViewStack@168b0f0">&#x0A;<folder activePageID="org.eclipse.debug.ui.RegisterView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.cdt.dsf.debug.ui.disassembly.view" label="Disassembly"/>
 <page content="org.coocox.coassistant.view.CoAssistantView_debug" label="Peripherals"/>
 <page content="org.eclipse.debug.ui.RegisterView" label="Registers"/>
 <page content="org.eclipse.ui.views.ContentOutline" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
 <part id="1"/>
 <part id="2"/>
 </presentation>
@@ -336,10 +319,8 @@
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_usbdevice/Src/mocap_device.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_usbdevice/Src/main.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_usbdevice/common/radio/se8r01.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/motionsensor_usbdevice/Src/mocap_device.c"/>
 </editors>
-<item historyLabel="main.c" index="0">
-<position info="not_deleted" x="4570" y="0"/>
-</item>
 <item historyLabel="usbd_cdc_if.c" index="1">
 <position info="not_deleted" x="9255" y="0"/>
 </item>
@@ -484,8 +465,11 @@
 <item historyLabel="main.c" index="10">
 <position info="not_deleted" x="4167" y="0"/>
 </item>
-<item active="true" historyLabel="se8r01.c" index="11">
+<item historyLabel="se8r01.c" index="11">
 <position info="not_deleted" x="6520" y="0"/>
+</item>
+<item active="true" historyLabel="mocap_device.c" index="12">
+<position info="not_deleted" x="3021" y="0"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -499,56 +483,47 @@
 <org.coocox.welcome.ui.WelcomePage/>
 </persistable>
 </file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="radio_data_formats.h" tooltip="motionsensor_usbdevice/common/radio/radio_data_formats.h">
+<persistable path="/motionsensor_usbdevice/common/radio/radio_data_formats.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="se8r01.h" tooltip="motionsensor_usbdevice/common/radio/se8r01.h">
+<persistable path="/motionsensor_usbdevice/common/radio/se8r01.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="usbd_core.h" tooltip="motionsensor_usbdevice/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h">
+<persistable path="/motionsensor_usbdevice/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="radio_data_formats.c" tooltip="motionsensor_usbdevice/common/radio/radio_data_formats.c">
+<persistable path="/motionsensor_usbdevice/common/radio/radio_data_formats.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="mocap_device.h" tooltip="motionsensor_usbdevice/Inc/mocap_device.h">
+<persistable path="/motionsensor_usbdevice/Inc/mocap_device.h"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="usbd_cdc_if.c" tooltip="motionsensor_usbdevice/Src/usbd_cdc_if.c">
+<persistable path="/motionsensor_usbdevice/Src/usbd_cdc_if.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="motionsensor_usbdevice/Src/main.c">
+<persistable path="/motionsensor_usbdevice/Src/main.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="sensor.c" tooltip="motionsensor_usbdevice/Src/sensor.c">
+<persistable path="/motionsensor_usbdevice/Src/sensor.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f103xb.s" tooltip="motionsensor_usbdevice/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s">
+<persistable path="/motionsensor_usbdevice/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="infrared_rx.c" tooltip="motionsensor_receiver/Src/infrared_rx.c">
+<persistable path="/motionsensor_receiver/Src/infrared_rx.c"/>
+</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="se8r01.h" tooltip="motionsensor_receiver/common/radio/se8r01.h">
 <persistable path="/motionsensor_receiver/common/radio/se8r01.h"/>
 </file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="se8r01.c" tooltip="motionsensor_receiver/Libraries/radio/se8r01.c">
 <persistable path="/motionsensor_receiver/Libraries/radio/se8r01.c"/>
 </file>
-<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
-<persistable>
-<org.coocox.welcome.ui.WelcomePage/>
-</persistable>
-</file>
-<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
-<persistable>
-<org.coocox.welcome.ui.WelcomePage/>
-</persistable>
-</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="se8r01.c" tooltip="motionsensor_receiver/common/radio/se8r01.c">
 <persistable path="/motionsensor_receiver/common/radio/se8r01.c"/>
 </file>
-<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
-<persistable>
-<org.coocox.welcome.ui.WelcomePage/>
-</persistable>
-</file>
-<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
-<persistable>
-<org.coocox.welcome.ui.WelcomePage/>
-</persistable>
-</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="se8r01.h" tooltip="motionsensor_receiver/Libraries/radio/se8r01.h">
 <persistable path="/motionsensor_receiver/Libraries/radio/se8r01.h"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="mocap_device.c" tooltip="motionsensor_receiver/Src/mocap_device.c">
-<persistable path="/motionsensor_receiver/Src/mocap_device.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="usbd_cdc_if.c" tooltip="motionsensor_receiver/Src/usbd_cdc_if.c">
-<persistable path="/motionsensor_receiver/Src/usbd_cdc_if.c"/>
-</file>
-<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
-<persistable>
-<org.coocox.welcome.ui.WelcomePage/>
-</persistable>
-</file>
-<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
-<persistable>
-<org.coocox.welcome.ui.WelcomePage/>
-</persistable>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="common.c" tooltip="motionsensor_receiver/common/common.c">
-<persistable path="/motionsensor_receiver/common/common.c"/>
 </file>
 </mruList>
 </workbench>

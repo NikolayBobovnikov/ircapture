@@ -32,12 +32,13 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
-#include "se8r01.h"
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "infrared.h"
+#include "se8r01.h"
 #include "common.h"
+
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -57,31 +58,12 @@ TIM_HandleTypeDef htim4;
 
 // TODO: cleanup when done debugging
 const bool _debug = true;
+const TIM_HandleTypeDef * phtim_envelop = &htim3;
+const TIM_HandleTypeDef * phtim_pwm = &htim4;
 
-TIM_HandleTypeDef *phtim_envelop = &htim3;
-TIM_HandleTypeDef *phtim_pwm = &htim4;
-
-/// ======================= USART stuff =======================
-HAL_StatusTypeDef status;
-extern DataFrame_t tx_data_frame;
-
-enum UART_Commands {
-  UART_COMMAND_NOT_RECEIVED = 0,
-  UART_DEBUG_DATA_TRANSMIT,
-  UART_DEBUG_DATA_TRANSMIT_OK,
-  UART_ECHO
-};
-uint8_t command = UART_COMMAND_NOT_RECEIVED;
-uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
-
-typedef struct
-{
-    uint8_t _ir_hub_id;
-    uint8_t _ir_sensor_id;
-    DataFrame_t data;
-} USART_msg_t;
-
-USART_msg_t uart_msg;
+/// interface with radio
+extern NRF_Module default_module;
+extern NRF_Module data_module;
 
 /* USER CODE END PV */
 
@@ -92,15 +74,16 @@ static void MX_DMA_Init(void);
 static void MX_CRC_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
-static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
-static void MX_USART1_UART_Init(void);
+static void MX_TIM2_Init(void);
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+                
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-void notify_transmission_finished();
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+void IR_TIM_Init(TIM_HandleTypeDef* p_envelop, TIM_HandleTypeDef* p_pwm);
 
 /* USER CODE END PFP */
 
@@ -129,24 +112,27 @@ int main(void)
   MX_CRC_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
-  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_USART1_UART_Init();
+  MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
+  // TODO verify that changing constants in infrared.h affects begaviour (are applied in timers)
+  IR_TIM_Init(phtim_envelop, phtim_pwm);
+
   init_beamer_channels_gpio();
-  HAL_TIM_Base_Start_IT(phtim_envelop);      // envelop
-  HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);  // pwm
+
+  // envelop
+  HAL_TIM_Base_Start_IT(phtim_envelop);
+  // pwm
+  HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);
 
   // TODO: this is requred. Refactor to avoid possible mistakes in the future
   // start usec delay timer
   HAL_TIM_Base_Start(&htim2);
+  // TODO: make more clean TODOs in the future. What the heck is required?!
 
-  bool is_transmitter = (mode =='t');
-  bool is_receiver = !is_transmitter;
-
-  setup();
+  setup(&default_module);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -154,9 +140,6 @@ int main(void)
   while (1) {
     init_data();
     sensor_send_data();
-    //RXX();
-    //ReceiveDataToSend();
-    //HAL_UART_Receive_IT(&huart1, &uart_msg, sizeof(uart_msg));
 
   /* USER CODE END WHILE */
 
@@ -182,7 +165,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -219,8 +203,8 @@ void MX_SPI1_Init(void)
   hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 10;
   HAL_SPI_Init(&hspi1);
 
@@ -231,7 +215,7 @@ void MX_SPI2_Init(void)
 {
 
   hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_SLAVE;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
@@ -239,8 +223,8 @@ void MX_SPI2_Init(void)
   hspi2.Init.NSS = SPI_NSS_SOFT;
   hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi2.Init.CRCPolynomial = 10;
   HAL_SPI_Init(&hspi2);
 
@@ -250,22 +234,22 @@ void MX_SPI2_Init(void)
 void MX_TIM2_Init(void)
 {
 
-    TIM_ClockConfigTypeDef sClockSourceConfig;
-    TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
 
-    htim2.Instance = TIM2;
-    htim2.Init.Prescaler = 0;
-    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = DELAY_PRESCALER;
-    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_Base_Init(&htim2);
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 0;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim2);
 
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
 
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 
 }
 
@@ -277,9 +261,9 @@ void MX_TIM3_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = envelop_timer_prescaler;
+  htim3.Init.Prescaler = (72-1);
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = DataBitLength;
+  htim3.Init.Period = (500-1);
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim3);
 
@@ -301,9 +285,9 @@ void MX_TIM4_Init(void)
   TIM_OC_InitTypeDef sConfigOC;
 
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = pwm_timer_prescaler;
+  htim4.Init.Prescaler = 0;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = pwm_timer_period;
+  htim4.Init.Period = (1880-1);
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   HAL_TIM_Base_Init(&htim4);
 
@@ -317,38 +301,36 @@ void MX_TIM4_Init(void)
   HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = pwm_pulse_width;
+  sConfigOC.Pulse = (940-1);
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4);
 
-}
-
-/* USART1 init function */
-void MX_USART1_UART_Init(void)
-{
+  HAL_TIM_MspPostInit(&htim4);
 
 }
 
-/**
+/** 
   * Enable DMA controller clock
   */
-void MX_DMA_Init(void)
+void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
 
 }
 
-/** Configure pins as
-        * Analog
-        * Input
+/** Configure pins as 
+        * Analog 
+        * Input 
         * Output
         * EVENT_OUT
         * EXTI
@@ -359,26 +341,43 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
-  __GPIOD_CLK_ENABLE();
-  __GPIOA_CLK_ENABLE();
-  __GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_4, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
-void notify_transmission_finished() {
-  responce = UART_DEBUG_DATA_TRANSMIT_OK;
 
-  uart_msg._ir_sensor_id = 1;
-  uart_msg._ir_hub_id = 2;
-  uart_msg.data = tx_data_frame;
-
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void IR_TIM_Init(TIM_HandleTypeDef* p_envelop, TIM_HandleTypeDef* p_pwm)
 {
-    tx_data_frame = uart_msg.data;
-    sensor_send_data();
+  p_envelop->Init.Period = pwm_timer_period;
+  HAL_TIM_Base_Init(p_envelop);
+
+  p_pwm->Init.Prescaler = envelop_timer_prescaler;
+  p_pwm->Init.Period = DataBitLength;
+  HAL_TIM_Base_Init(p_pwm);
 }
 
 /* USER CODE END 4 */
@@ -406,10 +405,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

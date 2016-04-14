@@ -2,14 +2,14 @@
   *************** (C) COPYRIGHT 2015 STMicroelectronics ************************
   * @file      startup_stm32f103xb.s
   * @author    MCD Application Team
-  * @version   V4.0.1
-  * @date      31-July-2015
+  * @version   V4.0.2
+  * @date      18-December-2015
   * @brief     STM32F103xB Devices vector table for Atollic toolchain.
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,
   *                - Set the vector table entries with the exceptions ISR address
-  *                - Configure the clock system
+  *                - Configure the clock system   
   *                - Branches to main in the C library (which eventually
   *                  calls main()).
   *            After Reset the Cortex-M3 processor is in Thread mode,

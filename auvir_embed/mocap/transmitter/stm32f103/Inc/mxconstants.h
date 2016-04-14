@@ -37,13 +37,6 @@
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
-//#define envelop_timer_prescaler 72 - 1
-//#define StartStopBitLength 400 - 1
-//#define DataBitLength 800 - 1
-//#define DelayBetweenDataFramesTotal 14000 - 1
-//#define pwm_timer_prescaler 0
-//#define pwm_timer_period 1880 - 1
-//#define pwm_pulse_width 940 - 1
 
 /* USER CODE BEGIN Private defines */
 
@@ -51,10 +44,10 @@
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
