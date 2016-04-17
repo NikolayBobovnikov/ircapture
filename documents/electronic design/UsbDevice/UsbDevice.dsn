@@ -1,0 +1,246 @@
+(pcb "/home/nikolay/work/dev/auvir/documents/electronic design/UsbDevice/UsbDevice.dsn"
+  (parser
+    (string_quote ")
+    (space_in_quoted_tokens on)
+    (host_cad "KiCad's Pcbnew")
+    (host_version "4.0.2-4+6225~38~ubuntu15.10.1-stable")
+  )
+  (resolution um 10)
+  (unit um)
+  (structure
+    (layer F.Cu
+      (type signal)
+      (property
+        (index 0)
+      )
+    )
+    (layer B.Cu
+      (type signal)
+      (property
+        (index 1)
+      )
+    )
+    (boundary
+      (rect pcb 139672 -77595 165128 -134099)
+    )
+    (via "Via[0-1]_600:400_um")
+    (rule
+      (width 250)
+      (clearance 200.1)
+      (clearance 200.1 (type default_smd))
+      (clearance 50 (type smd_smd))
+    )
+  )
+  (placement
+    (component Pin_Headers:Pin_Header_Straight_1x20
+      (place P1 144780 -83820 front 0 (PN CONN_01X20))
+      (place P2 160020 -83820 front 0 (PN CONN_01X20))
+    )
+    (component se8r01_smd:SE8R01_SMD
+      (place U1 158369 -115824 front 180 (PN "NRF24L01-BRKOUT"))
+      (place U2 146431 -100076 front 0 (PN "NRF24L01-BRKOUT"))
+    )
+  )
+  (library
+    (image Pin_Headers:Pin_Header_Straight_1x20
+      (outline (path signal 50  -1750 1750  -1750 -50050))
+      (outline (path signal 50  1750 1750  1750 -50050))
+      (outline (path signal 50  -1750 1750  1750 1750))
+      (outline (path signal 50  -1750 -50050  1750 -50050))
+      (outline (path signal 150  1270 -1270  1270 -49530))
+      (outline (path signal 150  1270 -49530  -1270 -49530))
+      (outline (path signal 150  -1270 -49530  -1270 -1270))
+      (outline (path signal 150  1550 1550  1550 0))
+      (outline (path signal 150  1270 -1270  -1270 -1270))
+      (outline (path signal 150  -1550 0  -1550 1550))
+      (outline (path signal 150  -1550 1550  1550 1550))
+      (pin Rect[A]Pad_2032x1727.2_um 1 0 0)
+      (pin Oval[A]Pad_2032x1727.2_um 2 0 -2540)
+      (pin Oval[A]Pad_2032x1727.2_um 3 0 -5080)
+      (pin Oval[A]Pad_2032x1727.2_um 4 0 -7620)
+      (pin Oval[A]Pad_2032x1727.2_um 5 0 -10160)
+      (pin Oval[A]Pad_2032x1727.2_um 6 0 -12700)
+      (pin Oval[A]Pad_2032x1727.2_um 7 0 -15240)
+      (pin Oval[A]Pad_2032x1727.2_um 8 0 -17780)
+      (pin Oval[A]Pad_2032x1727.2_um 9 0 -20320)
+      (pin Oval[A]Pad_2032x1727.2_um 10 0 -22860)
+      (pin Oval[A]Pad_2032x1727.2_um 11 0 -25400)
+      (pin Oval[A]Pad_2032x1727.2_um 12 0 -27940)
+      (pin Oval[A]Pad_2032x1727.2_um 13 0 -30480)
+      (pin Oval[A]Pad_2032x1727.2_um 14 0 -33020)
+      (pin Oval[A]Pad_2032x1727.2_um 15 0 -35560)
+      (pin Oval[A]Pad_2032x1727.2_um 16 0 -38100)
+      (pin Oval[A]Pad_2032x1727.2_um 17 0 -40640)
+      (pin Oval[A]Pad_2032x1727.2_um 18 0 -43180)
+      (pin Oval[A]Pad_2032x1727.2_um 19 0 -45720)
+      (pin Oval[A]Pad_2032x1727.2_um 20 0 -48260)
+    )
+    (image se8r01_smd:SE8R01_SMD
+      (outline (path signal 150  0 0  12000 0))
+      (outline (path signal 150  12000 0  12000 18000))
+      (outline (path signal 150  12000 18000  0 18000))
+      (outline (path signal 150  0 18000  0 0))
+      (pin Rect[T]Pad_800x2000_um 1 1492 1334)
+      (pin Rect[T]Pad_800x2000_um 2 2762 1334)
+      (pin Rect[T]Pad_800x2000_um 3 4032 1334)
+      (pin Rect[T]Pad_800x2000_um 4 5302 1334)
+      (pin Rect[T]Pad_800x2000_um 5 6572 1334)
+      (pin Rect[T]Pad_800x2000_um 6 7842 1334)
+      (pin Rect[T]Pad_800x2000_um 7 9112 1334)
+      (pin Rect[T]Pad_800x2000_um 8 10382 1334)
+    )
+    (padstack Oval[A]Pad_2032x1727.2_um
+      (shape (path F.Cu 1727.2  -152.4 0  152.4 0))
+      (shape (path B.Cu 1727.2  -152.4 0  152.4 0))
+      (attach off)
+    )
+    (padstack Rect[A]Pad_2032x1727.2_um
+      (shape (rect F.Cu -1016 -863.6 1016 863.6))
+      (shape (rect B.Cu -1016 -863.6 1016 863.6))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_800x2000_um
+      (shape (rect F.Cu -400 -1000 400 1000))
+      (attach off)
+    )
+    (padstack "Via[0-1]_600:400_um"
+      (shape (circle F.Cu 600))
+      (shape (circle B.Cu 600))
+      (attach off)
+    )
+  )
+  (network
+    (net "Net-(P1-Pad1)"
+      (pins P1-1)
+    )
+    (net "Net-(P1-Pad2)"
+      (pins P1-2)
+    )
+    (net "Net-(P1-Pad3)"
+      (pins P1-3)
+    )
+    (net "Net-(P1-Pad4)"
+      (pins P1-4)
+    )
+    (net "Net-(P1-Pad5)"
+      (pins P1-5)
+    )
+    (net "Net-(P1-Pad6)"
+      (pins P1-6)
+    )
+    (net "Net-(P1-Pad7)"
+      (pins P1-7)
+    )
+    (net "Net-(P1-Pad8)"
+      (pins P1-8)
+    )
+    (net "Net-(P1-Pad9)"
+      (pins P1-9)
+    )
+    (net "Net-(P1-Pad10)"
+      (pins P1-10)
+    )
+    (net "Net-(P1-Pad11)"
+      (pins P1-11)
+    )
+    (net "Net-(P1-Pad12)"
+      (pins P1-12)
+    )
+    (net "Net-(P1-Pad13)"
+      (pins P1-13)
+    )
+    (net "Net-(P1-Pad14)"
+      (pins P1-14)
+    )
+    (net "Net-(P1-Pad15)"
+      (pins P1-15)
+    )
+    (net "Net-(P1-Pad16)"
+      (pins P1-16)
+    )
+    (net "Net-(P1-Pad17)"
+      (pins P1-17)
+    )
+    (net "Net-(P1-Pad18)"
+      (pins P1-18)
+    )
+    (net GND
+      (pins P1-19 P2-1 U1-1 U2-1)
+    )
+    (net 3.3v
+      (pins P1-20 P2-3 U1-2 U2-2)
+    )
+    (net "Net-(P2-Pad2)"
+      (pins P2-2)
+    )
+    (net "Net-(P2-Pad4)"
+      (pins P2-4)
+    )
+    (net "Net-(P2-Pad5)"
+      (pins P2-5)
+    )
+    (net "Net-(P2-Pad6)"
+      (pins P2-6)
+    )
+    (net IRQ2
+      (pins P2-7 U2-8)
+    )
+    (net IRQ1
+      (pins P2-8 U1-8)
+    )
+    (net SPI1_MOSI
+      (pins P2-9 U1-6 U2-6)
+    )
+    (net SPI1_MISO
+      (pins P2-10 U1-7 U2-7)
+    )
+    (net SPI1_SCK
+      (pins P2-11 U1-5 U2-5)
+    )
+    (net "Net-(P2-Pad12)"
+      (pins P2-12)
+    )
+    (net CE2
+      (pins P2-13 U2-3)
+    )
+    (net CSN_2
+      (pins P2-14 U2-4)
+    )
+    (net CE1
+      (pins P2-15 U1-3)
+    )
+    (net CSN_1
+      (pins P2-16 U1-4)
+    )
+    (net "Net-(P2-Pad17)"
+      (pins P2-17)
+    )
+    (net "Net-(P2-Pad18)"
+      (pins P2-18)
+    )
+    (net "Net-(P2-Pad19)"
+      (pins P2-19)
+    )
+    (net "Net-(P2-Pad20)"
+      (pins P2-20)
+    )
+    (class kicad_default "" 3.3v CE1 CE2 CSN_1 CSN_2 GND IRQ1 IRQ2 "Net-(P1-Pad1)"
+      "Net-(P1-Pad10)" "Net-(P1-Pad11)" "Net-(P1-Pad12)" "Net-(P1-Pad13)"
+      "Net-(P1-Pad14)" "Net-(P1-Pad15)" "Net-(P1-Pad16)" "Net-(P1-Pad17)"
+      "Net-(P1-Pad18)" "Net-(P1-Pad2)" "Net-(P1-Pad3)" "Net-(P1-Pad4)" "Net-(P1-Pad5)"
+      "Net-(P1-Pad6)" "Net-(P1-Pad7)" "Net-(P1-Pad8)" "Net-(P1-Pad9)" "Net-(P2-Pad12)"
+      "Net-(P2-Pad17)" "Net-(P2-Pad18)" "Net-(P2-Pad19)" "Net-(P2-Pad2)" "Net-(P2-Pad20)"
+      "Net-(P2-Pad4)" "Net-(P2-Pad5)" "Net-(P2-Pad6)" SPI1_MISO SPI1_MOSI
+      SPI1_SCK
+      (circuit
+        (use_via Via[0-1]_600:400_um)
+      )
+      (rule
+        (width 250)
+        (clearance 200.1)
+      )
+    )
+  )
+  (wiring
+  )
+)

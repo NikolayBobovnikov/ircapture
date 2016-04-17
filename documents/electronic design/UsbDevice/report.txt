@@ -1,0 +1,132 @@
+Info: Reading netlist file "/home/nikolay/work/dev/auvir/documents/electronic design/UsbDevice/UsbDevice.net".
+
+Info: Using references to match components and footprints.
+
+Info: Checking netlist component footprint "P1:/57137486:Pin_Headers:Pin_Header_Straight_1x20".
+
+Adding new component "P1:/57137486" footprint "Pin_Headers:Pin_Header_Straight_1x20".
+
+Changing component "P1:/57137486" pin "1" net name from "" to "Net-(P1-Pad1)".
+
+Changing component "P1:/57137486" pin "2" net name from "" to "Net-(P1-Pad2)".
+
+Changing component "P1:/57137486" pin "3" net name from "" to "Net-(P1-Pad3)".
+
+Changing component "P1:/57137486" pin "4" net name from "" to "Net-(P1-Pad4)".
+
+Changing component "P1:/57137486" pin "5" net name from "" to "Net-(P1-Pad5)".
+
+Changing component "P1:/57137486" pin "6" net name from "" to "Net-(P1-Pad6)".
+
+Changing component "P1:/57137486" pin "7" net name from "" to "Net-(P1-Pad7)".
+
+Changing component "P1:/57137486" pin "8" net name from "" to "Net-(P1-Pad8)".
+
+Changing component "P1:/57137486" pin "9" net name from "" to "Net-(P1-Pad9)".
+
+Changing component "P1:/57137486" pin "10" net name from "" to "Net-(P1-Pad10)".
+
+Changing component "P1:/57137486" pin "11" net name from "" to "Net-(P1-Pad11)".
+
+Changing component "P1:/57137486" pin "12" net name from "" to "Net-(P1-Pad12)".
+
+Changing component "P1:/57137486" pin "13" net name from "" to "Net-(P1-Pad13)".
+
+Changing component "P1:/57137486" pin "14" net name from "" to "Net-(P1-Pad14)".
+
+Changing component "P1:/57137486" pin "15" net name from "" to "Net-(P1-Pad15)".
+
+Changing component "P1:/57137486" pin "16" net name from "" to "Net-(P1-Pad16)".
+
+Changing component "P1:/57137486" pin "17" net name from "" to "Net-(P1-Pad17)".
+
+Changing component "P1:/57137486" pin "18" net name from "" to "Net-(P1-Pad18)".
+
+Changing component "P1:/57137486" pin "19" net name from "" to "GND".
+
+Changing component "P1:/57137486" pin "20" net name from "" to "3.3v".
+
+Info: Checking netlist component footprint "P2:/571374D5:Pin_Headers:Pin_Header_Straight_1x20".
+
+Adding new component "P2:/571374D5" footprint "Pin_Headers:Pin_Header_Straight_1x20".
+
+Changing component "P2:/571374D5" pin "1" net name from "" to "GND".
+
+Changing component "P2:/571374D5" pin "2" net name from "" to "Net-(P2-Pad2)".
+
+Changing component "P2:/571374D5" pin "3" net name from "" to "3.3v".
+
+Changing component "P2:/571374D5" pin "4" net name from "" to "Net-(P2-Pad4)".
+
+Changing component "P2:/571374D5" pin "5" net name from "" to "Net-(P2-Pad5)".
+
+Changing component "P2:/571374D5" pin "6" net name from "" to "Net-(P2-Pad6)".
+
+Changing component "P2:/571374D5" pin "7" net name from "" to "IRQ2".
+
+Changing component "P2:/571374D5" pin "8" net name from "" to "IRQ1".
+
+Changing component "P2:/571374D5" pin "9" net name from "" to "SPI1_MOSI".
+
+Changing component "P2:/571374D5" pin "10" net name from "" to "SPI1_MISO".
+
+Changing component "P2:/571374D5" pin "11" net name from "" to "SPI1_SCK".
+
+Changing component "P2:/571374D5" pin "12" net name from "" to "Net-(P2-Pad12)".
+
+Changing component "P2:/571374D5" pin "13" net name from "" to "CE2".
+
+Changing component "P2:/571374D5" pin "14" net name from "" to "CSN_2".
+
+Changing component "P2:/571374D5" pin "15" net name from "" to "CE1".
+
+Changing component "P2:/571374D5" pin "16" net name from "" to "CSN_1".
+
+Changing component "P2:/571374D5" pin "17" net name from "" to "Net-(P2-Pad17)".
+
+Changing component "P2:/571374D5" pin "18" net name from "" to "Net-(P2-Pad18)".
+
+Changing component "P2:/571374D5" pin "19" net name from "" to "Net-(P2-Pad19)".
+
+Changing component "P2:/571374D5" pin "20" net name from "" to "Net-(P2-Pad20)".
+
+Info: Checking netlist component footprint "U1:/57138139:se8r01_smd:SE8R01_SMD".
+
+Adding new component "U1:/57138139" footprint "se8r01_smd:SE8R01_SMD".
+
+Changing component "U1:/57138139" pin "1" net name from "" to "GND".
+
+Changing component "U1:/57138139" pin "2" net name from "" to "3.3v".
+
+Changing component "U1:/57138139" pin "3" net name from "" to "CE1".
+
+Changing component "U1:/57138139" pin "4" net name from "" to "CSN_1".
+
+Changing component "U1:/57138139" pin "5" net name from "" to "SPI1_SCK".
+
+Changing component "U1:/57138139" pin "6" net name from "" to "SPI1_MOSI".
+
+Changing component "U1:/57138139" pin "7" net name from "" to "SPI1_MISO".
+
+Changing component "U1:/57138139" pin "8" net name from "" to "IRQ1".
+
+Info: Checking netlist component footprint "U2:/5713817D:se8r01_smd:SE8R01_SMD".
+
+Adding new component "U2:/5713817D" footprint "se8r01_smd:SE8R01_SMD".
+
+Changing component "U2:/5713817D" pin "1" net name from "" to "GND".
+
+Changing component "U2:/5713817D" pin "2" net name from "" to "3.3v".
+
+Changing component "U2:/5713817D" pin "3" net name from "" to "CE2".
+
+Changing component "U2:/5713817D" pin "4" net name from "" to "CSN_2".
+
+Changing component "U2:/5713817D" pin "5" net name from "" to "SPI1_SCK".
+
+Changing component "U2:/5713817D" pin "6" net name from "" to "SPI1_MOSI".
+
+Changing component "U2:/5713817D" pin "7" net name from "" to "SPI1_MISO".
+
+Changing component "U2:/5713817D" pin "8" net name from "" to "IRQ2".
+

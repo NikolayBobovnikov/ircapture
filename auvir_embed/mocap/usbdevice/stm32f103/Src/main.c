@@ -275,6 +275,17 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(LED_DBG_GPIO_Port, &GPIO_InitStruct);
 
+
+//#define NRF24_CSN1_Pin A0
+//#define NRF24_CE1_Pin  A1
+//#define NRF24_CSN2_Pin A2
+//#define NRF24_CE2_Pin  A3
+//#define NRF24_IRQ1_Pin B0
+//#define NRF24_IRQ2_Pin B1
+//    PA5     ------> SPI1_SCK
+//    PA6     ------> SPI1_MISO
+//    PA7     ------> SPI1_MOSI
+
 }
 
 /* USER CODE BEGIN 4 */
