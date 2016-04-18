@@ -37,7 +37,7 @@
   )
 
   (setup
-    (last_trace_width 0.25)
+    (last_trace_width 0.5)
     (trace_clearance 0.2)
     (zone_clearance 0.508)
     (zone_45_only no)
@@ -142,7 +142,7 @@
 
   (net_class Default "This is the default net class."
     (clearance 0.2)
-    (trace_width 0.25)
+    (trace_width 0.5)
     (via_dia 0.6)
     (via_drill 0.4)
     (uvia_dia 0.3)
@@ -1056,8 +1056,8 @@
   (segment (start 151.717 49.187) (end 151.717 50.879) (width 0.25) (layer F.Cu) (net 23))
   (segment (start 153.035 52.197) (end 211.582 52.197) (width 0.25) (layer F.Cu) (net 23) (tstamp 57154366))
   (segment (start 151.717 50.879) (end 153.035 52.197) (width 0.25) (layer F.Cu) (net 23) (tstamp 5715435F))
-  (segment (start 183.3196 50.1498) (end 214.6148 50.1498) (width 0.25) (layer F.Cu) (net 24))
-  (segment (start 214.6148 50.1498) (end 223.9772 59.5122) (width 0.25) (layer F.Cu) (net 24) (tstamp 57154497))
+  (segment (start 183.3196 50.1498) (end 214.6148 50.1498) (width 0.5) (layer F.Cu) (net 24) (status 400000))
+  (segment (start 223.9772 59.5122) (end 214.6148 50.1498) (width 0.5) (layer F.Cu) (net 24) (status 400000))
   (segment (start 223.8756 47.7012) (end 222.6056 47.7012) (width 0.25) (layer F.Cu) (net 26))
   (segment (start 230.6574 57.912) (end 229.0572 59.5122) (width 0.25) (layer F.Cu) (net 26) (tstamp 57154513))
   (segment (start 232.5116 57.912) (end 230.6574 57.912) (width 0.25) (layer F.Cu) (net 26) (tstamp 57154511))
