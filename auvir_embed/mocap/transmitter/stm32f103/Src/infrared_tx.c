@@ -22,19 +22,19 @@ uint8_t tx_current_bit_pos = 0;
 uint8_t tx_bit = 0;
 
 // constant, use for transmission non-structured light data
-const MCU_PIN standard_data_pin = { GPIOB, GPIO_PIN_12};
+const MCU_PIN standard_data_pin = { GPIOB, GPIO_PIN_8};
 // variable, use for transmission coded angle
-MCU_PIN current_pin  = { GPIOB, GPIO_PIN_12};
+MCU_PIN current_pin  = { GPIOB, GPIO_PIN_8};
 
 MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
-    { GPIOB, GPIO_PIN_0},
-    { GPIOB, GPIO_PIN_1},
+    { GPIOA, GPIO_PIN_11},
+    { GPIOA, GPIO_PIN_12},
+    { GPIOA, GPIO_PIN_15},
     { GPIOB, GPIO_PIN_3},
     { GPIOB, GPIO_PIN_4},
     { GPIOB, GPIO_PIN_5},
     { GPIOB, GPIO_PIN_6},
-    { GPIOB, GPIO_PIN_7},
-    { GPIOB, GPIO_PIN_8}
+    { GPIOB, GPIO_PIN_7}
 };
 uint8_t current_beamer_channel_index = 0;
 

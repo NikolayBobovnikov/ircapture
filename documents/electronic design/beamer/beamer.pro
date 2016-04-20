@@ -1,4 +1,4 @@
-update=Вс. 17 апр. 2016 23:33:51
+update=4/20/2016 1:57:12 PM
 version=1
 last_client=kicad
 [pcbnew]
@@ -58,7 +58,6 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-LibName30=/home/nikolay/work/dev/auvir/documents/electronic design/lib/2N7002K
-LibName31=/home/nikolay/work/dev/auvir/documents/electronic design/UsbDevice/lib/NRF24L01-BRKOUT
-LibName32=NRF24L01-BRKOUT
-LibName33=conn_R
+LibName30=NRF24L01-BRKOUT
+LibName31=conn_R
+LibName32=2N7002K
