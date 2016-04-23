@@ -19,6 +19,7 @@ auvir_embed/toolchain/
 *.o
 *.a
 *.lib
+!documents/
 *.dll
 *.bin
 *.hex
