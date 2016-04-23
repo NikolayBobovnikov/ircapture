@@ -18,8 +18,6 @@ auvir_embed/toolchain/
 *.obj
 *.o
 *.a
-*.lib
-!*lib/*.lib
 !documents/
 *.dll
 *.bin
