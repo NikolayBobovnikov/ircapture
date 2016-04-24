@@ -228,7 +228,7 @@
 #define HIGH GPIO_PIN_SET
 
 
-#define NRF24_CSN1_Pin GPIO_PIN_0
+#define NRF24_IRQ1_Pin GPIO_PIN_0
 #define NRF24_CSN1_GPIO_Port GPIOA
 #define NRF24_CE1_Pin GPIO_PIN_1
 #define NRF24_CE1_GPIO_Port GPIOA
@@ -240,6 +240,16 @@
 #define NRF24_IRQ1_GPIO_Port GPIOB
 #define NRF24_IRQ2_Pin GPIO_PIN_1
 #define NRF24_IRQ2_GPIO_Port GPIOB
+
+// previous:
+//CE: A1
+//CSN: A0
+//IRQ: B0
+
+// CE   A0
+// CSN  C15
+// IRQ  C14
+
 
 typedef enum{
     NRF24_TRANSMISSON_OK,

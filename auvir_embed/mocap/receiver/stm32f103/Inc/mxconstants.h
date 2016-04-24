@@ -37,11 +37,20 @@
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
+#define DelayCheckingPeriod (100 - 1)
+#define envelop_timer_prescaler (72 - 1)
+#define max_period (65535-1)
 
 #define LED_ONBOARD_Pin GPIO_PIN_13
 #define LED_ONBOARD_GPIO_Port GPIOC
+#define NRF24_CSN1_Pin GPIO_PIN_0
+#define NRF24_CSN1_GPIO_Port GPIOA
+#define NRF24_CE1_Pin GPIO_PIN_1
+#define NRF24_CE1_GPIO_Port GPIOA
 #define DBG_OUT_1_Pin GPIO_PIN_4
 #define DBG_OUT_1_GPIO_Port GPIOA
+#define NRF24_IRQ1_Pin GPIO_PIN_0
+#define NRF24_IRQ1_GPIO_Port GPIOB
 #define DBG_OUT_2_Pin GPIO_PIN_1
 #define DBG_OUT_2_GPIO_Port GPIOB
 #define LED_DBG_Pin GPIO_PIN_3
@@ -52,10 +61,10 @@
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

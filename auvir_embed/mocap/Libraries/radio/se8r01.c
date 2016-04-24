@@ -38,7 +38,7 @@ static void radio_settings(NRF_Module * radiomodule);
 static void set_rx_tx_mode(NRF_Module * radiomodule);
 
 static void se8r01_switch_bank(NRF_Module * radiomodule, uint8_t bankindex);
-static void se8r01_powerup();
+static void se8r01_powerup(NRF_Module * radiomodule);
 static void se8r01_calibration(NRF_Module * radiomodule);
 static void se8r01_setup(NRF_Module * radiomodule);
 
@@ -252,7 +252,7 @@ void setup(NRF_Module * radiomodule)
     HAL_Delay(5);
 
     //TODO FIXME NOTE: Check below
-    //se8r01_powerup();
+    se8r01_powerup(&default_module);
 
 
     //set EN_AA, EN_RXADDR, RF_CH (needless?), RF_SETUP (needless?), AW, SETUP_RETR, TX_ADDR, RX_ADDR_P*
@@ -263,6 +263,8 @@ void setup(NRF_Module * radiomodule)
 
     se8r01_calibration(radiomodule);
     se8r01_setup(radiomodule);
+
+    uint8_t status = SPI_Read(radiomodule, iRF_BANK0_STATUS);
 
     // set CONFIG register according to rx/tx mode
     set_rx_tx_mode(radiomodule);
@@ -344,7 +346,10 @@ void TXX(NRF_Module * radiomodule)
     //delay_us(200);
 
     nrf24_write_register(radiomodule, iRF_CMD_FLUSH_TX,0);
-    nrf24_write_register_buf(radiomodule, iRF_CMD_WR_TX_PLOAD,(uint8_t*)&tx_message,TX_PLOAD_WIDTH);
+    //nrf24_write_register_buf(radiomodule, iRF_CMD_WR_TX_PLOAD,(uint8_t*)&tx_message,TX_PLOAD_WIDTH);
+    nrf24_write_register_buf(radiomodule, iRF_CMD_WR_TX_PLOAD,(uint8_t*)&tx_buf[0],TX_PLOAD_WIDTH);
+
+
 
     //start transmission by toggling SE high for more than 10 us
     nrf24_ce_set(radiomodule, HIGH);
@@ -383,7 +388,6 @@ void TXX(NRF_Module * radiomodule)
         //HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13, GPIO_PIN_RESET);//nop
     }
     else{
-
     }
 
     nrf24_write_register(radiomodule, iRF_CMD_WRITE_REG + iRF_BANK0_STATUS,0xff);   // clear RX_DR or TX_DS or MAX_RT interrupt flag

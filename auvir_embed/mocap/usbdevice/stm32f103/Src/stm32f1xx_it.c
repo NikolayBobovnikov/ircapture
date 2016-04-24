@@ -56,13 +56,13 @@ extern SPI_HandleTypeDef hspi1;
 */
 void SysTick_Handler(void)
 {
-    /* USER CODE BEGIN SysTick_IRQn 0 */
-    /* USER CODE END SysTick_IRQn 0 */
-    HAL_IncTick();
-    HAL_SYSTICK_IRQHandler();
-    /* USER CODE BEGIN SysTick_IRQn 1 */
+  /* USER CODE BEGIN SysTick_IRQn 0 */
+  /* USER CODE END SysTick_IRQn 0 */
+  HAL_IncTick();
+  HAL_SYSTICK_IRQHandler();
+  /* USER CODE BEGIN SysTick_IRQn 1 */
 
-    /* USER CODE END SysTick_IRQn 1 */
+  /* USER CODE END SysTick_IRQn 1 */
 }
 
 /******************************************************************************/
@@ -77,13 +77,13 @@ void SysTick_Handler(void)
 */
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
-    /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 0 */
+  /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 0 */
 
-    /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
-    HAL_PCD_IRQHandler(&hpcd_USB_FS);
-    /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
+  /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+  /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
 
-    /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
+  /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
 }
 
 /**
@@ -91,13 +91,13 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 */
 void SPI1_IRQHandler(void)
 {
-    /* USER CODE BEGIN SPI1_IRQn 0 */
+  /* USER CODE BEGIN SPI1_IRQn 0 */
 
-    /* USER CODE END SPI1_IRQn 0 */
-    HAL_SPI_IRQHandler(&hspi1);
-    /* USER CODE BEGIN SPI1_IRQn 1 */
+  /* USER CODE END SPI1_IRQn 0 */
+  HAL_SPI_IRQHandler(&hspi1);
+  /* USER CODE BEGIN SPI1_IRQn 1 */
 
-    /* USER CODE END SPI1_IRQn 1 */
+  /* USER CODE END SPI1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

@@ -39,7 +39,6 @@
 #include "sensor.h"
 #include "sensor_hub.h"
 #include "se8r01.h"
-#include "se8r01_if.h"
 #include "common.h"
 
 // TODO: cleanup when done debugging
@@ -95,6 +94,14 @@ extern uint8_t tx_buf[TX_PLOAD_WIDTH];
 extern RadioMessage rx_message;
 extern RadioMessage tx_message;
 
+extern NRF_Module default_module;
+extern NRF_Module data_module;
+
+extern RadioDevInfo radiodevinfo;
+extern SensorData sensordata;
+BeamerData beamerdata = {0};
+IMUData imudata = {0};
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -120,10 +127,7 @@ typedef struct
 
 USART_msg_t uart_msg;
 
-extern NRF_Module default_module;
-extern NRF_Module data_module;
-
-const char mode = 'r'; // 't'
+const char mode = 't'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -171,9 +175,6 @@ int main(void)
     //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
 
-    const char* test_str = "HelloWireless!\0";
-    memcpy(&tx_buf[1], test_str, strlen(test_str));
-
 
 #define RM_SyncSensor       6 // 1 if sync signal for sensor, 0 otherwise
 #define RM_SyncBeamer       5 // 1 if sync signal for beamer, 0 otherwise
@@ -183,10 +184,6 @@ int main(void)
 #define RM_WhoAmI_Beamer    1 // 1 for Beamer, 0 otherwise
 #define RM_WhoAmI_UsbDevice 0 // 1 if this is usbdevice, 0 otherwise
 
-    tx_message.type = (1 << RM_WhoAmI_Sensor) | (1 << RM_SendSensorData);
-    memcpy(&(tx_message.data), test_str, strlen(test_str));
-
-
     while (1)
     {
 #if 1
@@ -195,10 +192,25 @@ int main(void)
             //nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
-            //memcpy(&tx_buf[0], &salt, 1);
-            //salt++;
+            //=================== prepare message for sending
+            const char* test_str = "HelloWireless!\0";
+            memcpy(&tx_buf[0], test_str, strlen(test_str));
 
-            TXX(&default_module, &tx_message);
+            /*
+            // Determine source of packet
+            radio_tx_set_message_header(WhoAmI_Sensor, Dest_UsbDevice,Typ_SensorData);
+
+            SingleBeamerData singlebeamdata;
+            singlebeamdata.angle = 124;
+            singlebeamdata.beamer_id = 1;
+
+            beamerdata.beamer_data_array[0] = singlebeamdata;
+
+            radio_tx_set_sensordata(&sensordata);
+            */
+            //=====================
+
+            TXX(&default_module);
             HAL_Delay(30);
         }
 #endif
@@ -377,9 +389,9 @@ void MX_TIM4_Init(void)
 
 }
 
-/** Configure pins as
-        * Analog
-        * Input
+/** Configure pins as 
+        * Analog 
+        * Input 
         * Output
         * EVENT_OUT
         * EXTI
@@ -399,7 +411,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|DBG_OUT_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, NRF24_CSN1_Pin|NRF24_CE1_Pin|DBG_OUT_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, DBG_OUT_2_Pin|LED_DBG_Pin, GPIO_PIN_RESET);
@@ -410,30 +422,23 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_ONBOARD_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 PA1 DBG_OUT_1_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|DBG_OUT_1_Pin;
+  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
+  GPIO_InitStruct.Pin = NRF24_CSN1_Pin|NRF24_CE1_Pin|DBG_OUT_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : NRF24_IRQ_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  //GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  //GPIO_InitStruct.Pull = GPIO_PULLUP;
+  /*Configure GPIO pin : NRF24_IRQ1_Pin */
+  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(NRF24_IRQ1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DBG_OUT_2_Pin LED_DBG_Pin */
   GPIO_InitStruct.Pin = DBG_OUT_2_Pin|LED_DBG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /* EXTI interrupt init*/
-  //HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
-  //HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 }
 
@@ -527,10 +532,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

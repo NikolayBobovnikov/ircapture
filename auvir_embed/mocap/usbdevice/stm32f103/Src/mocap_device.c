@@ -46,6 +46,7 @@ extern RadioDevInfo radiodevinfo;
 extern SensorData sensordata;
 extern uint16_t TmpID;
 BeamerData beamerdata = {0};
+IMUData imudata = {0};
 
 /// Description of data:
 /// ID of Sensor/Beamer = its index in the array
