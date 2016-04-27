@@ -249,7 +249,7 @@ void setup(NRF_Module * radiomodule)
 
     // choose required module using SPI
     nrf24_csn_set(radiomodule, HIGH);
-	// disable module (go to STANDBY-1 mode)
+    // disable module (go to STANDBY-1 mode)
     nrf24_ce_set(radiomodule, LOW);
 
     HAL_Delay(5);
@@ -346,9 +346,10 @@ void TXX(NRF_Module * radiomodule)
     //nrf24_write_register(radiomodule,iRF_BANK0_CONFIG, (1 << MASK_RX_DR) | (0 << MASK_TX_DS) | (0 << MASK_MAX_RT) | (1 << EN_CRC) | (1 << CRCO)  | (1 << PWR_UP) | (0 << PRIM_RX) );
     //delay_us(200);
 
-	/// Important note: functions below are critical
+    /// Important note: functions below are critical
     SPI_RW_Reg(radiomodule,iRF_CMD_FLUSH_TX,0);
-    SPI_Write_Buf(radiomodule,iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
+    //SPI_Write_Buf(radiomodule,iRF_CMD_WR_TX_PLOAD,tx_buf,TX_PLOAD_WIDTH);
+    SPI_Write_Buf(radiomodule,iRF_CMD_WR_TX_PLOAD,(uint8_t*)&tx_message,TX_PLOAD_WIDTH);
 
     //start transmission by toggling SE high for more than 10 us
     nrf24_ce_set(radiomodule, HIGH);
@@ -404,7 +405,7 @@ static void radio_settings(NRF_Module * radiomodule)
     nrf24_write_register(radiomodule,iRF_BANK0_EN_RXADDR,(1<<ERX_P0)|(0<<ERX_P1)|(0<<ERX_P2)|(0<<ERX_P3)|(0<<ERX_P4)|(0<<ERX_P5));
 
 
-	// SETUP_AW number of bytes for address
+    // SETUP_AW number of bytes for address
     //4 byte adress, but use 5 byte address! TODO: research http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
     // 11 5 bytes
     // 10 4 bytes

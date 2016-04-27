@@ -37,7 +37,6 @@
 #include <stdbool.h>
 #include "infrared.h"
 #include "sensor.h"
-#include "sensor_hub.h"
 #include "se8r01.h"
 #include "common.h"
 
@@ -109,25 +108,7 @@ IMUData imudata = {0};
 HAL_StatusTypeDef status;
 extern DataFrame_t rx_data_frame;
 
-enum UART_Commands {
-    UART_COMMAND_NOT_RECEIVED = 0,
-    UART_DEBUG_DATA_TRANSMIT,
-    UART_DEBUG_DATA_TRANSMIT_OK,
-    UART_ECHO
-};
-uint8_t command = UART_COMMAND_NOT_RECEIVED;
-uint8_t responce = UART_DEBUG_DATA_TRANSMIT_OK;
-
-typedef struct
-{
-    uint8_t _ir_hub_id;
-    uint8_t _ir_sensor_id;
-    DataFrame_t data;
-} USART_msg_t;
-
-USART_msg_t uart_msg;
-
-const char mode = 't'; // 't'
+const char mode = 'r'; // 't'
 /* USER CODE END 0 */
 
 int main(void)
@@ -189,14 +170,9 @@ int main(void)
 #if 1
         if(is_receiver){
             RXX(&default_module);// - this is called on IRQ
-            //nrf_without_this_interrupts_not_work();
         }
         else if(is_transmitter){
             //=================== prepare message for sending
-            const char* test_str = "HelloWireless!\0";
-            memcpy(&tx_buf[0], test_str, strlen(test_str));
-
-            /*
             // Determine source of packet
             radio_tx_set_message_header(WhoAmI_Sensor, Dest_UsbDevice,Typ_SensorData);
 
@@ -207,7 +183,6 @@ int main(void)
             beamerdata.beamer_data_array[0] = singlebeamdata;
 
             radio_tx_set_sensordata(&sensordata);
-            */
             //=====================
 
             TXX(&default_module);
@@ -389,9 +364,9 @@ void MX_TIM4_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -483,14 +458,7 @@ HAL_StatusTypeDef HAL_TIM_IC_PWM_Stop_IT (const TIM_HandleTypeDef *htim)
     /* Return function status */
     return HAL_OK;
 }
-void send_data_uart()
-{
-    USART_msg_t msg;
-    msg._ir_sensor_id = 1;
-    msg._ir_hub_id = 2;
-    msg.data = rx_data_frame;
 
-}
 void nrf_receive_callback()
 {
     HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
@@ -532,10 +500,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
