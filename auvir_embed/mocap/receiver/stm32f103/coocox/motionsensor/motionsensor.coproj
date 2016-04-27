@@ -76,22 +76,23 @@
   <LocalComponents/>
   <Files>
     <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c" type="1"/>
+    <File name="common/radio/radio_data_formats.h" path="../../../../Libraries/radio/radio_data_formats.h" type="1"/>
     <File name="Drivers/CMSIS/Include/core_cm3.h" path="../../Drivers/CMSIS/Include/core_cm3.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c" type="1"/>
-    <File name="common/radio/se8r01.c" path="../../../../Libraries/radio/se8r01.c" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h" type="1"/>
-    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c" type="1"/>
+    <File name="common/radio/se8r01.c" path="../../../../Libraries/radio/se8r01.c" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx" path="" type="2"/>
+    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c" type="1"/>
     <File name="Drivers/CMSIS/Include/core_cmSimd.h" path="../../Drivers/CMSIS/Include/core_cmSimd.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c" type="1"/>
     <File name="Inc/sensor.h" path="../../Inc/sensor.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h" type="1"/>
-    <File name="Drivers/CMSIS/Include/core_cm4.h" path="../../Drivers/CMSIS/Include/core_cm4.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c" type="1"/>
+    <File name="Drivers/CMSIS/Include/core_cm4.h" path="../../Drivers/CMSIS/Include/core_cm4.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi_ex.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi_ex.c" type="1"/>
-    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h" type="1"/>
+    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f101xg.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f101xg.h" type="1"/>
     <File name="common/radio/se8r01.h" path="../../../../Libraries/radio/se8r01.h" type="1"/>
     <File name="Drivers/CMSIS/Include/cmsis_gcc.h" path="../../Drivers/CMSIS/Include/cmsis_gcc.h" type="1"/>
@@ -101,11 +102,12 @@
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h" type="1"/>
-    <File name="Drivers/CMSIS/Include/core_cmFunc.h" path="../../Drivers/CMSIS/Include/core_cmFunc.h" type="1"/>
-    <File name="common" path="" type="2"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h" type="1"/>
+    <File name="common" path="" type="2"/>
+    <File name="Drivers/CMSIS/Include/core_cmFunc.h" path="../../Drivers/CMSIS/Include/core_cmFunc.h" type="1"/>
     <File name="Drivers/CMSIS/Include" path="" type="2"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f102xb.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f102xb.h" type="1"/>
+    <File name="common/radio/radio_data_formats.c" path="../../../../Libraries/radio/radio_data_formats.c" type="1"/>
     <File name="Src/sensor_hub.c" path="../../Src/sensor_hub.c" type="1"/>
     <File name="Src/main.c" path="../../Src/main.c" type="1"/>
     <File name="Drivers/CMSIS/Include/core_cmInstr.h" path="../../Drivers/CMSIS/Include/core_cmInstr.h" type="1"/>
@@ -114,10 +116,10 @@
     <File name="Src/infrared_rx.c" path="../../Src/infrared_rx.c" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f101xe.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f101xe.h" type="1"/>
     <File name="Drivers/CMSIS/Include/core_sc300.h" path="../../Drivers/CMSIS/Include/core_sc300.h" type="1"/>
-    <File name="Inc/stm32f1xx_it.h" path="../../Inc/stm32f1xx_it.h" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc" path="" type="2"/>
-    <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include" path="" type="2"/>
+    <File name="Inc/stm32f1xx_it.h" path="../../Inc/stm32f1xx_it.h" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Source" path="" type="2"/>
+    <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include" path="" type="2"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f105xc.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f105xc.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_crc.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_crc.c" type="1"/>
@@ -125,8 +127,8 @@
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f101x6.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f101x6.h" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h" path="../../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h" type="1"/>
-    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c" type="1"/>
     <File name="Drivers/STM32F1xx_HAL_Driver/Inc/Legacy" path="" type="2"/>
+    <File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c" path="../../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c" type="1"/>
     <File name="Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f107xc.h" path="../../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f107xc.h" type="1"/>
     <File name="Drivers/CMSIS/Include/cmsis_armcc.h" path="../../Drivers/CMSIS/Include/cmsis_armcc.h" type="1"/>
     <File name="Inc/stm32f1xx_hal_conf.h" path="../../Inc/stm32f1xx_hal_conf.h" type="1"/>
