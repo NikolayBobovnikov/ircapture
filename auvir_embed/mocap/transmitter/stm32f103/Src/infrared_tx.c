@@ -177,6 +177,7 @@ void transmit_handler()
                 // First (long) bit
                 case Tx_PREAMBLE_BIT_1:
                 {
+                    current_pin = standard_data_pin;
                     force_envelop_timer_output_on();
                     phtim_envelop->Instance->ARR = PreambleBitCorrected;
                     StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_1;
@@ -396,20 +397,6 @@ static inline void reset_previous_update_current_beamer_pin()
 
 static inline void force_envelop_timer_output_on()
 {
-    if(_debug)
-    {
-        if(_is_direct_logic)
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-        }
-        else
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
-        }
-    }
-
     // turn on current pin
     HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
 

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include "stm32f1xx_hal.h"
+#include "mxconstants.h"
 
 #define DELAY_PRESCALER (72 - 1)
 

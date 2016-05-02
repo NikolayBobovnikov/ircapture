@@ -8,6 +8,7 @@
 #include "stm32f1xx_hal.h"
 #include "radio_data_formats.h"
 #include <stdbool.h>
+#include "mxconstants.h"
 
 // Memory Map //
 #define CONFIG      0x00

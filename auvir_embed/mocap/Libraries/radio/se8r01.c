@@ -3,6 +3,7 @@
 #include "se8r01.h"
 #include "common.h"
 
+
 ///
 /// on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
 ///
