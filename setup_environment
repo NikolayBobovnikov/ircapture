@@ -46,7 +46,7 @@ sudo -S aptitude install -y --with-recommends libeigen3-dev libflann-dev libtbb-
 # testing libraries
 sudo -S aptitude install -y --with-recommends libgtest-dev libcunit1-dev libcppunit-dev 
 #build gtest
-sudo cd /usr/src/gtest && cmake CMakeLists.txt && make && cp *.a /usr/lib
+cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && cp *.a /usr/lib
 
 
 # CI: Jenkins
