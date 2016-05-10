@@ -39,9 +39,6 @@
 /* Private define ------------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-#define DelayCheckingPeriod (100 - 1)
-#define envelop_timer_prescaler (72 - 1)
-
 #define LED_ONBOARD_Pin GPIO_PIN_13
 #define LED_ONBOARD_GPIO_Port GPIOC
 #define NRF24_CSN1_Pin GPIO_PIN_0

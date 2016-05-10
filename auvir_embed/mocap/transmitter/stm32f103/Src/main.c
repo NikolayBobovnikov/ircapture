@@ -117,8 +117,8 @@ int main(void)
   MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
-  // TODO verify that changing constants in infrared.h affects begaviour (are applied in timers)
-  IR_TIM_Init(phtim_envelop, phtim_pwm);
+  // TODO fix IR_TIM_Init function
+  //IR_TIM_Init(phtim_envelop, phtim_pwm);
 
   init_beamer_channels_gpio();
 
