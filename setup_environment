@@ -13,7 +13,7 @@ sudo -S aptitude install -y --with-recommends checkinstall pkg-config gdebi \
 sudo -S aptitude install -y --with-recommends zip unzip \
 
 # console stuff
-sudo -S aptitude install -y --with-recommends vim tmux zsh mc picocom \
+sudo -S aptitude install -y --with-recommends vim tmux zsh mc picocom ssh \
 
 # version control
 sudo -S aptitude install -y --with-recommends git mercurial subversion
