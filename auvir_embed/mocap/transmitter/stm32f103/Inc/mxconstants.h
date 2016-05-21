@@ -40,19 +40,19 @@
 
 /* USER CODE BEGIN Private defines */
 #define LED_ONBOARD_Pin GPIO_PIN_13
-#define LED_ONBOARD_GPIO_Port GPIOC
+#define LED_ONBOARD_Port GPIOC
 #define NRF24_CSN1_Pin GPIO_PIN_0
-#define NRF24_CSN1_GPIO_Port GPIOA
+#define NRF24_CSN1_Port GPIOA
 #define NRF24_CE1_Pin GPIO_PIN_1
-#define NRF24_CE1_GPIO_Port GPIOA
+#define NRF24_CE1_Port GPIOA
 #define DBG_OUT_1_Pin GPIO_PIN_4
-#define DBG_OUT_1_GPIO_Port GPIOA
+#define DBG_OUT_1_Port GPIOA
 #define NRF24_IRQ1_Pin GPIO_PIN_0
-#define NRF24_IRQ1_GPIO_Port GPIOB
+#define NRF24_IRQ1_Port GPIOB
 #define DBG_OUT_2_Pin GPIO_PIN_1
-#define DBG_OUT_2_GPIO_Port GPIOB
+#define DBG_OUT_2_Port GPIOB
 #define LED_DBG_Pin GPIO_PIN_3
-#define LED_DBG_GPIO_Port GPIOB
+#define LED_DBG_Port GPIOB
 /* USER CODE END Private defines */
 
 /**
