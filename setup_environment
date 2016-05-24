@@ -22,10 +22,10 @@ sudo -S aptitude install -y --with-recommends git mercurial subversion
 sudo -S aptitude install -y --with-recommends autoconf automake make cmake build-essential doxygen ddd
 
 # verification tools
-sudo -S aptitude install -y --with-recommends valgrind cppcheck uncrustify astyle clang-format-3.7
+sudo -S aptitude install -y --with-recommends valgrind cppcheck uncrustify astyle clang-format clang-tidy clang-check
 
 # compilers and debuggers
-sudo -S aptitude install -y --with-recommends gcc-arm-none-eabi gdb-arm-none-eabi clang libclang-dev 
+sudo -S aptitude install -y --with-recommends gcc-arm-none-eabi gdb-arm-none-eabi clang libclang-dev
 
 # embedded tools, prerequisites for hidapi
 sudo -S aptitude install -y --with-recommends libudev-dev libusb-dev libusb-1.0-0-dev libfox-1.6-dev
