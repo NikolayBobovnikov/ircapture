@@ -136,6 +136,8 @@ int main(void)
   MX_I2C1_Init();
 
   /* USER CODE BEGIN 2 */
+  configure_gpio_radio();
+
     //TODO: setting the timer. merge with TIM_Init
     setup_ic_timer();
 
@@ -371,6 +373,32 @@ void MX_TIM4_Init(void)
         * EVENT_OUT
         * EXTI
 */
+void configure_gpio_radio()
+{
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  //HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, GPIO_PIN_RESET);
+  //HAL_GPIO_WritePin(NRF24_CE1_Port, NRF24_CE1_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
+  GPIO_InitStruct.Pin = NRF24_CSN1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(NRF24_CSN1_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
+  GPIO_InitStruct.Pin = NRF24_CE1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(NRF24_CE1_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : NRF24_IRQ1_Pin */
+  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(NRF24_IRQ1_Port, &GPIO_InitStruct);
+}
+
 void MX_GPIO_Init(void)
 {
 
@@ -386,7 +414,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, NRF24_CSN1_Pin|NRF24_CE1_Pin|DBG_OUT_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, DBG_OUT_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, DBG_OUT_2_Pin|LED_DBG_Pin, GPIO_PIN_RESET);
@@ -398,16 +426,11 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(LED_ONBOARD_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
-  GPIO_InitStruct.Pin = NRF24_CSN1_Pin|NRF24_CE1_Pin|DBG_OUT_1_Pin;
+  GPIO_InitStruct.Pin = DBG_OUT_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : NRF24_IRQ1_Pin */
-  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(NRF24_IRQ1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DBG_OUT_2_Pin LED_DBG_Pin */
   GPIO_InitStruct.Pin = DBG_OUT_2_Pin|LED_DBG_Pin;

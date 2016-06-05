@@ -229,27 +229,13 @@
 #define HIGH GPIO_PIN_SET
 
 
-#define NRF24_IRQ1_Pin GPIO_PIN_0
-#define NRF24_CSN1_GPIO_Port GPIOA
-#define NRF24_CE1_Pin GPIO_PIN_1
-#define NRF24_CE1_GPIO_Port GPIOA
-#define NRF24_CSN2_Pin GPIO_PIN_2
-#define NRF24_CSN2_GPIO_Port GPIOA
-#define NRF24_CE2_Pin GPIO_PIN_3
-#define NRF24_CE2_GPIO_Port GPIOA
-#define NRF24_IRQ1_Pin GPIO_PIN_0
-#define NRF24_IRQ1_GPIO_Port GPIOB
-#define NRF24_IRQ2_Pin GPIO_PIN_1
-#define NRF24_IRQ2_GPIO_Port GPIOB
-
-// previous:
-//CE: A1
-//CSN: A0
-//IRQ: B0
-
-// CE   A0
-// CSN  C15
-// IRQ  C14
+#define USE_OLD_MAPPING 0
+#define USE_NEW_MAPPING (!USE_OLD_MAPPING)
+#if USE_OLD_MAPPING
+#include "pin_mapping_old.h"
+#else
+#include "pin_mapping_new.h"
+#endif
 
 
 typedef enum{
