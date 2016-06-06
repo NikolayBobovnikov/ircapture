@@ -22,3 +22,13 @@ void delay_cycles(uint16_t delay)
 #endif
 
 
+
+void blink(uint8_t num_blinks, uint16_t delay_ms)
+{
+    for(uint8_t iteration = 0; iteration < num_blinks; ++iteration){
+        HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, HIGH);
+        HAL_Delay(delay_ms);
+        HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, LOW);
+        HAL_Delay(delay_ms);
+    }
+}

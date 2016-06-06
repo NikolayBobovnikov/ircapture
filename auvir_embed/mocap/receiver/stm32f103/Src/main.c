@@ -155,6 +155,8 @@ int main(void)
     bool is_receiver = !is_transmitter;
 
     setup(&default_module);
+
+    blink(5,200);
     //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
 
