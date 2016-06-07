@@ -6,6 +6,7 @@
 ///
 
 #include "stm32f1xx_hal.h"
+#include "common.h"
 #include "radio_data_formats.h"
 #include <stdbool.h>
 #include "mxconstants.h"
@@ -225,33 +226,17 @@
 
 ///==========================================================================
 
-#ifndef LOW
-#define LOW GPIO_PIN_RESET
-#endif
-#ifndef HIGH
-#define HIGH GPIO_PIN_SET
-#endif
-
-
-#define USE_OLD_MAPPING 1
-#define USE_NEW_MAPPING (!USE_OLD_MAPPING)
 #if USE_OLD_MAPPING
 #include "pin_mapping_old.h"
 #else
 #include "pin_mapping_new.h"
 #endif
 
-
 typedef enum{
     NRF24_TRANSMISSON_OK,
     NRF24_MESSAGE_LOST,
     NRF24_MESSAGE_SENDING
 }TransmissionStatus;
-
-typedef struct GPIO_PIN{
-    GPIO_TypeDef * Port;
-    uint16_t Pin;
-}GPIO_PIN;
 
 typedef struct NRF_Module{
     GPIO_PIN CE;

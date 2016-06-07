@@ -1,8 +1,6 @@
 //this is a copy and paste job made by F2k
 
 #include "se8r01.h"
-#include "common.h"
-
 
 ///
 /// on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
@@ -49,7 +47,7 @@ static void power_on_rx(NRF_Module * radiomodule);
 
 static bool interrupt_happened(NRF_Module * radiomodule);
 
-static uint8_t nrf_getStatus(NRF_Module * radiomodule);
+uint8_t nrf_getStatus(NRF_Module * radiomodule);
 
 //
 
@@ -259,6 +257,12 @@ void setup(NRF_Module * radiomodule)
     se8r01_powerup(radiomodule);
 
     uint8_t status = nrf_getStatus (radiomodule);
+    if(status == 64){
+        blink(4,200);
+    }else{
+        blink(2,300);
+    }
+
 
 
     //set EN_AA, EN_RXADDR, RF_CH (needless?), RF_SETUP (needless?), AW, SETUP_RETR, TX_ADDR, RX_ADDR_P*
@@ -821,7 +825,7 @@ void nrf_without_this_interrupts_not_work(NRF_Module * radiomodule)
     SPI_RW_Reg(radiomodule, iRF_CMD_WRITE_REG+iRF_BANK0_STATUS,0xff);
 }
 
-static uint8_t nrf_getStatus(NRF_Module * radiomodule)
+uint8_t nrf_getStatus(NRF_Module * radiomodule)
 {
     return SPI_Read(radiomodule, iRF_BANK0_STATUS);
 }

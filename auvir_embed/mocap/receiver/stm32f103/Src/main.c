@@ -38,7 +38,7 @@
 #include "infrared.h"
 #include "sensor.h"
 #include "se8r01.h"
-#include "common.h"
+//#include "common.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -139,12 +139,16 @@ int main(void)
   configure_gpio_radio();
 
     //TODO: setting the timer. merge with TIM_Init
-    setup_ic_timer();
 
     //// start usec delay timer
     HAL_TIM_Base_Start(&htim2);
-    HAL_TIM_Base_Start_IT(ptim_data_read);
-    HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
+
+    bool enable_IR_timers = false;//TODO
+    if(enable_IR_timers){
+        setup_ic_timer();
+        HAL_TIM_Base_Start_IT(ptim_data_read);
+        HAL_TIM_IC_PWM_Start_IT(ptim_input_capture);
+    }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -156,7 +160,6 @@ int main(void)
 
     setup(&default_module);
 
-    blink(5,200);
     //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
 
@@ -171,7 +174,8 @@ int main(void)
 
     while (1)
     {
-#if 1
+        blink_port_pin(GPIOB,NRF24_IRQ1_Pin,10,100);
+#if 0
         if(is_receiver){
             RXX(&default_module);// - this is called on IRQ
         }
@@ -379,8 +383,8 @@ void configure_gpio_radio()
 {
   GPIO_InitTypeDef GPIO_InitStruct;
 
-  //HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, GPIO_PIN_RESET);
-  //HAL_GPIO_WritePin(NRF24_CE1_Port, NRF24_CE1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(NRF24_CE1_Port, NRF24_CE1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
   GPIO_InitStruct.Pin = NRF24_CSN1_Pin;
@@ -416,10 +420,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, DBG_OUT_1_Pin, GPIO_PIN_RESET);
-
+  HAL_GPIO_WritePin(DBG_OUT_1_Port, DBG_OUT_1_Pin, GPIO_PIN_RESET);
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, DBG_OUT_2_Pin|LED_DBG_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(DBG_OUT_2_Port, DBG_OUT_2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_DBG_Port, LED_DBG_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_ONBOARD_Pin */
   GPIO_InitStruct.Pin = LED_ONBOARD_Pin;
