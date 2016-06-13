@@ -11,7 +11,7 @@
 #define HIGH GPIO_PIN_SET
 #endif
 
-#define USE_OLD_MAPPING 1
+#define USE_OLD_MAPPING 0
 #define USE_NEW_MAPPING (!USE_OLD_MAPPING)
 
 typedef struct GPIO_PIN{

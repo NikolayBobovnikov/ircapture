@@ -195,10 +195,10 @@ static void nrf24_setup_modules_gpio()
 static void nrf24_ce_set(NRF_Module * radiomodule, GPIO_PinState state)
 {
     assert_param(state == LOW || state == HIGH);
-#if 1
+#if 0
     HAL_GPIO_WritePin(radiomodule->CE.Port, radiomodule->CE.Pin, state);
 #else
-    HAL_GPIO_WritePin(NRF24_CE1_GPIO_Port, NRF24_CE1_Pin, state);
+    HAL_GPIO_WritePin(NRF24_CE1_Port, NRF24_CE1_Pin, state);
 #endif
     delay_us(10);
 }
@@ -206,10 +206,10 @@ static void nrf24_ce_set(NRF_Module * radiomodule, GPIO_PinState state)
 static void nrf24_csn_set(NRF_Module * radiomodule, GPIO_PinState state)
 {
     assert_param(state == LOW || state == HIGH);
-#if 1
+#if 0
     HAL_GPIO_WritePin(radiomodule->CSN.Port, radiomodule->CSN.Pin, state);
 #else
-    HAL_GPIO_WritePin(NRF24_CSN1_GPIO_Port, NRF24_CSN1_Pin, state);
+    HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, state);
 #endif
     if(state == HIGH){
         delay_us(100);

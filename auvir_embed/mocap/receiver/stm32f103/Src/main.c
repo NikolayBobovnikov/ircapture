@@ -174,8 +174,8 @@ int main(void)
 
     while (1)
     {
-        blink_port_pin(GPIOB,NRF24_IRQ1_Pin,10,100);
-#if 0
+       // blink_port_pin(GPIOB,NRF24_IRQ1_Pin,10,100);
+#if 1
         if(is_receiver){
             RXX(&default_module);// - this is called on IRQ
         }
