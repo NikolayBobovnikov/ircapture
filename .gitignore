@@ -3,8 +3,10 @@ auvir_model/build/
 auvir_embed/build/
 auvir_embed/toolchain/
 *build/*
-*bin
-*obj
+*.bin
+*.obj
+*.lib
+!**/documents/**
 *Debug
 *debug
 *Release
@@ -18,7 +20,6 @@ auvir_embed/toolchain/
 *.obj
 *.o
 *.a
-!documents/
 *.dll
 *.bin
 *.hex

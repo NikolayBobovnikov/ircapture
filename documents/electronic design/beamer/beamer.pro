@@ -1,4 +1,4 @@
-update=4/20/2016 1:57:12 PM
+update=Чт 16 июн 2016 23:41:52
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,3 +61,4 @@ LibName29=valves
 LibName30=NRF24L01-BRKOUT
 LibName31=conn_R
 LibName32=2N7002K
+LibName33=74HC595D/74HC595D

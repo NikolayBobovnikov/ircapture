@@ -8,8 +8,8 @@
 #define NRF24_CE1_Pin GPIO_PIN_0
 #define NRF24_CE1_Port GPIOA
 
-#define NRF24_IRQ1_Pin GPIO_PIN_14
-#define NRF24_IRQ1_Port GPIOC
+#define NRF24_IRQ1_Pin GPIO_PIN_1
+#define NRF24_IRQ1_Port GPIOA
 
 
 #define NRF24_CSN2_Pin GPIO_PIN_2
