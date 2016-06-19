@@ -355,21 +355,21 @@ Text GLabel 4450 4800 0    60   Input ~ 0
 NRF_CE1
 Text GLabel 4450 4300 0    60   Input ~ 0
 NRF_IRQ1
-Text GLabel 8150 3700 2    60   Input ~ 0
-IR_PIN_1
-Text GLabel 8150 3800 2    60   Input ~ 0
-IR_PIN_2
-Text GLabel 8150 3900 2    60   Input ~ 0
-IR_PIN_3
-Text GLabel 8150 4000 2    60   Input ~ 0
-IR_PIN_4
-Text GLabel 8150 4100 2    60   Input ~ 0
-IR_PIN_5
-Text GLabel 8150 4200 2    60   Input ~ 0
-IR_PIN_6
-Text GLabel 8150 4300 2    60   Input ~ 0
-IR_PIN_7
 Text GLabel 8150 4400 2    60   Input ~ 0
+IR_PIN_1
+Text GLabel 8150 4300 2    60   Input ~ 0
+IR_PIN_2
+Text GLabel 8150 4200 2    60   Input ~ 0
+IR_PIN_3
+Text GLabel 8150 4100 2    60   Input ~ 0
+IR_PIN_4
+Text GLabel 8150 4000 2    60   Input ~ 0
+IR_PIN_5
+Text GLabel 8150 3900 2    60   Input ~ 0
+IR_PIN_6
+Text GLabel 8150 3800 2    60   Input ~ 0
+IR_PIN_7
+Text GLabel 8150 3700 2    60   Input ~ 0
 IR_PIN_8
 Text GLabel 2900 5100 2    60   Input ~ 0
 IR_PIN_ID
