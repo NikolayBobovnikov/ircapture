@@ -355,25 +355,24 @@ Text GLabel 4450 4800 0    60   Input ~ 0
 NRF_CE1
 Text GLabel 4450 4300 0    60   Input ~ 0
 NRF_IRQ1
-Text GLabel 8150 3700 2    60   Input ~ 0
-IR_PIN_1
-Text GLabel 8150 3800 2    60   Input ~ 0
-IR_PIN_2
-Text GLabel 8150 3900 2    60   Input ~ 0
-IR_PIN_3
-Text GLabel 8150 4000 2    60   Input ~ 0
-IR_PIN_4
-Text GLabel 8150 4100 2    60   Input ~ 0
-IR_PIN_5
-Text GLabel 8150 4200 2    60   Input ~ 0
-IR_PIN_6
-Text GLabel 8150 4300 2    60   Input ~ 0
-IR_PIN_7
 Text GLabel 8150 4400 2    60   Input ~ 0
+IR_PIN_1
+Text GLabel 8150 4300 2    60   Input ~ 0
+IR_PIN_2
+Text GLabel 8150 4200 2    60   Input ~ 0
+IR_PIN_3
+Text GLabel 8150 4100 2    60   Input ~ 0
+IR_PIN_4
+Text GLabel 8150 4000 2    60   Input ~ 0
+IR_PIN_5
+Text GLabel 8150 3900 2    60   Input ~ 0
+IR_PIN_6
+Text GLabel 8150 3800 2    60   Input ~ 0
+IR_PIN_7
+Text GLabel 8150 3700 2    60   Input ~ 0
 IR_PIN_8
-Text GLabel 2900 5100 2    60   Input ~ 0
+Text GLabel 2800 5300 2    60   Input ~ 0
 IR_PIN_ID
-NoConn ~ 2800 5300
 NoConn ~ 2800 4200
 NoConn ~ 2800 4100
 NoConn ~ 2800 4000
@@ -443,7 +442,6 @@ F 3 "" H 8850 1800 60  0000 C CNN
 	1    8850 1800
 	1    0    0    -1  
 $EndComp
-NoConn ~ 4550 4200
 NoConn ~ 2800 3600
 $Comp
 L +3.3V #PWR07
@@ -578,8 +576,6 @@ Wire Wire Line
 Wire Wire Line
 	4450 3800 4550 3800
 Wire Wire Line
-	2800 5100 2900 5100
-Wire Wire Line
 	8050 4400 8150 4400
 Wire Wire Line
 	8050 4300 8150 4300
@@ -710,7 +706,7 @@ Wire Wire Line
 	6000 4300 6650 4300
 Wire Wire Line
 	6550 4000 6650 4000
-Text GLabel 4450 4900 0    60   Input ~ 0
+Text GLabel 4550 4200 0    60   Input ~ 0
 ShiftReg_Expose
 Text GLabel 6550 4100 0    60   Input ~ 0
 ShiftReg_Expose
@@ -733,7 +729,84 @@ NoConn ~ 4550 5300
 NoConn ~ 4550 5200
 NoConn ~ 4550 5100
 NoConn ~ 3650 3050
-Wire Wire Line
-	4550 4900 4450 4900
 NoConn ~ 2800 5000
+$Comp
+L CONN_01X02 P3
+U 1 1 57685656
+P 6250 5200
+F 0 "P3" H 6250 5350 50  0000 C CNN
+F 1 "CONN_01X02" V 6350 5200 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02" H 6250 5200 50  0001 C CNN
+F 3 "" H 6250 5200 50  0000 C CNN
+	1    6250 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR013
+U 1 1 5768570E
+P 6050 5150
+F 0 "#PWR013" H 6050 5000 50  0001 C CNN
+F 1 "+3.3V" H 6050 5290 50  0000 C CNN
+F 2 "" H 6050 5150 50  0000 C CNN
+F 3 "" H 6050 5150 50  0000 C CNN
+	1    6050 5150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR014
+U 1 1 57685767
+P 6050 5250
+F 0 "#PWR014" H 6050 5000 50  0001 C CNN
+F 1 "GND" H 6050 5100 50  0000 C CNN
+F 2 "" H 6050 5250 50  0000 C CNN
+F 3 "" H 6050 5250 50  0000 C CNN
+	1    6050 5250
+	0    1    1    0   
+$EndComp
+NoConn ~ 4550 4900
+$Comp
+L CONN_01X01 P4
+U 1 1 5768633C
+P 7550 5450
+F 0 "P4" H 7550 5550 50  0000 C CNN
+F 1 "CONN_01X01" V 7650 5450 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x01" H 7550 5450 50  0001 C CNN
+F 3 "" H 7550 5450 50  0000 C CNN
+	1    7550 5450
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 P5
+U 1 1 576863D4
+P 7550 5950
+F 0 "P5" H 7550 6050 50  0000 C CNN
+F 1 "CONN_01X01" V 7650 5950 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x01" H 7550 5950 50  0001 C CNN
+F 3 "" H 7550 5950 50  0000 C CNN
+	1    7550 5950
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR015
+U 1 1 5768645D
+P 7350 5450
+F 0 "#PWR015" H 7350 5300 50  0001 C CNN
+F 1 "+3.3V" H 7350 5590 50  0000 C CNN
+F 2 "" H 7350 5450 50  0000 C CNN
+F 3 "" H 7350 5450 50  0000 C CNN
+	1    7350 5450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L +3.3V #PWR016
+U 1 1 576864BF
+P 7350 5950
+F 0 "#PWR016" H 7350 5800 50  0001 C CNN
+F 1 "+3.3V" H 7350 6090 50  0000 C CNN
+F 2 "" H 7350 5950 50  0000 C CNN
+F 3 "" H 7350 5950 50  0000 C CNN
+	1    7350 5950
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 2800 5100
 $EndSCHEMATC
