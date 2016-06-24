@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:beamer-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -799,7 +800,7 @@ F 3 "" H 7350 5950 50  0000 C CNN
 $EndComp
 NoConn ~ 2800 5100
 $Comp
-L NRF24L01-BRKOUT U1
+L NRF24L01-BRKOUT-RESCUE-beamer U1
 U 1 1 576CC048
 P 8850 1800
 F 0 "U1" H 8450 2400 50  0000 L CNN
