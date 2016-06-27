@@ -21,7 +21,7 @@
 #define NRF24_IRQ2_Pin GPIO_PIN_1
 #define NRF24_IRQ2_Port GPIOB
 
-// PWM generation: move from TIM4 to TIM2 CH1
+// PWM generation: move from TIM4 to TIM2 CH1 (pin A0, check it)
 
 // CSN  C15
 // CE   A0
