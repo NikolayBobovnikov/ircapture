@@ -1,4 +1,4 @@
-update=24/06/2016 10:43:15
+update=27/06/2016 17:32:46
 version=1
 last_client=kicad
 [pcbnew]
@@ -59,7 +59,7 @@ LibName27=opto
 LibName28=atmel
 LibName29=contrib
 LibName30=valves
-LibName31=NRF24L01-BRKOUT
-LibName32=conn_R
-LibName33=2N7002K
+LibName31=conn_R
+LibName32=2N7002K
+LibName33=NRF24L01-BRKOUT
 LibName34=74HC595D/74HC595
