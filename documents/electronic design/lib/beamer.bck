@@ -1,0 +1,7 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STM32F103_header
+D Connector 01x20
+$ENDCMP
+#
+#End Doc Library

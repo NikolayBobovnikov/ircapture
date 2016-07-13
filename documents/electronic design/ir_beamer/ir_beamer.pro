@@ -1,4 +1,4 @@
-update=Ср 13 июл 2016 22:26:03
+update=Ср 13 июл 2016 22:59:08
 version=1
 last_client=kicad
 [pcbnew]
@@ -59,3 +59,4 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=2N7002K
+LibName31=beamer
