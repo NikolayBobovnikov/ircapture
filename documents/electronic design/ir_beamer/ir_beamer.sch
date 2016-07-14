@@ -73,16 +73,16 @@ NoConn ~ 5300 2850
 NoConn ~ 5300 2950
 NoConn ~ 5300 3050
 NoConn ~ 5300 3150
-NoConn ~ 6450 3350
-NoConn ~ 6450 3250
-NoConn ~ 6450 3150
-NoConn ~ 6450 3050
-NoConn ~ 6450 2950
-NoConn ~ 6450 2850
-NoConn ~ 6450 2150
-NoConn ~ 6450 1950
-NoConn ~ 6450 1850
-NoConn ~ 6450 1750
+NoConn ~ 6150 3350
+NoConn ~ 6150 3250
+NoConn ~ 6150 3150
+NoConn ~ 6150 3050
+NoConn ~ 6150 2950
+NoConn ~ 6150 2850
+NoConn ~ 6150 2150
+NoConn ~ 6150 1950
+NoConn ~ 6150 1850
+NoConn ~ 6150 1750
 $Comp
 L LED D1
 U 1 1 5786C38B
@@ -171,50 +171,37 @@ F 3 "" H 3600 2300 60  0000 C CNN
 	1    3850 2300
 	1    0    0    -1  
 $EndComp
-$Comp
-L STM32F103_header P1
-U 1 1 578765C4
-P 5500 2400
-F 0 "P1" H 5900 3450 50  0000 C CNN
-F 1 "STM32F103_header" V 5850 2750 50  0000 C CNN
-F 2 "footprints:STM32F103C8T6_pin_header" H 5500 2400 50  0001 C CNN
-F 3 "" H 5500 2400 50  0000 C CNN
-	1    5500 2400
-	1    0    0    -1  
-$EndComp
-Text Notes 6750 1700 0    60   ~ 0
+Text Notes 6450 1700 0    60   ~ 0
     PA5     ------> SPI1_SCK\n    PA6     ------> SPI1_MISO\n    PA7     ------> SPI1_MOSI
-Text GLabel 6450 2450 2    60   Input ~ 0
+Text GLabel 6150 2450 2    60   Input ~ 0
 SPI_SCK
-Text GLabel 6450 2250 2    60   Input ~ 0
+Text GLabel 6150 2250 2    60   Input ~ 0
 SPI_MOSI
 Text GLabel 4350 1950 2    60   Input ~ 0
 SPI_SCK
 Text GLabel 4350 1750 2    60   Input ~ 0
 SPI_MOSI
-Text GLabel 6450 2550 2    60   Input ~ 0
+Text GLabel 6150 2550 2    60   Input ~ 0
 ShiftReg_Expose
 Text GLabel 4350 2050 2    60   Input ~ 0
 ShiftReg_Expose
-Text GLabel 6450 1650 2    60   Input ~ 0
+Text GLabel 6150 1650 2    60   Input ~ 0
 +3.3
 Text GLabel 4350 1550 2    60   Input ~ 0
 +3.3
 NoConn ~ 4350 2250
 NoConn ~ 4350 1650
-Text GLabel 6450 2750 2    60   Input ~ 0
+Text GLabel 6150 2750 2    60   Input ~ 0
 OE_NOT
-Text GLabel 6450 2650 2    60   Input ~ 0
+Text GLabel 6150 2650 2    60   Input ~ 0
 MR_NOT
 Text GLabel 4350 1850 2    60   Input ~ 0
 OE_NOT
 Text GLabel 4350 2150 2    60   Input ~ 0
 MR_NOT
 NoConn ~ 5300 1950
-NoConn ~ 6450 2350
+NoConn ~ 6150 2350
 NoConn ~ 5300 3350
-NoConn ~ 6450 1450
-NoConn ~ 6450 1550
 Wire Wire Line
 	2600 1550 3400 1550
 Wire Wire Line
@@ -274,12 +261,51 @@ Wire Wire Line
 Connection ~ 1900 2300
 Wire Wire Line
 	1900 3050 2200 3050
-NoConn ~ 6450 2050
-Wire Wire Line
-	1400 3250 5300 3250
-Wire Wire Line
-	3400 3250 3400 2250
-Wire Wire Line
-	1400 2300 1400 3250
-Connection ~ 3400 3250
+NoConn ~ 6150 2050
+$Comp
+L GND #PWR01
+U 1 1 5787B950
+P 1400 2300
+F 0 "#PWR01" H 1400 2050 50  0001 C CNN
+F 1 "GND" H 1400 2150 50  0000 C CNN
+F 2 "" H 1400 2300 50  0000 C CNN
+F 3 "" H 1400 2300 50  0000 C CNN
+	1    1400 2300
+	0    1    1    0   
+$EndComp
+$Comp
+L STM32F103HEADER U2
+U 1 1 5787BBF4
+P 5550 2500
+F 0 "U2" H 5700 3750 60  0000 C CNN
+F 1 "STM32F103HEADER" H 5750 1450 60  0000 C CNN
+F 2 "" H 4900 3500 60  0000 C CNN
+F 3 "" H 4900 3500 60  0000 C CNN
+	1    5550 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR02
+U 1 1 5787C121
+P 3400 2250
+F 0 "#PWR02" H 3400 2000 50  0001 C CNN
+F 1 "GND" H 3400 2100 50  0000 C CNN
+F 2 "" H 3400 2250 50  0000 C CNN
+F 3 "" H 3400 2250 50  0000 C CNN
+	1    3400 2250
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR03
+U 1 1 5787C14A
+P 6150 1550
+F 0 "#PWR03" H 6150 1300 50  0001 C CNN
+F 1 "GND" H 6150 1400 50  0000 C CNN
+F 2 "" H 6150 1550 50  0000 C CNN
+F 3 "" H 6150 1550 50  0000 C CNN
+	1    6150 1550
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 6150 1450
+NoConn ~ 5300 3250
 $EndSCHEMATC
