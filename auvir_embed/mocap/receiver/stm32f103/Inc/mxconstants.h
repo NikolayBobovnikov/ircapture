@@ -42,12 +42,6 @@
 
 #define LED_ONBOARD_Pin GPIO_PIN_13
 #define LED_ONBOARD_Port GPIOC
-#define DBG_OUT_1_Pin GPIO_PIN_4
-#define DBG_OUT_1_Port GPIOA
-#define DBG_OUT_2_Pin GPIO_PIN_1
-#define DBG_OUT_2_Port GPIOB
-#define LED_DBG_Pin GPIO_PIN_3
-#define LED_DBG_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

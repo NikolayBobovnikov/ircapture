@@ -101,6 +101,16 @@ extern SensorData sensordata;
 BeamerData beamerdata = {0};
 IMUData imudata = {0};
 
+
+
+#define ShiftReg_MR_NOT_Pin GPIO_PIN_3
+#define ShiftReg_MR_NOT_Port GPIOA
+
+#define ShiiftReg_OE_NOT_Pin GPIO_PIN_2
+#define ShiftReg_OE_NOT_Port GPIOA
+
+#define ShiftReg_Expose_Pin GPIO_PIN_4
+#define ShiftReg_Expose_Port GPIOA
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -163,19 +173,30 @@ int main(void)
     //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
 
-
-#define RM_SyncSensor       6 // 1 if sync signal for sensor, 0 otherwise
-#define RM_SyncBeamer       5 // 1 if sync signal for beamer, 0 otherwise
-#define RM_SendSensorData   4 // 1 if "is sensor data", 0 otherwise
-#define RM_SendRegisterReq  3 // 1 if "is registration request", 0 otherwise
-#define RM_WhoAmI_Sensor    2 // 1 for Sensor, 0 otherwise
-#define RM_WhoAmI_Beamer    1 // 1 for Beamer, 0 otherwise
-#define RM_WhoAmI_UsbDevice 0 // 1 if this is usbdevice, 0 otherwise
+    uint8_t led_array[8] =
+    {
+        0b00000001, //1
+        0b00000010, //2
+        0b00000100, //3
+        0b00001000, //4
+        0b00010000, //5
+        0b00100000, //6
+        0b01000000, //7
+        0b10000000, //8
+    };
 
     while (1)
     {
-       // blink_port_pin(GPIOB,NRF24_IRQ1_Pin,10,100);
-#if 1
+
+        for (uint8_t pin_num = 1; pin_num < 8; pin_num ++){
+            HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
+            HAL_SPI_Transmit(&hspi1, &(led_array[pin_num]), 1, 100);
+            HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
+            HAL_Delay(100);
+        }
+
+
+#if 0
         if(is_receiver){
             RXX(&default_module);// - this is called on IRQ
         }
@@ -403,6 +424,35 @@ void configure_gpio_radio()
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(NRF24_IRQ1_Port, &GPIO_InitStruct);
+
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
+  GPIO_InitStruct.Pin = ShiftReg_MR_NOT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ShiiftReg_OE_NOT_Pin */
+  GPIO_InitStruct.Pin = ShiiftReg_OE_NOT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ShiftReg_Expose_Pin */
+  GPIO_InitStruct.Pin = ShiftReg_Expose_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ShiftReg_Expose_Port, &GPIO_InitStruct);
+
+
+  HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
+  HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, LOW);
+
 }
 
 void MX_GPIO_Init(void)
@@ -419,30 +469,12 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DBG_OUT_1_Port, DBG_OUT_1_Pin, GPIO_PIN_RESET);
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DBG_OUT_2_Port, DBG_OUT_2_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LED_DBG_Port, LED_DBG_Pin, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : LED_ONBOARD_Pin */
   GPIO_InitStruct.Pin = LED_ONBOARD_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_ONBOARD_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
-  GPIO_InitStruct.Pin = DBG_OUT_1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-
-  /*Configure GPIO pins : DBG_OUT_2_Pin LED_DBG_Pin */
-  GPIO_InitStruct.Pin = DBG_OUT_2_Pin|LED_DBG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
