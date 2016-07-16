@@ -74,6 +74,7 @@ void init_beamer_channels_gpio()
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     HAL_GPIO_Init(standard_data_pin.pin_port, &GPIO_InitStruct);
+
 }
 
 void init_data()

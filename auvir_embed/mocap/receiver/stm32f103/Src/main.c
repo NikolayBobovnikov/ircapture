@@ -62,6 +62,7 @@ const uint16_t GPIO_PIN_IR_IN = GPIO_PIN_6;
 
 TIM_HandleTypeDef* ptim_input_capture = &htim4;
 TIM_HandleTypeDef* ptim_data_read = &htim3;
+TIM_HandleTypeDef* phtim_delay = &htim2;
 
 extern const bool _is_direct_logic;
 const bool _debug = true;
@@ -146,7 +147,13 @@ int main(void)
   MX_I2C1_Init();
 
   /* USER CODE BEGIN 2 */
-  configure_gpio_radio();
+  bool use_radio = false;
+
+  if(use_radio){
+    configure_gpio_radio();
+  }
+
+  configure_gpio_shiftreg();
 
     //TODO: setting the timer. merge with TIM_Init
 
@@ -168,7 +175,9 @@ int main(void)
     bool is_transmitter = (mode =='t');
     bool is_receiver = !is_transmitter;
 
-    setup(&default_module);
+    if(use_radio){
+        setup(&default_module);
+    }
 
     //nrf_without_this_interrupts_not_work();
     HAL_Delay(100);
@@ -196,28 +205,29 @@ int main(void)
         }
 
 
-#if 0
-        if(is_receiver){
-            RXX(&default_module);// - this is called on IRQ
+        if(use_radio)
+        {
+            if(is_receiver){
+                RXX(&default_module);// - this is called on IRQ
+            }
+            else if(is_transmitter){
+                //=================== prepare message for sending
+                // Determine source of packet
+                radio_tx_set_message_header(WhoAmI_Sensor, Dest_UsbDevice,Typ_SensorData);
+
+                SingleBeamerData singlebeamdata;
+                singlebeamdata.angle = 124;
+                singlebeamdata.beamer_id = 1;
+
+                beamerdata.beamer_data_array[0] = singlebeamdata;
+
+                radio_tx_set_sensordata(&sensordata);
+                //=====================
+
+                TXX(&default_module);
+                HAL_Delay(30);
+            }
         }
-        else if(is_transmitter){
-            //=================== prepare message for sending
-            // Determine source of packet
-            radio_tx_set_message_header(WhoAmI_Sensor, Dest_UsbDevice,Typ_SensorData);
-
-            SingleBeamerData singlebeamdata;
-            singlebeamdata.angle = 124;
-            singlebeamdata.beamer_id = 1;
-
-            beamerdata.beamer_data_array[0] = singlebeamdata;
-
-            radio_tx_set_sensordata(&sensordata);
-            //=====================
-
-            TXX(&default_module);
-            HAL_Delay(30);
-        }
-#endif
 
   /* USER CODE END WHILE */
 
@@ -424,34 +434,48 @@ void configure_gpio_radio()
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(NRF24_IRQ1_Port, &GPIO_InitStruct);
+}
+
+void configure_gpio_shiftreg()
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, GPIO_PIN_RESET);
+
+    /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
+    GPIO_InitStruct.Pin = ShiftReg_MR_NOT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : ShiiftReg_OE_NOT_Pin */
+    GPIO_InitStruct.Pin = ShiiftReg_OE_NOT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : ShiftReg_Expose_Pin */
+    GPIO_InitStruct.Pin = ShiftReg_Expose_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(ShiftReg_Expose_Port, &GPIO_InitStruct);
 
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
-  GPIO_InitStruct.Pin = ShiftReg_MR_NOT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : ShiiftReg_OE_NOT_Pin */
-  GPIO_InitStruct.Pin = ShiiftReg_OE_NOT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : ShiftReg_Expose_Pin */
-  GPIO_InitStruct.Pin = ShiftReg_Expose_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(ShiftReg_Expose_Port, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
+    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, LOW);
 
 
-  HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
-  HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, LOW);
+    /*Pin which corresponds to TIM2 CH1 PWM output
+    turn on/offf LEDs*/
+    GPIO_InitStruct.Pin = GPIO_PIN_0;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, HIGH);
+
 
 }
 

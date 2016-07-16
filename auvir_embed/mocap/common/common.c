@@ -3,14 +3,14 @@
 
 #include "common.h"
 
-extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef* phtim_delay;
 
 void delay_us(uint16_t delay)
 {
-    htim2.Instance->CNT = 0;
-    htim2.Instance->ARR = (DELAY_PRESCALER + 1) * (delay) - 1;
-    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
-    while(__HAL_TIM_GET_FLAG(&htim2, TIM_FLAG_UPDATE) == RESET){}
+    phtim_delay->Instance->CNT = 0;
+    phtim_delay->Instance->ARR = (DELAY_PRESCALER + 1) * (delay) - 1;
+    __HAL_TIM_CLEAR_IT(phtim_delay, TIM_IT_UPDATE);
+    while(__HAL_TIM_GET_FLAG(phtim_delay, TIM_FLAG_UPDATE) == RESET){}
 }
 
 void delay_cycles(uint16_t delay)
