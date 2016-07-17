@@ -66,17 +66,6 @@ TIM_HandleTypeDef * const phtim_delay = &htim4;
 extern NRF_Module default_module;
 extern NRF_Module data_module;
 
-
-#define ShiftReg_MR_NOT_Pin GPIO_PIN_3
-#define ShiftReg_MR_NOT_Port GPIOA
-
-#define ShiiftReg_OE_NOT_Pin GPIO_PIN_2
-#define ShiftReg_OE_NOT_Port GPIOA
-
-#define ShiftReg_Expose_Pin GPIO_PIN_4
-#define ShiftReg_Expose_Port GPIOA
-
-void init_gpio_shiftreg();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -91,7 +80,7 @@ static void MX_TIM4_Init(void);
 static void MX_TIM2_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-                
+
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -108,6 +97,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+  bool is_transmitter = (mode =='t');
+  bool is_receiver = !is_transmitter;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -133,7 +125,11 @@ int main(void)
   //init_beamer_channels_gpio();
 
   /*Configure GPIO pin Output Level */
-  init_gpio_shiftreg();
+  bool use_shiftreg = true;
+  if(use_shiftreg){
+    configure_gpio_shiftreg();
+  }
+  configure_gpio_radio();
 
   // envelop
   HAL_TIM_Base_Start_IT(phtim_envelop);
@@ -145,11 +141,8 @@ int main(void)
   HAL_TIM_Base_Start(phtim_delay);
   // TODO: make more clean TODOs in the future. What the heck is required?!
 
-  bool use_radio = false;
+  setup(&default_module);
 
-  if(use_radio){
-    setup(&default_module);
-  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -165,14 +158,28 @@ int main(void)
       0b01000000, //7
       0b10000000, //8
   };
+uint8_t led_num = 0;
 
   while (1) {
-      for (uint8_t pin_num = 1; pin_num < 8; pin_num ++){
-          HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
-          HAL_SPI_Transmit(&hspi1, &(led_array[pin_num]), 1, 100);
-          HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
-          HAL_Delay(100);
+      if(use_shiftreg)
+        {
+          if(led_num == 7)
+            led_num = 0;
+          else
+            led_num++;
+
+              HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
+              HAL_SPI_Transmit(&hspi1, &(led_array[led_num]), 1, 100);
+              HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
+              HAL_Delay(50);
+
+        }
+
+
+      if(is_receiver){
+          RXX(&default_module);// - this is called on IRQ
       }
+
 
 #if 0 //TODO
     init_data();
@@ -372,10 +379,10 @@ static void MX_TIM4_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
@@ -390,9 +397,9 @@ static void MX_DMA_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -408,6 +415,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : LED_ONBOARD_Pin */
+  GPIO_InitStruct.Pin = LED_ONBOARD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_ONBOARD_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */
@@ -499,36 +514,6 @@ void TIM4_Init_prev(void)
 
 }
 
-void init_gpio_shiftreg()
-{
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, LOW);
-
-    /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
-    GPIO_InitStruct.Pin = ShiftReg_MR_NOT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : ShiiftReg_OE_NOT_Pin */
-    GPIO_InitStruct.Pin = ShiiftReg_OE_NOT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : ShiftReg_Expose_Pin */
-    GPIO_InitStruct.Pin = ShiftReg_Expose_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(ShiftReg_Expose_Port, &GPIO_InitStruct);
-
-    HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
-    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, LOW);
-}
 
 /* USER CODE END 4 */
 
@@ -541,10 +526,10 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
+  while(1)
   {
   }
-  /* USER CODE END Error_Handler */ 
+  /* USER CODE END Error_Handler */
 }
 
 #ifdef USE_FULL_ASSERT
@@ -570,10 +555,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

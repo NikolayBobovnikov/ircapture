@@ -38,7 +38,7 @@
 #include "infrared.h"
 #include "sensor.h"
 #include "se8r01.h"
-//#include "common.h"
+#include "common.h"
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -102,16 +102,6 @@ extern SensorData sensordata;
 BeamerData beamerdata = {0};
 IMUData imudata = {0};
 
-
-
-#define ShiftReg_MR_NOT_Pin GPIO_PIN_3
-#define ShiftReg_MR_NOT_Port GPIOA
-
-#define ShiiftReg_OE_NOT_Pin GPIO_PIN_2
-#define ShiftReg_OE_NOT_Port GPIOA
-
-#define ShiftReg_Expose_Pin GPIO_PIN_4
-#define ShiftReg_Expose_Port GPIOA
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -147,14 +137,17 @@ int main(void)
   MX_I2C1_Init();
 
   /* USER CODE BEGIN 2 */
-  bool use_radio = false;
+  bool use_radio = true;
 
   if(use_radio){
     configure_gpio_radio();
   }
 
-  configure_gpio_shiftreg();
+  bool use_shiftreg = false;
 
+  if(use_shiftreg){
+    configure_gpio_shiftreg();
+  }
     //TODO: setting the timer. merge with TIM_Init
 
     //// start usec delay timer
@@ -197,12 +190,16 @@ int main(void)
     while (1)
     {
 
-        for (uint8_t pin_num = 1; pin_num < 8; pin_num ++){
-            HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
-            HAL_SPI_Transmit(&hspi1, &(led_array[pin_num]), 1, 100);
-            HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
-            HAL_Delay(100);
-        }
+        if(use_shiftreg)
+          {
+            for (uint8_t pin_num = 1; pin_num < 8; pin_num ++){
+                HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
+                HAL_SPI_Transmit(&hspi1, &(led_array[pin_num]), 1, 100);
+                HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
+                HAL_Delay(100);
+              }
+
+          }
 
 
         if(use_radio)
@@ -410,74 +407,7 @@ void MX_TIM4_Init(void)
         * EVENT_OUT
         * EXTI
 */
-void configure_gpio_radio()
-{
-  GPIO_InitTypeDef GPIO_InitStruct;
 
-  HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(NRF24_CE1_Port, NRF24_CE1_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
-  GPIO_InitStruct.Pin = NRF24_CSN1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(NRF24_CSN1_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
-  GPIO_InitStruct.Pin = NRF24_CE1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(NRF24_CE1_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : NRF24_IRQ1_Pin */
-  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(NRF24_IRQ1_Port, &GPIO_InitStruct);
-}
-
-void configure_gpio_shiftreg()
-{
-    GPIO_InitTypeDef GPIO_InitStruct;
-
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, GPIO_PIN_RESET);
-
-    /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
-    GPIO_InitStruct.Pin = ShiftReg_MR_NOT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : ShiiftReg_OE_NOT_Pin */
-    GPIO_InitStruct.Pin = ShiiftReg_OE_NOT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
-
-    /*Configure GPIO pin : ShiftReg_Expose_Pin */
-    GPIO_InitStruct.Pin = ShiftReg_Expose_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(ShiftReg_Expose_Port, &GPIO_InitStruct);
-
-
-    HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
-    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, LOW);
-
-
-    /*Pin which corresponds to TIM2 CH1 PWM output
-    turn on/offf LEDs*/
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, HIGH);
-
-
-}
 
 void MX_GPIO_Init(void)
 {

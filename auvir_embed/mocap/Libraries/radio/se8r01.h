@@ -226,11 +226,6 @@
 
 ///==========================================================================
 
-#if USE_OLD_MAPPING
-#include "pin_mapping_old.h"
-#else
-#include "pin_mapping_new.h"
-#endif
 
 typedef enum{
     NRF24_TRANSMISSON_OK,

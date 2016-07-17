@@ -191,7 +191,6 @@ static void nrf24_setup_modules_gpio()
     data_module.IRQ.Port= NRF24_IRQ2_Port;
 }
 
-
 static void nrf24_ce_set(NRF_Module * radiomodule, GPIO_PinState state)
 {
     assert_param(state == LOW || state == HIGH);
