@@ -4,6 +4,7 @@
 #include "common.h"
 
 extern TIM_HandleTypeDef* phtim_delay;
+extern SPI_HandleTypeDef hspi1;
 
 void delay_us(uint16_t delay)
 {
@@ -111,4 +112,11 @@ void configure_gpio_shiftreg()
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, HIGH);
   */
 
+}
+
+void shiftreg_send_16bit_data(uint16_t data)
+{
+  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
+  HAL_SPI_Transmit(&hspi1, &data, 1, 10);
+  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
 }

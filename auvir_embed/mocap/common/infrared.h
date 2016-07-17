@@ -2,6 +2,7 @@
 #define INFRARED_H
 
 #include "stm32f1xx_hal.h"
+#include "common.h"
 #include <stdbool.h>
 
 // INFO: values below has been chosen manually
@@ -37,7 +38,7 @@
 #define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1)
 #define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1)
 
-#define NUMBER_OF_BEAMER_CHANNELS 8
+#define NUMBER_OF_BEAMER_CHANNELS 8 //8 ir channels, no data pin included
 #define RX_BUF_SIZE 10
 
 //======= Turn on/off particular testing pulses
@@ -139,7 +140,6 @@ typedef struct MCU_PIN{
 void init_data();
 void sensor_send_data();
 void transmit_handler();
-void init_beamer_channels_gpio();
 
 // main functions used in timer interrupt handlers
 void irreceiver_timer_prob_handler(); // for update timer

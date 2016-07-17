@@ -158,7 +158,7 @@ int main(void)
       0b01000000, //7
       0b10000000, //8
   };
-uint8_t led_num = 0;
+  uint8_t led_num = 0;
 
   while (1) {
       if(use_shiftreg)
@@ -168,9 +168,7 @@ uint8_t led_num = 0;
           else
             led_num++;
 
-              HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
-              HAL_SPI_Transmit(&hspi1, &(led_array[led_num]), 1, 100);
-              HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
+            shiftreg_send_16bit_data(led_array[led_num]);
               HAL_Delay(50);
 
         }
