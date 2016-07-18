@@ -22,23 +22,22 @@ uint8_t tx_total_bits = 0;
 uint8_t tx_current_bit_pos = 0;
 uint8_t tx_bit = 0;
 
-uint16_t beamer_ir_channel_array[NUMBER_OF_BEAMER_CHANNELS + 1] =
+uint8_t beamer_ir_channel_array[NUMBER_OF_BEAMER_CHANNELS + 1] =
 {
-  0b0000000000000001,//0
-  0b0000000000000010,//1
-  0b0000000000000100,//2
-  0b0000000000001000,//3
-  0b0000000000010000,//4
-  0b0000000000100000,//5
-  0b0000000001000000,//6
-  0b0000000010000000 //7
-  //0b0000000100000000,//8
+  0b00000001,//0
+  0b00000010,//1
+  0b00000100,//2
+  0b00001000,//3
+  0b00010000,//4
+  0b00100000,//5
+  0b01000000,//6
+  0b10000000 //7
   //0b0000001000000000,//9
   //0b0000010000000000,//10 data pin
 };
-
 uint8_t beamer_current_ir_channel = 0;
 const uint8_t beamer_data_pin = NUMBER_OF_BEAMER_CHANNELS;
+const uint8_t beamer_ir_1st_channel = 0;
 
 /// ================== External Function prototypes ================
 void RXX();
@@ -142,7 +141,7 @@ void transmit_handler()
      * 4. stop sequence
      */
     // htim_envelop forming envelop
-    // htim2 generates PWM
+    // phtim_pwm generates PWM
 
     switch(TransmitterState)
     {
@@ -346,7 +345,7 @@ static inline void p_w_modulate(uint8_t bit)
 static inline void turn_off_all_beamer_pins()
 {
 
-    shiftreg_send_16bit_data(0);
+    shiftreg_send_8bit_data(0);
 }
 
 static inline void select_next_beamer_channel_index()
@@ -363,10 +362,11 @@ static inline void reset_previous_update_current_beamer_pin()
 {
     //TODO: IR channel turn off current pin?
     //shiftreg_send_16bit_data(0xFF ^ beamer_ir_channel_array[beamer_current_ir_channel]);
-    shiftreg_send_16bit_data(0);
+    shiftreg_send_8bit_data(0);
 
     if(DATAFRAME_2_ANGLE == TxDataFrameState){
         //TODO: IR channel - set current pin from IR channels
+        beamer_current_ir_channel = beamer_ir_1st_channel;
     }
     else{
         beamer_current_ir_channel = beamer_data_pin;
@@ -376,7 +376,7 @@ static inline void reset_previous_update_current_beamer_pin()
 static inline void force_envelop_timer_output_on()
 {
     // turn on current pin
-    shiftreg_send_16bit_data(beamer_ir_channel_array[beamer_current_ir_channel]);
+    shiftreg_send_8bit_data(beamer_ir_channel_array[beamer_current_ir_channel]);
 
     // turn on carrier
     if(_is_direct_logic)
@@ -394,7 +394,7 @@ static inline void force_envelop_timer_output_off()
 {
     // turn on current pin
     //TODO: IR channel turn on current pin [ why turn on? ]
-    shiftreg_send_16bit_data(beamer_ir_channel_array[beamer_current_ir_channel]);
+    shiftreg_send_8bit_data(beamer_ir_channel_array[beamer_current_ir_channel]);
 
     // turn off carrier
     if(_is_direct_logic)

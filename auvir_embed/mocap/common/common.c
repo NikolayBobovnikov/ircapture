@@ -119,4 +119,15 @@ void shiftreg_send_16bit_data(uint16_t data)
   HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
   HAL_SPI_Transmit(&hspi1, &data, 1, 10);
   HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
+  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
+
+}
+
+void shiftreg_send_8bit_data(uint8_t data)
+{
+  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
+  HAL_SPI_Transmit(&hspi1, &data, 1, 10);
+  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
+  HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
+
 }
