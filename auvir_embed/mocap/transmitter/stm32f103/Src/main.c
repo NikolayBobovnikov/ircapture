@@ -161,6 +161,7 @@ int main(void)
   uint8_t led_num = 0;
 
   while (1) {
+      /*
       if(use_shiftreg)
         {
           if(led_num == 7)
@@ -172,6 +173,7 @@ int main(void)
               HAL_Delay(50);
 
         }
+        */
 
 
       if(is_receiver){
@@ -179,7 +181,7 @@ int main(void)
       }
 
 
-#if 0 //TODO
+#if 1 //TODO
     init_data();
     sensor_send_data();
 #endif

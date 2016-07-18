@@ -11,6 +11,7 @@ const bool _is_direct_logic = true;
 //PWM timer configuration
 extern TIM_HandleTypeDef * phtim_envelop;
 extern TIM_HandleTypeDef * phtim_pwm;
+extern const uint32_t pwm_tim_channel;
 
 TxStartStopSequenceStates StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
 DataFrameStates TxDataFrameState = DATAFRAME_0_NODATA;
@@ -21,23 +22,23 @@ uint8_t tx_total_bits = 0;
 uint8_t tx_current_bit_pos = 0;
 uint8_t tx_bit = 0;
 
-// constant, use for transmission non-structured light data
-const MCU_PIN standard_data_pin = { GPIOB, GPIO_PIN_8};
-// variable, use for transmission coded angle
-MCU_PIN current_pin  = { GPIOB, GPIO_PIN_8};
-
-MCU_PIN beamer_channel_array[NUMBER_OF_BEAMER_CHANNELS] = {
-    { GPIOA, GPIO_PIN_11},
-    { GPIOA, GPIO_PIN_12},
-    { GPIOA, GPIO_PIN_15},
-    { GPIOB, GPIO_PIN_3},
-    { GPIOB, GPIO_PIN_4},
-    { GPIOB, GPIO_PIN_5},
-    { GPIOB, GPIO_PIN_6},
-    { GPIOB, GPIO_PIN_7}
+uint16_t beamer_ir_channel_array[NUMBER_OF_BEAMER_CHANNELS + 1] =
+{
+  0b0000000000000001,//0
+  0b0000000000000010,//1
+  0b0000000000000100,//2
+  0b0000000000001000,//3
+  0b0000000000010000,//4
+  0b0000000000100000,//5
+  0b0000000001000000,//6
+  0b0000000010000000 //7
+  //0b0000000100000000,//8
+  //0b0000001000000000,//9
+  //0b0000010000000000,//10 data pin
 };
-uint8_t current_beamer_channel_index = 0;
 
+uint8_t beamer_current_ir_channel = 0;
+const uint8_t beamer_data_pin = NUMBER_OF_BEAMER_CHANNELS;
 
 /// ================== External Function prototypes ================
 void RXX();
@@ -56,26 +57,6 @@ static inline void force_envelop_timer_output_off();
 /// ============================== Function definitions ==============================
 
 // TX
-void init_beamer_channels_gpio()
-{
-    GPIO_InitTypeDef GPIO_InitStruct;
-    // initialize separate pins
-    for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
-    {
-        GPIO_InitStruct.Pin = beamer_channel_array[pin_index].pin_number;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-
-        HAL_GPIO_Init(beamer_channel_array[pin_index].pin_port, &GPIO_InitStruct);
-    }
-
-    // initialize common pin
-    GPIO_InitStruct.Pin = standard_data_pin.pin_number;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    HAL_GPIO_Init(standard_data_pin.pin_port, &GPIO_InitStruct);
-
-}
 
 void init_data()
 {
@@ -178,7 +159,7 @@ void transmit_handler()
                 // First (long) bit
                 case Tx_PREAMBLE_BIT_1:
                 {
-                    current_pin = standard_data_pin;
+                    beamer_current_ir_channel = beamer_data_pin;
                     force_envelop_timer_output_on();
                     phtim_envelop->Instance->ARR = PreambleBitCorrected;
                     StartStopSequenceTransmitState = Tx_PREAMBLE_DELAY_1;
@@ -343,8 +324,7 @@ static inline void reset_transmitter()
     phtim_envelop->Instance->ARR = InterframeDelayLength;
     StartStopSequenceTransmitState = Tx_PREAMBLE_BIT_1;
     TxDataFrameState = DATAFRAME_0_NODATA;
-    current_pin = standard_data_pin;
-    current_beamer_channel_index = 0;
+    beamer_current_ir_channel = beamer_data_pin;
 }
 
 static inline void switch_to_data_transmission_state()
@@ -366,80 +346,64 @@ static inline void p_w_modulate(uint8_t bit)
 static inline void turn_off_all_beamer_pins()
 {
 
-    for(uint8_t pin_index = 0; pin_index < NUMBER_OF_BEAMER_CHANNELS; pin_index++)
-    {
-        HAL_GPIO_WritePin(beamer_channel_array[pin_index].pin_port, beamer_channel_array[pin_index].pin_number, GPIO_PIN_RESET);
-    }
-
-    HAL_GPIO_WritePin(standard_data_pin.pin_port, standard_data_pin.pin_number,  GPIO_PIN_RESET);
+    shiftreg_send_16bit_data(0);
 }
 
 static inline void select_next_beamer_channel_index()
 {
-    if(current_beamer_channel_index < NUMBER_OF_BEAMER_CHANNELS - 1){
-        current_beamer_channel_index++;
+    if(beamer_current_ir_channel < NUMBER_OF_BEAMER_CHANNELS - 1){
+        beamer_current_ir_channel++;
     }
     else{
-        current_beamer_channel_index = 0;
+        beamer_current_ir_channel = 0;
     }
 }
 
 static inline void reset_previous_update_current_beamer_pin()
 {
-    HAL_GPIO_WritePin(current_pin.pin_port, current_pin.pin_number, GPIO_PIN_RESET);
+    //TODO: IR channel turn off current pin?
+    //shiftreg_send_16bit_data(0xFF ^ beamer_ir_channel_array[beamer_current_ir_channel]);
+    shiftreg_send_16bit_data(0);
 
     if(DATAFRAME_2_ANGLE == TxDataFrameState){
-        current_pin = beamer_channel_array[current_beamer_channel_index];
+        //TODO: IR channel - set current pin from IR channels
     }
     else{
-        current_pin = standard_data_pin;
+        beamer_current_ir_channel = beamer_data_pin;
     }
 }
 
 static inline void force_envelop_timer_output_on()
 {
     // turn on current pin
-    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
+    shiftreg_send_16bit_data(beamer_ir_channel_array[beamer_current_ir_channel]);
 
     // turn on carrier
     if(_is_direct_logic)
     {
-        HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);
+        HAL_TIM_PWM_Start(phtim_pwm, pwm_tim_channel);
     }
     else
     {
-        HAL_TIM_PWM_Stop(phtim_pwm, TIM_CHANNEL_4);
+        HAL_TIM_PWM_Stop(phtim_pwm, pwm_tim_channel);
     }
 
 }
 
 static inline void force_envelop_timer_output_off()
 {
-    if(_debug)
-    {
-        if(_is_direct_logic)
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
-        }
-        else
-        {
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-        }
-    }
-
     // turn on current pin
-    HAL_GPIO_WritePin(current_pin.pin_port,current_pin.pin_number, GPIO_PIN_SET);
+    //TODO: IR channel turn on current pin [ why turn on? ]
+    shiftreg_send_16bit_data(beamer_ir_channel_array[beamer_current_ir_channel]);
 
     // turn off carrier
     if(_is_direct_logic)
     {
-        HAL_TIM_PWM_Stop(phtim_pwm, TIM_CHANNEL_4);
+        HAL_TIM_PWM_Stop(phtim_pwm, pwm_tim_channel);
     }
     else
     {
-        HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_4);
+        HAL_TIM_PWM_Start(phtim_pwm, pwm_tim_channel);
     }
 
 }
