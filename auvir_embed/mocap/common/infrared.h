@@ -38,7 +38,7 @@
 #define max_delta_preamble_bit      (int)(PreambleBitLength * 0.1)
 #define max_delta_preamble_delay    (int)(PreambleDelayLength * 0.1)
 
-#define NUMBER_OF_BEAMER_CHANNELS 8 //8 ir channels, no data pin included
+#define NUMBER_OF_BEAMER_CHANNELS 7 //ir channels, no data pin included
 #define RX_BUF_SIZE 10
 
 //======= Turn on/off particular testing pulses

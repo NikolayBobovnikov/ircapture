@@ -53,5 +53,7 @@ void configure_gpio_radio();
 void configure_gpio_shiftreg();
 
 void shiftreg_send_16bit_data(uint16_t data);
+void shiftreg_send_8bit_data(uint8_t data);
+
 
 #endif //H_COMMON
