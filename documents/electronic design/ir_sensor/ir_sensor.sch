@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:ir_sensor-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -305,7 +306,7 @@ F 3 "" H 1850 950 50  0000 C CNN
 $EndComp
 $Comp
 L STM32F103HEADER U?
-U 1 1 578E6D6B
+U 1 1 578FE591
 P 1350 2750
 F 0 "U?" H 1500 4000 60  0000 C CNN
 F 1 "STM32F103HEADER" H 1550 1700 60  0000 C CNN
