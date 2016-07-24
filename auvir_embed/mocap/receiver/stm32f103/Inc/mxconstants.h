@@ -30,18 +30,17 @@
   *
   ******************************************************************************
   */
-/* Includes ------------------------------------------------------------------*/
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __MXCONSTANT_H
+#define __MXCONSTANT_H
+  /* Includes ------------------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
-#define DelayCheckingPeriod (100 - 1)
-#define envelop_timer_prescaler (72 - 1)
 
-#define LED_ONBOARD_Pin GPIO_PIN_13
-#define LED_ONBOARD_Port GPIOC
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
@@ -54,4 +53,5 @@
   * @}
 */
 
+#endif /* __MXCONSTANT_H */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

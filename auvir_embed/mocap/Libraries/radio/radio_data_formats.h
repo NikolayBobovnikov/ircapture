@@ -18,7 +18,7 @@
 // But for multi person with arena platform, sensor won't be able to receive angles from all beamers,
 // Instead, each sensor should receive data from subset of beamers (e.g. which are nearby)
 // So we need to limit number of beamers for each sensor to get data from
-#define MAX_BEAMERS_PER_SENSOR 10 /// should be less or equal to MAX_BEAMER_NUM
+#define MAX_BEAMERS_PER_SENSOR 9 /// should be less or equal to MAX_BEAMER_NUM
 
 typedef struct RadioAddress{
     uint8_t byte_array[TX_ADR_WIDTH];
@@ -28,6 +28,8 @@ typedef struct RadioAddress{
 typedef struct RadioMessage{
     uint8_t header;
     uint8_t data[31];
+    //Maximum size of radiomessage for radiomodule is 32 bytes, so upper bound for data is 31 bytes
+
     //Contents of data depends on the message type:
     //Typ_BeamerRequestRegistration
     //  uint16_t TmpBeamerID
@@ -89,13 +91,14 @@ typedef enum SensorDataType{
 }SensorDataType;
 
 //TODO: make sure size of SensorData is the same as size of radio buffer (rx/tx payload) if it is not dynamic
+#define MAX_SENSOR_DATA_SIZE 27 // maximum size for data member to be able to contain all types of data (BeamerData, IMUData)
 typedef struct SensorData{
     uint8_t sensor_id;
     SensorDataType datatype;
-    uint8_t data[30];
+    uint8_t data[MAX_SENSOR_DATA_SIZE];
     //Contents of data depends on the message type:
     //SDT_BeamerData:
-    //BeamerData beamer_data[MAX_BEAMERS_PER_SENSOR]; //30 bytes
+    //BeamerData beamer_data[MAX_BEAMERS_PER_SENSOR]; //27 bytes
     //SDT_IMUData:
     //IMUData imu_data;                               //18 bytes
 } SensorData;
@@ -167,6 +170,7 @@ RM_Typ_e radio_get_msgtype();
 void radio_set_whoami(RM_WhoAmI_e whoami);
 void radio_set_dst(RM_Dest_e dst);
 void radio_set_msgtype(RM_Typ_e typ);
+
 void radio_tx_set_message_header(RM_WhoAmI_e whoami, RM_Dest_e dst, RM_Typ_e typ);
 
 /// ===================================== Radio message type =====================================
@@ -185,7 +189,10 @@ void radio_tx_set_sensordata(SensorData * sensordata);
 
 
 /// ===================================== Sensor data type =====================================
-void get_sensordata_type();
+SensorDataType get_sensordata_type(SensorData *snsrdata);
+void set_sensordata_type(SensorData *snsrdata, SensorDataType type);
 
+void set_sensor_data_imu(SensorData *snsrdata, IMUData* data);
+void set_sensor_data_beamer(SensorData *snsrdata, BeamerData* data);
 
 #endif //RADIO_DATA_FORMATS_H

@@ -22,6 +22,7 @@ RM_Typ_e radio_get_msgtype()
     return ((rx_message.header & RM_Mask_Typ) >> RM_Bit_Typ);
 }
 
+//TODO: review below; probably redundant (there is a radio_tx_set_message_header() already)
 void radio_set_whoami(RM_WhoAmI_e whoami)
 {
     tx_message.header |= (whoami << RM_Bit_WhoAmI);
@@ -61,7 +62,6 @@ void radio_tx_set_id(uint8_t id)
 void radio_rx_get_radiodevinfo(RadioDevInfo * rdinfo)
 {
     //memcpy(rdinfo, &(rx_message.data[0]), sizeof(RadioDevInfo));
-
     // TODO FIXME: read on casting if it truncates redundant stuff - try simple casting like
     rdinfo = (RadioDevInfo*)&(rx_message.data[0]);
 }
@@ -82,9 +82,23 @@ void radio_tx_set_sensordata(SensorData * snsrdata)
 }
 
 
-
-
-void get_sensordata_type()
+SensorDataType get_sensordata_type(SensorData * snsrdata)
 {
+    //TODO checkme
+    return snsrdata->datatype;
+}
 
+void set_sensordata_type(SensorData *snsrdata, SensorDataType type)
+{
+    snsrdata->datatype = type;
+}
+
+void set_sensor_data_imu(SensorData *snsrdata, IMUData *data)
+{
+    memcpy(&(snsrdata->data[0]), data, sizeof(IMUData));
+}
+
+void set_sensor_data_beamer(SensorData *snsrdata, BeamerData *data)
+{
+    memcpy(&(snsrdata->data[0]), data, sizeof(BeamerData));
 }

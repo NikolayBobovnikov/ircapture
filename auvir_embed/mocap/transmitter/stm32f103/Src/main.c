@@ -37,6 +37,8 @@
 #include <stdbool.h>
 #include "infrared.h"
 #include "se8r01.h"
+
+#define USE_OLD_MAPPING 0
 #include "common.h"
 
 /* USER CODE END Includes */

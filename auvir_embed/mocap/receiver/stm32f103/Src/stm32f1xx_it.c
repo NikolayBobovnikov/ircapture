@@ -40,18 +40,17 @@
 // #include "infrared.h"
 
 void irreceiver_timer_up_handler();
-void irreceiver_timer_ic_handler();
+void irreceiver_ic_handler();
 void nrf_receive_handler();
 
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern SPI_HandleTypeDef hspi1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 
 /******************************************************************************/
-/*            Cortex-M3 Processor Interruption and Exception Handlers         */ 
+/*            Cortex-M3 Processor Interruption and Exception Handlers         */
 /******************************************************************************/
 
 /**
@@ -94,25 +93,11 @@ void TIM3_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-    irreceiver_timer_ic_handler();
+    irreceiver_ic_handler();
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */
   /* USER CODE END TIM4_IRQn 1 */
-}
-
-/**
-* @brief This function handles SPI1 global interrupt.
-*/
-void SPI1_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI1_IRQn 0 */
-
-  /* USER CODE END SPI1_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi1);
-  /* USER CODE BEGIN SPI1_IRQn 1 */
-
-  /* USER CODE END SPI1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

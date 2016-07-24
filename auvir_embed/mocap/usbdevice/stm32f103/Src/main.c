@@ -41,6 +41,8 @@
 #include "se8r01.h"
 #include "infrared.h"
 #include "usbd_cdc_if.h"
+
+#define USE_OLD_MAPPING 1
 #include "common.h"
 #include "mocap_device.h"
 
@@ -55,9 +57,18 @@ TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 const bool _debug = true;
+const TIM_HandleTypeDef* phtim_delay = &htim2;
 
 extern GPIO_TypeDef * GPIO_LED_PORT;
 extern uint16_t GPIO_LED_PIN;
+
+
+
+extern RadioMessage tx_message;
+extern RadioDevInfo radiodevinfo;
+extern SensorData sensordata;
+extern BeamerData beamerdata;
+extern IMUData imudata;
 /// ===========================================
 
 /* USER CODE END PV */
@@ -116,15 +127,66 @@ int main(void)
     setup(&default_module);
 
     //wait for usb device is configured
-    while(!is_usb_configured());
+    while(!is_usb_configured())
+    {
+        //NOP
+    };
+
+    // sigal that USB is OK ==============
+    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+    HAL_Delay (300);
+    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+    HAL_Delay (300);
+    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+    HAL_Delay (300);
+    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+    HAL_Delay (300);
+    //====================================
 
     register_usb_device();
 
+
+    bool test_usb = true;
+
+    const char* test_str = "Hello, I'm a usbdevice";
+    uint8_t buf[32] = {0};
+    memcpy(&buf[0], test_str, strlen(test_str));
+
+
     while (1)
     {
-        //HAL_Delay (100);
-        //CDC_Transmit_FS(buf, strlen(str));
-        //HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+
+        if(test_usb){
+
+            //=================== prepare message for sending
+            // Determine source of packet
+            radio_tx_set_message_header(WhoAmI_UsbDevice, Dest_UsbDevice, Typ_SensorData);
+
+            IMUData imudata;
+            imudata.ax = 1;
+            imudata.ay = 1;
+            imudata.az = 1;
+            imudata.gx = 2;
+            imudata.gy = 2;
+            imudata.gz = 2;
+            imudata.mx = 3;
+            imudata.my = 3;
+            imudata.mz = 3;
+
+            sensordata.sensor_id = 12;
+            set_sensordata_type (&sensordata, SDT_IMUData);
+            set_sensor_data_imu (&sensordata, &imudata);
+
+            radio_tx_set_sensordata(&sensordata);
+            //=====================
+
+            HAL_Delay (1000);
+            uint8_t result = CDC_Transmit_FS((uint8_t *)&tx_message, sizeof(RadioMessage));
+            if(result == USBD_OK){
+                HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
+            }
+
+        }
 
         //listening...
         RXX(&default_module);
@@ -218,9 +280,9 @@ void MX_TIM2_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -296,10 +358,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

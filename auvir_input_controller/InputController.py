@@ -15,8 +15,11 @@ import glob
 import serial
 import serial.tools.list_ports
 
+import struct
+from struct import *
 
-def serial_ports():
+
+def get_serial_ports():
     """ Lists serial port names
 
         :raises EnvironmentError:
@@ -44,32 +47,31 @@ def serial_ports():
             pass
     return result
 
-	
-def process_serial_device(device):
-    if cdc_device.isOpen():
-        #data_to_write = b"Hello!"
-        #cdc_device.write(data_to_write)
-        #cdc_device.write(data_to_write)
-        for i in range(1,5):
-            line = cdc_device.read(32)
-            print(line)
-            
-            
-			
-    
-if __name__ == "__main__":
-    
-    print ("List all devices...")
+
+def use_usb():
+    	#TODO
+    print ("List all usb devices...")
     for dev in usb.core.find(find_all=True):
         print ("  idVendor: %d (%s)" % (dev.idVendor, hex(dev.idVendor)))
         print ("  idProduct: %d (%s)" % (dev.idProduct, hex(dev.idProduct)))
     
+    print ("open STM usbdevice")
+    dev = usb.core.find(idVendor=0x0483, idProduct=0x5740)
+    #idVendor           0x0483 STMicroelectronics
+    #idProduct          0x5740 STM32F407
+
+    # was it found?
+    if dev is None:
+        print("raise ValueError!!!")
+        raise ValueError('Device not found')
+    print( dev.configurations )	
     
-    print ("List all serial ports...")
-    port_names = serial_ports()
-    print ("List all serial ports other way...")
+    
+def use_serial():
+    print ("List all serial ports:")
+    port_names = get_serial_ports()
+    print ("List all serial ports other way using serial library:")
     ports = list(serial.tools.list_ports.comports())
-    
     #check that there are ports available
     if not port_names:
         print("There is no available serial ports")
@@ -80,17 +82,45 @@ if __name__ == "__main__":
     
     #Get correct port name. Need to identify among others if there are many
     #just use first port from the list, using one of 2 options below. TODO: fix that, determine required port somehow
-    port_name = port_names[0]
-    #port_name = ports[0].device
-    print(port_name)
+    #port_name = port_names[0]
     
-     #Tried with and without the last 3 parameters, and also at 1Mbps, same happens.
-    try:
-        with serial.Serial(port_name) as cdc_device:
-            process_serial_device(cdc_device)
-    except serial.serialutil.SerialException as e:
-        print(e)
+    target_port_name = "ttyACM0"
+    
+    for port_name in port_names:
+        print(port_name)
+        if target_port_name in port_name:
+            print("opening " + target_port_name)
+    
+             #Tried with and without the last 3 parameters, and also at 1Mbps, same happens.
+            try:
+                with serial.Serial(port_name) as cdc_device:
+                    process_serial_device(cdc_device)
+            except serial.serialutil.SerialException as e:
+                print(e)
+                
+	
+def process_serial_device(cdc_device):
+    #formats for unpacking data from received C structures
+    msg_formats = {"IMUData" : "3c9H10c",
+                   "BeamerData" : "3ccHcHcHcHcHcHcHcHcH" }
+    while cdc_device.isOpen():
+        #data = cdc_device.read(32)
+        #line = cdc_device.readline()
+        data = cdc_device.read(32)
+        print(data)
+            
+        decoded_Data = unpack(msg_formats["IMUData"], data)
+        print(decoded_Data)
+   
+            
+
+    
+if __name__ == "__main__":
+    
+    use_usb()
         
+    use_serial()
+    
     
     
  

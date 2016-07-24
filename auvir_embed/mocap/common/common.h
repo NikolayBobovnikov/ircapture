@@ -16,13 +16,19 @@
 #endif
 
 // pin mapping for radio module
-#define USE_OLD_MAPPING 0
 #define USE_NEW_MAPPING (!USE_OLD_MAPPING)
 #if USE_OLD_MAPPING
 #include "pin_mapping_old.h"
 #else
 #include "pin_mapping_new.h"
 #endif
+
+
+
+#define LED_ONBOARD_Pin GPIO_PIN_13
+#define LED_ONBOARD_GPIO_Port GPIOC
+#define LED_DBG_Pin GPIO_PIN_3
+#define LED_DBG_GPIO_Port GPIOB
 
 // pin mapping for shift register
 #define ShiftReg_MR_NOT_Pin GPIO_PIN_3

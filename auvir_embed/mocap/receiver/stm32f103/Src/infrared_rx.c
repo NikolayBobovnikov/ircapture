@@ -7,8 +7,8 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef* ptim_input_capture;
 extern TIM_HandleTypeDef* ptim_data_read;
 
-extern GPIO_TypeDef * GPIO_PORT_IR_IN;
-extern uint16_t GPIO_PIN_IR_IN;
+extern GPIO_TypeDef * IR_IN_Gpio_Port;
+extern uint16_t IR_IN_Gpio_Pin;
 extern const bool _is_direct_logic;
 
 const bool _is_direct_logic = false;
@@ -36,7 +36,7 @@ uint16_t _ccr1 = 0;
 uint16_t _ccr2 = 0;
 
 GPIO_TypeDef * GPIO_LED_PORT = GPIOB;
-uint16_t GPIO_LED_PIN = GPIO_PIN_3;
+uint16_t GPIO_LED_PIN = GPIO_PIN_11;
 
 
 /// ================== Radio interface ================
@@ -106,7 +106,7 @@ inline void irreceiver_timer_up_handler()
     receive_handler();
 }
 
-inline void irreceiver_timer_ic_handler()
+inline void irreceiver_ic_handler()
 {
     if(__HAL_TIM_GET_FLAG(ptim_input_capture, TIM_FLAG_CC1) != RESET)
     {
@@ -561,6 +561,9 @@ static inline void reset_receiver_state()
         //HAL_GPIO_WritePin(GPIO_LED_PORT,GPIO_LED_PIN,GPIO_PIN_RESET);
     }
 
+    _is_rising_edge = false;
+    _is_falling_edge = false;
+    _is_uptimer_update_event = false;
     //HAL_TIM_Base_Stop_IT(ptim_data_read);
 }
 
@@ -643,11 +646,11 @@ static inline bool is_0_on_update_event()
 
 static inline void get_logical_level()
 {
-    if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_SET)
+    if(HAL_GPIO_ReadPin(IR_IN_Gpio_Port, IR_IN_Gpio_Pin) == GPIO_PIN_SET)
     {
         LineLevelState = LINE_HIGH_ON_UPDATE_EVENT;
     }
-    else if(HAL_GPIO_ReadPin(GPIO_PORT_IR_IN, GPIO_PIN_IR_IN) == GPIO_PIN_RESET)
+    else if(HAL_GPIO_ReadPin(IR_IN_Gpio_Port, IR_IN_Gpio_Pin) == GPIO_PIN_RESET)
     {
         LineLevelState = LINE_LOW_ON_UPDATE_EVENT;
     }
