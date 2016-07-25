@@ -36,6 +36,7 @@
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+extern "C" {
 #include "sensor.h"
 #include "sensor_hub.h"
 #include "se8r01.h"
@@ -45,7 +46,7 @@
 #define USE_OLD_MAPPING 1
 #include "common.h"
 #include "mocap_device.h"
-
+}
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
 
@@ -63,12 +64,13 @@ extern GPIO_TypeDef * GPIO_LED_PORT;
 extern uint16_t GPIO_LED_PIN;
 
 
-
 extern RadioMessage tx_message;
 extern RadioDevInfo radiodevinfo;
 extern SensorData sensordata;
 extern BeamerData beamerdata;
 extern IMUData imudata;
+
+
 /// ===========================================
 
 /* USER CODE END PV */
@@ -91,7 +93,8 @@ extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 extern NRF_Module default_module;
 extern NRF_Module data_module;
 
-const char mode = 'r'; // 't'
+char mode = 'r'; // 't'
+
 /* USER CODE END 0 */
 
 int main(void)

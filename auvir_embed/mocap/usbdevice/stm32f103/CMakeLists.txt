@@ -87,7 +87,7 @@ SET(ALL_LIB_HEADERS "")
 
 # include source/include files recursively
 foreach (_dir ${LIB_DIRS})
-    file(GLOB_RECURSE LIB_SOURCES "${_dir}/*.c" "${_dir}/*.s")
+    file(GLOB_RECURSE LIB_SOURCES "${_dir}/*.c" "${_dir}/*.cpp" "${_dir}/*.s")
     file(GLOB_RECURSE LIB_HEADERS "${_dir}/*.h")
     list(APPEND ALL_LIB_SOURCES ${LIB_SOURCES})
     list(APPEND ALL_LIB_HEADERS ${LIB_HEADERS})

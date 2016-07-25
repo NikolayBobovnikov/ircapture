@@ -27,6 +27,7 @@
 
 #define LED_ONBOARD_Pin GPIO_PIN_13
 #define LED_ONBOARD_GPIO_Port GPIOC
+
 #define LED_DBG_Pin GPIO_PIN_3
 #define LED_DBG_GPIO_Port GPIOB
 
