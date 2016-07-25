@@ -364,9 +364,12 @@ bool try_reassign_beamer()
             // TODO FIXME: verify that using existent address from the array works
             // stop registration procedure
             // TODO FIXME: verify that break
-            return;
+
+            //TODO: check true/false
+            return false;
         }
     }
+    return  true; //TODO: check true/false
 }
 void register_new_beamer_in_array()
 {
