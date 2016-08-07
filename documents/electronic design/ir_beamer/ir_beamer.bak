@@ -88,7 +88,7 @@ Text GLabel 4700 850  2    60   Input ~ 0
 SPI_MOSI
 NoConn ~ 6950 1250
 NoConn ~ 7800 1350
-Text GLabel 3800 750  0    60   Input ~ 0
+Text GLabel 3800 2400 0    60   Input ~ 0
 IR_LED_1
 Text GLabel 3800 850  0    60   Input ~ 0
 IR_LED_2
@@ -256,11 +256,11 @@ F 3 "" H 4100 3450 50  0000 C CNN
 	1    4100 3450
 	1    0    0    -1  
 $EndComp
-Text GLabel 3800 2400 0    60   Input ~ 0
-IR_LED_8
 Text GLabel 3800 2500 0    60   Input ~ 0
-IR_LED_9
+IR_LED_8
 Text GLabel 3800 2600 0    60   Input ~ 0
+IR_LED_9
+Text GLabel 3800 2700 0    60   Input ~ 0
 IR_LED_10
 Text GLabel 6500 4300 0    60   Input ~ 0
 Latch
@@ -745,7 +745,6 @@ Text GLabel 1200 6550 0    60   Input ~ 0
 IR_VCC
 Text GLabel 1200 7150 0    60   Input ~ 0
 IR_VCC
-NoConn ~ 3800 2700
 Text GLabel 3800 3000 0    60   Input ~ 0
 IR_LED_DATA
 NoConn ~ 4700 3000
@@ -979,4 +978,5 @@ Wire Wire Line
 	1600 7350 1600 7150
 Wire Wire Line
 	5200 2900 4700 2900
+NoConn ~ 3800 750 
 $EndSCHEMATC
