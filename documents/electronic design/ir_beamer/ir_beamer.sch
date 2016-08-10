@@ -74,7 +74,7 @@ F 1 "LED" H 1400 1050 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 1150 50  0001 C CNN
 F 3 "" H 1400 1150 50  0000 C CNN
 	1    1400 1150
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text Notes 8800 1650 0    60   ~ 0
 A5     ------> SPI1_SCK\nA6     ------> SPI1_MISO\nA7     ------> SPI1_MOSI \n\nA0     ------> IR_PWM (TIM2 CH1 PWM out)\n\nA10 -> CE\nA11 -> CSN\nB0  -> IRQ\n
@@ -113,7 +113,7 @@ F 1 "LED" H 1400 1650 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 1750 50  0001 C CNN
 F 3 "" H 1400 1750 50  0000 C CNN
 	1    1400 1750
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 1750 2    60   Input ~ 0
 IR_LED_2
@@ -126,7 +126,7 @@ F 1 "LED" H 1400 2250 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 2350 50  0001 C CNN
 F 3 "" H 1400 2350 50  0000 C CNN
 	1    1400 2350
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 2350 2    60   Input ~ 0
 IR_LED_3
@@ -139,7 +139,7 @@ F 1 "LED" H 1400 2850 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 2950 50  0001 C CNN
 F 3 "" H 1400 2950 50  0000 C CNN
 	1    1400 2950
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 2950 2    60   Input ~ 0
 IR_LED_4
@@ -152,7 +152,7 @@ F 1 "LED" H 1400 3450 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 3550 50  0001 C CNN
 F 3 "" H 1400 3550 50  0000 C CNN
 	1    1400 3550
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 3550 2    60   Input ~ 0
 IR_LED_5
@@ -165,7 +165,7 @@ F 1 "LED" H 1400 4050 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 4150 50  0001 C CNN
 F 3 "" H 1400 4150 50  0000 C CNN
 	1    1400 4150
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 4150 2    60   Input ~ 0
 IR_LED_6
@@ -178,7 +178,7 @@ F 1 "LED" H 1400 4650 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 4750 50  0001 C CNN
 F 3 "" H 1400 4750 50  0000 C CNN
 	1    1400 4750
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 4750 2    60   Input ~ 0
 IR_LED_7
@@ -191,7 +191,7 @@ F 1 "LED" H 1400 5250 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 5350 50  0001 C CNN
 F 3 "" H 1400 5350 50  0000 C CNN
 	1    1400 5350
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 5350 2    60   Input ~ 0
 IR_LED_8
@@ -204,7 +204,7 @@ F 1 "LED" H 1400 5850 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 5950 50  0001 C CNN
 F 3 "" H 1400 5950 50  0000 C CNN
 	1    1400 5950
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 5950 2    60   Input ~ 0
 IR_LED_9
@@ -217,7 +217,7 @@ F 1 "LED" H 1400 6450 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 6550 50  0001 C CNN
 F 3 "" H 1400 6550 50  0000 C CNN
 	1    1400 6550
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 1600 6550 2    60   Input ~ 0
 IR_LED_10
@@ -230,7 +230,7 @@ F 1 "LED" H 1400 7050 50  0000 C CNN
 F 2 "LEDs:LED-5MM" H 1400 7150 50  0001 C CNN
 F 3 "" H 1400 7150 50  0000 C CNN
 	1    1400 7150
-	-1   0    0    1   
+	1    0    0    -1  
 $EndComp
 Text GLabel 4700 2700 2    60   Input ~ 0
 SPI_SCK
@@ -446,17 +446,6 @@ F 3 "" H 6700 2450 50  0000 C CNN
 	1    6700 2450
 	1    0    0    -1  
 $EndComp
-$Comp
-L +5V #PWR012
-U 1 1 5791C22D
-P 1000 700
-F 0 "#PWR012" H 1000 550 50  0001 C CNN
-F 1 "+5V" H 1000 840 50  0000 C CNN
-F 2 "" H 1000 700 50  0000 C CNN
-F 3 "" H 1000 700 50  0000 C CNN
-	1    1000 700 
-	0    -1   -1   0   
-$EndComp
 Text GLabel 4700 1350 2    60   Input ~ 0
 Cascade
 Text GLabel 4700 2500 2    60   Input ~ 0
@@ -562,38 +551,16 @@ IR_LED_DATA
 $Comp
 L R R1
 U 1 1 57A138ED
-P 1150 700
-F 0 "R1" V 1230 700 50  0000 C CNN
-F 1 "50" V 1150 700 50  0000 C CNN
-F 2 "Capacitors_SMD:C_0805_HandSoldering" V 1080 700 50  0001 C CNN
-F 3 "" H 1150 700 50  0000 C CNN
-	1    1150 700 
+P 1350 700
+F 0 "R1" V 1430 700 50  0000 C CNN
+F 1 "22" V 1350 700 50  0000 C CNN
+F 2 "Capacitors_SMD:C_0805_HandSoldering" V 1280 700 50  0001 C CNN
+F 3 "" H 1350 700 50  0000 C CNN
+	1    1350 700 
 	0    1    1    0   
 $EndComp
-Text GLabel 1300 700  2    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 1150 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 1750 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 2350 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 2950 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 3550 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 4150 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 4750 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 5350 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 5950 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 6550 0    60   Input ~ 0
-IR_VCC
-Text GLabel 1200 7150 0    60   Input ~ 0
-IR_VCC
+Text GLabel 1500 700  2    60   Input ~ 0
+IR_GND
 Text GLabel 3800 3000 0    60   Input ~ 0
 IR_LED_DATA
 NoConn ~ 4700 3000
@@ -653,4 +620,37 @@ Wire Wire Line
 Wire Wire Line
 	5200 2900 4700 2900
 NoConn ~ 3800 750 
+$Comp
+L GND #PWR?
+U 1 1 57AB0120
+P 1200 700
+F 0 "#PWR?" H 1200 450 50  0001 C CNN
+F 1 "GND" H 1200 550 50  0000 C CNN
+F 2 "" H 1200 700 50  0000 C CNN
+F 3 "" H 1200 700 50  0000 C CNN
+	1    1200 700 
+	0    1    1    0   
+$EndComp
+Text GLabel 1200 1150 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 1750 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 2350 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 2950 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 3550 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 4150 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 4750 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 5350 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 5950 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 6550 0    60   Input ~ 0
+IR_GND
+Text GLabel 1200 7150 0    60   Input ~ 0
+IR_GND
 $EndSCHEMATC
