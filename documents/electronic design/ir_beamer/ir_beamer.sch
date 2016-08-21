@@ -505,12 +505,6 @@ Text GLabel 1200 6550 0    60   Input ~ 0
 IR_GND
 Text GLabel 1200 7150 0    60   Input ~ 0
 IR_GND
-Text GLabel 4700 2900 2    60   Input ~ 0
-MR_NOT
-Text GLabel 4700 1250 2    60   Input ~ 0
-MR_NOT
-Text GLabel 6950 1750 0    60   Input ~ 0
-MR_NOT
 Wire Wire Line
 	5400 2600 4700 2600
 Wire Wire Line
@@ -592,4 +586,36 @@ SPI_MISO
 NoConn ~ 6950 1650
 NoConn ~ 7800 1350
 NoConn ~ 7800 1850
+$Comp
+L GND #PWR015
+U 1 1 57BA1E9B
+P 5850 1250
+F 0 "#PWR015" H 5850 1000 50  0001 C CNN
+F 1 "GND" H 5850 1100 50  0000 C CNN
+F 2 "" H 5850 1250 50  0000 C CNN
+F 3 "" H 5850 1250 50  0000 C CNN
+	1    5850 1250
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4700 1250 5550 1250
+Wire Wire Line
+	5250 1250 5250 2900
+Wire Wire Line
+	5250 2900 4700 2900
+$Comp
+L R R2
+U 1 1 57BA1F05
+P 5700 1250
+F 0 "R2" V 5780 1250 50  0000 C CNN
+F 1 "10K" V 5700 1250 50  0000 C CNN
+F 2 "Capacitors_SMD:C_0805_HandSoldering" V 5630 1250 50  0001 C CNN
+F 3 "" H 5700 1250 50  0000 C CNN
+	1    5700 1250
+	0    1    1    0   
+$EndComp
+Connection ~ 5250 1250
+NoConn ~ 6950 1750
+Text Label 5250 2800 0    60   ~ 0
+MR_NOT
 $EndSCHEMATC
