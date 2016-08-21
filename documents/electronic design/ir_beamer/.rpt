@@ -1,0 +1,44 @@
+** Drc report for /home/nikolay/work/dev/auvir/documents/electronic design/ir_beamer/ir_beamer.kicad_pcb **
+** Created on 2016-08-21 11:33:32 **
+
+** Found 10 DRC errors **
+ErrType(19): Pad near pad
+    @ (178,473 mm,119,189 mm): Pad 8 on F.Cu of U4
+    @ (179,743 mm,119,189 mm): Pad 7 on F.Cu of U4
+ErrType(19): Pad near pad
+    @ (179,743 mm,119,189 mm): Pad 7 on F.Cu of U4
+    @ (181,013 mm,119,189 mm): Pad 6 on F.Cu of U4
+ErrType(19): Pad near pad
+    @ (181,013 mm,119,189 mm): Pad 6 on F.Cu of U4
+    @ (182,283 mm,119,189 mm): Pad 5 on F.Cu of U4
+ErrType(19): Pad near pad
+    @ (182,283 mm,119,189 mm): Pad 5 on F.Cu of U4
+    @ (183,553 mm,119,189 mm): Pad 4 on F.Cu of U4
+ErrType(19): Pad near pad
+    @ (183,553 mm,119,189 mm): Pad 4 on F.Cu of U4
+    @ (184,823 mm,119,189 mm): Pad 3 on F.Cu of U4
+ErrType(19): Pad near pad
+    @ (184,823 mm,119,189 mm): Pad 3 on F.Cu of U4
+    @ (186,093 mm,119,189 mm): Pad 2 on F.Cu of U4
+ErrType(19): Pad near pad
+    @ (186,093 mm,119,189 mm): Pad 2 on F.Cu of U4
+    @ (187,363 mm,119,189 mm): Pad 1 on F.Cu of U4
+ErrType(7): Via near track
+    @ (142,808 mm,122,876 mm): Track 0,600 mm, net [Cascade] (18) on layer F.Cu, length: 20,107 mm
+    @ (152,412 mm,121,462 mm): Via 1,200 mm net [IR_PWM] (1) on layers F.Cu/B.Cu
+ErrType(5): Track near via
+    @ (118,260 mm,123,697 mm): Track 0,500 mm, net [SPI_MOSI] (11) on layer F.Cu, length: 2,275 mm
+    @ (119,367 mm,125,047 mm): Via 1,200 mm net [+3V3] (12) on layers F.Cu/B.Cu
+ErrType(7): Via near track
+    @ (129,822 mm,122,876 mm): Track 0,600 mm, net [Cascade] (18) on layer F.Cu, length: 12,986 mm
+    @ (134,620 mm,124,276 mm): Via 1,200 mm net [SPI_MOSI] (11) on layers F.Cu/B.Cu
+
+** Found 2 unconnected pads **
+ErrType(2): Unconnected pads
+    @ (116,840 mm,119,380 mm): Pad 19 on F.Cu, B.Cu, Internal, Non-copper of U2 net GND
+    @ (166,370 mm,118,860 mm): Pad 8 on F.Cu, Non-copper of U3
+ErrType(2): Unconnected pads
+    @ (123,382 mm,124,638 mm): Pad 1 on F.Cu, Non-copper of R5 net +3V3
+    @ (162,560 mm,134,620 mm): Pad 20 on F.Cu, B.Cu, Internal, Non-copper of U2
+
+** End of Report **

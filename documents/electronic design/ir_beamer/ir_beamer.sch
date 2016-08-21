@@ -51,7 +51,6 @@ NoConn ~ 6950 950
 NoConn ~ 6950 1050
 NoConn ~ 6950 1150
 NoConn ~ 6950 1550
-NoConn ~ 6950 1650
 NoConn ~ 6950 1950
 NoConn ~ 6950 2050
 NoConn ~ 6950 2150
@@ -286,7 +285,7 @@ F 3 "" H 4000 3250 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 NoConn ~ 7800 2050
-Text GLabel 7800 1850 2    60   Input ~ 0
+Text GLabel 6950 1850 0    60   Input ~ 0
 Latch
 $Comp
 L +3V3 #PWR03
@@ -385,8 +384,6 @@ Text GLabel 4700 1350 2    60   Input ~ 0
 Cascade
 Text GLabel 4700 2500 2    60   Input ~ 0
 Cascade
-NoConn ~ 6950 1750
-NoConn ~ 6950 1850
 Text GLabel 5650 2000 2    60   Input ~ 0
 IR_PWM
 $Comp
@@ -512,20 +509,87 @@ Text GLabel 4700 2900 2    60   Input ~ 0
 MR_NOT
 Text GLabel 4700 1250 2    60   Input ~ 0
 MR_NOT
-Text GLabel 7800 1350 2    60   Input ~ 0
+Text GLabel 6950 1750 0    60   Input ~ 0
 MR_NOT
 Wire Wire Line
-	4700 2600 5400 2600
+	5400 2600 4700 2600
 Wire Wire Line
-	5400 2600 5400 950 
-NoConn ~ 7800 1650
-NoConn ~ 6950 1450
-NoConn ~ 6950 1350
-NoConn ~ 7800 1450
+	5400 950  5400 2600
 Wire Wire Line
 	5600 1800 5400 1800
 Connection ~ 5400 1800
 Wire Wire Line
 	5650 2000 5400 2000
 Connection ~ 5400 2000
+Text GLabel 3850 4250 0    60   Input ~ 0
+SPI_SCK
+Text GLabel 4650 3950 2    60   Input ~ 0
+SPI_MOSI
+Text GLabel 4650 4250 2    60   Input ~ 0
+RADIO_IRQ
+Text GLabel 3850 4100 0    60   Input ~ 0
+RADIO_CSN
+Text GLabel 3850 3950 0    60   Input ~ 0
+RADIO_CE
+$Comp
+L GND #PWR013
+U 1 1 57B954EB
+P 4400 4950
+F 0 "#PWR013" H 4400 4700 50  0001 C CNN
+F 1 "GND" H 4400 4800 50  0000 C CNN
+F 2 "" H 4400 4950 50  0000 C CNN
+F 3 "" H 4400 4950 50  0000 C CNN
+	1    4400 4950
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR014
+U 1 1 57B95532
+P 4100 4950
+F 0 "#PWR014" H 4100 4800 50  0001 C CNN
+F 1 "+3.3V" H 4100 5090 50  0000 C CNN
+F 2 "" H 4100 4950 50  0000 C CNN
+F 3 "" H 4100 4950 50  0000 C CNN
+	1    4100 4950
+	-1   0    0    1   
+$EndComp
+$Comp
+L C C1
+U 1 1 57B95404
+P 4250 4650
+F 0 "C1" H 4275 4750 50  0000 L CNN
+F 1 "100uf" H 4275 4550 50  0000 L CNN
+F 2 "Capacitors_SMD:C_1206_HandSoldering" H 4288 4500 50  0001 C CNN
+F 3 "" H 4250 4650 50  0000 C CNN
+	1    4250 4650
+	0    1    1    0   
+$EndComp
+$Comp
+L SE8R01_module U4
+U 1 1 57B96E1C
+P 4450 4500
+F 0 "U4" H 4200 5250 50  0000 L CNN
+F 1 "SE8R01_module" H 3950 5150 50  0000 L CNN
+F 2 "footprints:SE8R01" H 4100 5350 50  0001 L CNN
+F 3 "" H 4500 4500 60  0000 C CNN
+	1    4450 4500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4100 4950 4100 4650
+Wire Wire Line
+	4400 4950 4400 4650
+Text GLabel 6950 1350 0    60   Input ~ 0
+RADIO_CE
+Text GLabel 6950 1450 0    60   Input ~ 0
+RADIO_CSN
+Text GLabel 7800 1450 2    60   Input ~ 0
+RADIO_IRQ
+Text GLabel 7800 1650 2    60   Input ~ 0
+SPI_MISO
+Text GLabel 4650 4100 2    60   Input ~ 0
+SPI_MISO
+NoConn ~ 6950 1650
+NoConn ~ 7800 1350
+NoConn ~ 7800 1850
 $EndSCHEMATC
