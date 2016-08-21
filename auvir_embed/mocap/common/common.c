@@ -77,7 +77,6 @@ void configure_gpio_shiftreg()
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
@@ -87,11 +86,6 @@ void configure_gpio_shiftreg()
     HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
 
     /*Configure GPIO pin : ShiiftReg_OE_NOT_Pin */
-    GPIO_InitStruct.Pin = ShiiftReg_OE_NOT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
-
     /*Configure GPIO pin : ShiftReg_Expose_Pin */
     GPIO_InitStruct.Pin = ShiftReg_Expose_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -100,8 +94,6 @@ void configure_gpio_shiftreg()
 
 
     HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
-    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiiftReg_OE_NOT_Pin, LOW);
-
 
     /*Pin which corresponds to TIM2 CH1 PWM output
     turn on/offf LEDs

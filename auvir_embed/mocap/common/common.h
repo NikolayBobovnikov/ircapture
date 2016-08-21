@@ -33,13 +33,13 @@
 
 // pin mapping for shift register
 #define ShiftReg_MR_NOT_Pin GPIO_PIN_3
-#define ShiftReg_MR_NOT_Port GPIOA
+#define ShiftReg_MR_NOT_Port GPIOB
 
-#define ShiiftReg_OE_NOT_Pin GPIO_PIN_2
-#define ShiftReg_OE_NOT_Port GPIOA
+//#define ShiiftReg_OE_NOT_Pin GPIO_PIN_0
+//#define ShiftReg_OE_NOT_Port GPIOA
 
 #define ShiftReg_Expose_Pin GPIO_PIN_4
-#define ShiftReg_Expose_Port GPIOA
+#define ShiftReg_Expose_Port GPIOB
 
 
 typedef struct GPIO_PIN{
