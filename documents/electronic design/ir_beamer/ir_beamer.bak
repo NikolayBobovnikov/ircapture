@@ -616,6 +616,6 @@ F 3 "" H 5700 1250 50  0000 C CNN
 $EndComp
 Connection ~ 5250 1250
 NoConn ~ 6950 1750
-Text Label 5250 2200 0    60   ~ 0
+Text Label 5250 2800 0    60   ~ 0
 MR_NOT
 $EndSCHEMATC

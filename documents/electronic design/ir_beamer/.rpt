@@ -1,29 +1,11 @@
 ** Drc report for /home/nikolay/work/dev/auvir/documents/electronic design/ir_beamer/ir_beamer.kicad_pcb **
-** Created on 2016-08-22 01:36:51 **
+** Created on 2016-08-23 01:55:18 **
 
-** Found 2 DRC errors **
-ErrType(5): Track near via
-    @ (144,361 mm,96,164 mm): Track 0,500 mm, net [SPI_MOSI] (11) on layer F.Cu, length: 11,687 mm
-    @ (143,713 mm,97,514 mm): Via 1,200 mm net [SPI_MISO] (22) on layers F.Cu/B.Cu
-ErrType(5): Track near via
-    @ (69,285 mm,116,545 mm): Track 0,600 mm, net [Latch] (17) on layer F.Cu, length: 29,721 mm
-    @ (96,266 mm,118,045 mm): Via 1,200 mm net [/MR_NOT] (24) on layers F.Cu/B.Cu
+** Found 0 DRC errors **
 
-** Found 5 unconnected pads **
+** Found 1 unconnected pads **
 ErrType(2): Unconnected pads
-    @ (120,396 mm,120,015 mm): Pad 19 on F.Cu, B.Cu, Internal, Non-copper of U2 net GND
-    @ (128,143 mm,104,134 mm): Pad 8 on F.Cu, Non-copper of U3
-ErrType(2): Unconnected pads
-    @ (145,288 mm,120,345 mm): Pad 2 on F.Cu of U4 net GND
-    @ (139,319 mm,105,601 mm): Pad 2 on F.Cu, Non-copper of C3
-ErrType(2): Unconnected pads
-    @ (92,812 mm,100,686 mm): Pad 2 on F.Cu, Non-copper of R1 net GND
-    @ (128,143 mm,104,134 mm): Pad 8 on F.Cu, Non-copper of U3
-ErrType(2): Unconnected pads
-    @ (122,936 mm,120,015 mm): Pad 20 on F.Cu, B.Cu, Internal, Non-copper of U2 net +3V3
-    @ (79,756 mm,104,775 mm): Pad 20 on F.Cu, B.Cu, Internal, Non-copper of U2
-ErrType(2): Unconnected pads
-    @ (139,319 mm,109,601 mm): Pad 1 on F.Cu, Non-copper of C3 net +3V3
-    @ (145,288 mm,121,615 mm): Pad 1 on F.Cu of U4
+    @ (139,598 mm,108,763 mm): Pad 1 on F.Cu, Non-copper of C3 net +3V3
+    @ (142,430 mm,121,615 mm): Pad 1 on F.Cu of U4
 
 ** End of Report **
