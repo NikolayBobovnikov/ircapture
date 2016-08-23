@@ -548,17 +548,6 @@ F 3 "" H 4100 4950 50  0000 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L C C1
-U 1 1 57B95404
-P 4250 4650
-F 0 "C1" H 4275 4750 50  0000 L CNN
-F 1 "100uf" H 4275 4550 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 4288 4500 50  0001 C CNN
-F 3 "" H 4250 4650 50  0000 C CNN
-	1    4250 4650
-	0    1    1    0   
-$EndComp
-$Comp
 L SE8R01_module U4
 U 1 1 57B96E1C
 P 4450 4500
@@ -618,4 +607,15 @@ Connection ~ 5250 1250
 NoConn ~ 6950 1750
 Text Label 5250 2800 0    60   ~ 0
 MR_NOT
+$Comp
+L C C1
+U 1 1 57BCA083
+P 4250 4650
+F 0 "C1" H 4275 4750 50  0000 L CNN
+F 1 "100nf" H 4275 4550 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0603_HandSoldering" H 4288 4500 50  0001 C CNN
+F 3 "" H 4250 4650 50  0000 C CNN
+	1    4250 4650
+	0    1    1    0   
+$EndComp
 $EndSCHEMATC
