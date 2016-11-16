@@ -12,6 +12,16 @@ PROJECT(motionsensor_transmitter)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 ENABLE_LANGUAGE(ASM)
 
+# for cmake-ide in emacs: save project dir/build dir to dir-locals.el
+message(STATUS "create .dir-locals.el")
+file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/../.dir-locals.el
+"((nil . (
+  (cmake-ide-project-dir . \"${CMAKE_CURRENT_SOURCE_DIR}/\")
+  (cmake-ide-build-dir . \"${PROJECT_BINARY_DIR}/\")
+ ))
+ ((c-mode . ((mode . c++))))
+)")
+
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #TODO: SET to RELEASE in production
 message(STATUS "Setting build type to debug")
