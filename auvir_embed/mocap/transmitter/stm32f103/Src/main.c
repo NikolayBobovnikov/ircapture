@@ -129,9 +129,9 @@ int main(void)
   /*Configure GPIO pin Output Level */
   bool use_shiftreg = true;
   if(use_shiftreg){
-    configure_gpio_shiftreg();
+      //configure_gpio_shiftreg();
   }
-  configure_gpio_radio();
+  //configure_gpio_radio();
 
   // envelop
   HAL_TIM_Base_Start_IT(phtim_envelop);
@@ -143,7 +143,7 @@ int main(void)
   HAL_TIM_Base_Start(phtim_delay);
   // TODO: make more clean TODOs in the future. What the heck is required?!
 
-  setup(&default_module);
+  //setup(&default_module);
 
   /* USER CODE END 2 */
 
@@ -178,12 +178,14 @@ int main(void)
         */
 
 
-      if(is_receiver){
+      if(is_receiver && false){
           RXX(&default_module);// - this is called on IRQ
       }
 
-
-#if 1 //TODO
+      HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
+      HAL_Delay(500);
+      
+#if 0 //TODO
     init_data();
     sensor_send_data();
 #endif

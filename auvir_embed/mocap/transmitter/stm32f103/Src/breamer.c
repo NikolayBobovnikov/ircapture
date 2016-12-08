@@ -19,7 +19,7 @@ void nrf_receive_callback()
     //TODO: remove blinking
     HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
 
-    // get type of the message to determine its content and how to process it
+    // get type f the message to determine its content and how to process it
     RM_Typ_e type = radio_get_msgtype();
 
     switch (type) {

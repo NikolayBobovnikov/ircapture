@@ -13,6 +13,8 @@ auvir_embed/toolchain/
 *release
 *.autosave
 *~
+*#*
+*.el
 *.lock
 *.lock*
 *.out
