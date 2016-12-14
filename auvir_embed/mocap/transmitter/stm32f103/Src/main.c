@@ -68,6 +68,10 @@ TIM_HandleTypeDef * const phtim_delay = &htim4;
 extern NRF_Module default_module;
 extern NRF_Module data_module;
 
+extern RadioMessage tx_message;
+extern RadioDevInfo radiodevinfo;
+extern SensorData sensordata;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -180,6 +184,30 @@ int main(void)
 
       if(is_receiver && false){
           RXX(&default_module);// - this is called on IRQ
+      }
+      else{
+            //=================== prepare message for sending
+            // Determine source of packet
+            radio_tx_set_message_header(WhoAmI_Beamer, Dest_Sensor, Typ_SensorData);
+
+            BeamerData beamerdata;
+            SingleBeamerData data;
+            data.angle = 10;
+            data.beamer_id = 12;
+            for(int i = 0; i < MAX_BEAMERS_PER_SENSOR; ++i ){
+                beamerdata.beamer_data_array[i] = data;
+            }
+            
+
+            sensordata.sensor_id = data.beamer_id;
+            set_sensordata_type (&sensordata, SDT_BeamerData);
+            set_sensor_data_beamer (&sensordata, &beamerdata);
+
+            radio_tx_set_sensordata(&sensordata);
+            //=====================
+
+            HAL_Delay (1000);
+          TXX(&default_module);
       }
 
       HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
