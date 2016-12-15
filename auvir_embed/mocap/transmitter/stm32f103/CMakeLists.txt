@@ -1,6 +1,14 @@
 #TODO: autodetect arm gcc
 #SET(TOOLCHAIN_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/../../toolchain/gcc-arm-none-eabi-4_9-2015q2)
-SET(TOOLCHAIN_PREFIX /usr)
+if(UNIX)
+#SET(TOOLCHAIN_PREFIX /usr)
+SET(TOOLCHAIN_PREFIX D:/Software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32)
+endif(UNIX)
+
+if(WIN32)
+SET(TOOLCHAIN_PREFIX D:/Software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32)
+endif(WIN32)
+
 SET(TARGET_TRIPLET arm-none-eabi)
 SET(STM32_CHIP STM32F103C8)
 SET(STM32_FAMILY F1)

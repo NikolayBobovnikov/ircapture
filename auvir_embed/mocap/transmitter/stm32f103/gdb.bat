@@ -1,0 +1,1 @@
+arm-none-eabi-gdb.exe ./build/motionsensor_transmitter

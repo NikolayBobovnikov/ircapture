@@ -1,7 +1,6 @@
-target remote localhost:4242
+target remote localhost:3331
 monitor reset halt
 load
 monitor reset halt
 break main
 continue
-
