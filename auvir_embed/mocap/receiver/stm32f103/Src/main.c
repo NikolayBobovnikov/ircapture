@@ -40,6 +40,7 @@
 #include "se8r01.h"
 #include "MPU6050.h"
 #include "common.h"
+#define USE_OLD_MAPPING 1
 
 // TODO: cleanup when done debugging
 /* USER CODE END Includes */
@@ -141,7 +142,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   setup_infrared_input_gpio();
 
-  bool use_radio = false;
+  bool use_radio = true;
 
   if(use_radio){
     configure_gpio_radio();
