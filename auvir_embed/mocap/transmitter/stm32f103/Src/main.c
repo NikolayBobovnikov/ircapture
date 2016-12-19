@@ -38,7 +38,7 @@
 #include "infrared.h"
 #include "se8r01.h"
 
-#define USE_OLD_MAPPING 0
+#define USE_OLD_MAPPING 1 
 #include "common.h"
 
 /* USER CODE END Includes */
@@ -127,15 +127,15 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   // TODO fix IR_TIM_Init function
-  //IR_TIM_Init(phtim_envelop, phtim_pwm);
+  IR_TIM_Init(phtim_envelop, phtim_pwm);
   //init_beamer_channels_gpio();
 
   /*Configure GPIO pin Output Level */
   bool use_shiftreg = true;
   if(use_shiftreg){
-      //configure_gpio_shiftreg();
+      configure_gpio_shiftreg();
   }
-  //configure_gpio_radio();
+  configure_gpio_radio();
 
   // envelop
   HAL_TIM_Base_Start_IT(phtim_envelop);
@@ -147,7 +147,7 @@ int main(void)
   HAL_TIM_Base_Start(phtim_delay);
   // TODO: make more clean TODOs in the future. What the heck is required?!
 
-  //setup(&default_module);
+  setup(&default_module);
 
   /* USER CODE END 2 */
 
