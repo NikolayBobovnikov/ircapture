@@ -30,4 +30,5 @@ auvir_embed/toolchain/
 *.tar
 *.tar.gz
 *.7z
+*/.dir-locals.el
 CMakeLists.txt.user*
