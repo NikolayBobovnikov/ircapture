@@ -123,7 +123,7 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_TIM2_Init();
+  ///MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
   // TODO fix IR_TIM_Init function
@@ -140,7 +140,7 @@ int main(void)
   // envelop
   HAL_TIM_Base_Start_IT(phtim_envelop);
   // pwm
-  HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_1);
+  ///HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_1);
 
   // TODO: this is requred. Refactor to avoid possible mistakes in the future
   // start usec delay timer
@@ -167,7 +167,7 @@ int main(void)
   uint8_t led_num = 0;
 
   while (1) {
-      /*
+
       if(use_shiftreg)
         {
           if(led_num == 7)
@@ -175,13 +175,13 @@ int main(void)
           else
             led_num++;
 
-            shiftreg_send_16bit_data(led_array[led_num]);
-              HAL_Delay(50);
+            shiftreg_send_8bit_data(led_array[led_num]);
+              HAL_Delay(100);
 
         }
-        */
 
 
+/*
       if(is_receiver && false){
           RXX(&default_module);// - this is called on IRQ
       }
@@ -209,10 +209,9 @@ int main(void)
             HAL_Delay (1000);
           TXX(&default_module);
       }
-
+      */
       HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
-      HAL_Delay(500);
-      
+      HAL_Delay(50);
 #if 0 //TODO
     init_data();
     sensor_send_data();

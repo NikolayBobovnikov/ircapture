@@ -78,6 +78,7 @@ void configure_gpio_shiftreg()
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiftReg_OE_NOT_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
     GPIO_InitStruct.Pin = ShiftReg_MR_NOT_Pin;
@@ -85,14 +86,22 @@ void configure_gpio_shiftreg()
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : ShiiftReg_OE_NOT_Pin */
+    /*Configure GPIO pin : ShiftReg_OE_NOT_Pin */
+    GPIO_InitStruct.Pin = ShiftReg_OE_NOT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
+
+    // turn off shift registers
+    HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
+
     /*Configure GPIO pin : ShiftReg_Expose_Pin */
     GPIO_InitStruct.Pin = ShiftReg_Expose_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(ShiftReg_Expose_Port, &GPIO_InitStruct);
 
-
+    // dont reset shift registers
     HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, HIGH);
 
     /*Pin which corresponds to TIM2 CH1 PWM output
@@ -122,6 +131,8 @@ void shiftreg_send_8bit_data(uint8_t data)
 {
   HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
   HAL_SPI_Transmit(&hspi1, &data, 1, 10);
+  // turn off shift registers
+  HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin, LOW);
   HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, HIGH);
   HAL_GPIO_WritePin(ShiftReg_Expose_Port, ShiftReg_Expose_Pin, LOW);
 
