@@ -121,13 +121,13 @@ int main(void)
   MX_DMA_Init();
   MX_CRC_Init();
   MX_SPI1_Init();
-  MX_TIM3_Init();
+  ///MX_TIM3_Init();
   MX_TIM4_Init();
-  ///MX_TIM2_Init();
+  MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
   // TODO fix IR_TIM_Init function
-  IR_TIM_Init(phtim_envelop, phtim_pwm);
+  ///IR_TIM_Init(phtim_envelop, phtim_pwm);
   //init_beamer_channels_gpio();
 
   /*Configure GPIO pin Output Level */
@@ -138,9 +138,9 @@ int main(void)
   configure_gpio_radio();
 
   // envelop
-  HAL_TIM_Base_Start_IT(phtim_envelop);
+  ///HAL_TIM_Base_Start_IT(phtim_envelop);
   // pwm
-  ///HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_1);
 
   // TODO: this is requred. Refactor to avoid possible mistakes in the future
   // start usec delay timer
@@ -153,7 +153,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t led_array[8] =
+  uint8_t led8_array[8] =
   {
       0b00000001, //1
       0b00000010, //2
@@ -164,21 +164,73 @@ int main(void)
       0b01000000, //7
       0b10000000, //8
   };
+
+  uint16_t led16_array[16] =
+  {
+      0b0000000000000001, //1
+      0b0000000000000010, //2
+      0b0000000000000100, //3
+      0b0000000000001000, //4
+      0b0000000000010000, //5
+      0b0000000000100000, //6
+      0b0000000001000000, //7
+      0b0000000010000000, //8
+      0b0000000100000000, //9
+      0b0000001000000000, //10
+      0b0000010000000000, //11
+      0b0000100000000000, //12
+      0b0001000000000000, //13
+      0b0010000000000000, //14
+      0b0100000000000000, //15
+      0b1000000000000000, //16
+  };
+
+  uint16_t led16_array_tmp[8] =
+  {
+      0b1010101010101010, //1
+      0b1001001001001001, //2
+      0b1000100010001000, //3
+      0b1000010000100001, //4
+      0b0000000000010000, //5
+      0b0000000000100000, //6
+      0b0000000001000000, //7
+      0b0000000010000000, //8
+  };
   uint8_t led_num = 0;
+ uint16_t test_msg = 0b1010101010101010;
 
   while (1) {
 
+      /*
+      /// check SPI module by reading status register from radio module
+      uint8_t s_reg = iRF_BANK0_STATUS;
+      uint8_t S = 0;
+      HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, LOW);           // CSN low, initialize SPI communication...
+      HAL_SPI_TransmitReceive_IT(&hspi1, &s_reg, &S, 1);
+      uint8_t reg_val = HAL_SPI_TransmitReceive_IT(&hspi1, 0, &S, 1);
+      HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, HIGH);          // CSN high, terminate SPI communication
+        */
+
+      /// test spi for shift register
+      ///shiftreg_send_16bit_data(test_msg);
+      ///HAL_Delay(10);
+
+
+        /*
       if(use_shiftreg)
         {
-          if(led_num == 7)
+          if(led_num == 16)
             led_num = 0;
           else
             led_num++;
-
-            shiftreg_send_8bit_data(led_array[led_num]);
-              HAL_Delay(100);
-
+            shiftreg_send_16bit_data(led16_array[led_num]);
         }
+        */
+      for (int i = 0; i < 16; ++i) {
+         shiftreg_send_16bit_data(led16_array[i]);
+         HAL_Delay(10);
+      }
+
 
 
 /*
@@ -211,7 +263,6 @@ int main(void)
       }
       */
       HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
-      HAL_Delay(50);
 #if 0 //TODO
     init_data();
     sensor_send_data();
@@ -281,7 +332,7 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
