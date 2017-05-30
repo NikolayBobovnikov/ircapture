@@ -22,7 +22,7 @@ ENDIF()
 # INFO: _estack changed to _eram for consistency with coocox project
 SET(STM32_LINKER_SCRIPT_TEXT
   "ENTRY(Reset_Handler)\n"
-  "_eram = ${STM32_RAM_ORIGIN} + ${STM32_RAM_SIZE} - 1\;\n"
+  "_estack = ${STM32_RAM_ORIGIN} + ${STM32_RAM_SIZE} - 1\;\n"
   "_Min_Heap_Size = ${STM32_MIN_HEAP_SIZE}\;\n"
   "_Min_Stack_Size = ${STM32_MIN_STACK_SIZE}\;\n"
   "MEMORY\n"

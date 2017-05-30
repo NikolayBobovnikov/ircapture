@@ -142,9 +142,9 @@ int main(void)
   MX_TIM2_Init();
   MX_ADC1_Init();
 
+  /* USER CODE BEGIN 2 */
   HAL_ADCEx_Calibration_Start(&hadc1);
 
-  /* USER CODE BEGIN 2 */
   // TODO fix IR_TIM_Init function
   ///IR_TIM_Init(phtim_envelop, phtim_pwm);
   //init_beamer_channels_gpio();
@@ -441,7 +441,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1880;
+  htim2.Init.Period = 1880-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
@@ -581,7 +581,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PA2 PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_3;
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
