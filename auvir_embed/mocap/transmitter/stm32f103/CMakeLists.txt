@@ -5,7 +5,7 @@ SET(TOOLCHAIN_PREFIX /usr)
 endif(UNIX)
 
 if(WIN32)
-SET(TOOLCHAIN_PREFIX D:/Software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32)
+SET(TOOLCHAIN_PREFIX D:\Software\gcc-arm-none-eabi-4_9-2015q2-20150609-win32)
 endif(WIN32)
 
 SET(TARGET_TRIPLET arm-none-eabi)
@@ -14,7 +14,7 @@ SET(STM32_FAMILY F1)
 #SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/)
 SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
-
+#SET(STM32_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F103C8Tx_FLASH.ld)
 #=======================================================================================================
 
 PROJECT(motionsensor_transmitter)
