@@ -58,7 +58,9 @@
 #define USE_OLD_MAPPING 1
 #include "common.h"
 
-//#include <string>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 /* USER CODE END Includes */
 
@@ -201,7 +203,7 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
   // prepare buffer for sending over USB
   const char *helloworld_str = "hello world!\n";
-  uint8_t buf[4] = {0};
+  uint8_t buf[64] = {0};
 
   while (1) {
 
@@ -219,8 +221,14 @@ int main(void) {
     HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
     HAL_Delay(adc_val / 100);
 
-    // auto str = std::to_string(adc_val).c_str();
-    // CDC_Transmit_FS(&str, sizeof(str));
+    std::stringstream ss;
+    ss << adc_val;
+    std::string str = ss.str();
+    for (int i = 0; i < str.size(); i++) {
+      buf[i] = str.at(i);
+    }
+
+    /// TODO: CDC_Transmit_FS(buf, str.size());
 
     /* USER CODE END WHILE */
 
