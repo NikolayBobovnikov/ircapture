@@ -5,15 +5,17 @@ Created on Thu Mar 31 10:56:50 2016
 @author: nbobovnikov
 """
 
+# usb library
 import usb
 import usb.core
 import usb.util
 import usb.control
-
-import sys
-import glob
+# serial library
 import serial
 import serial.tools.list_ports
+# system libraries
+import sys
+import glob
 
 import struct
 from struct import *
@@ -54,19 +56,18 @@ def use_usb():
     for dev in usb.core.find(find_all=True):
         print ("  idVendor: %d (%s)" % (dev.idVendor, hex(dev.idVendor)))
         print ("  idProduct: %d (%s)" % (dev.idProduct, hex(dev.idProduct)))
-    
-    print ("open STM usbdevice")
-    dev = usb.core.find(idVendor=0x0483, idProduct=0x5740)
-    #idVendor           0x0483 STMicroelectronics
-    #idProduct          0x5740 STM32F407
 
-    # was it found?
-    if dev is None:
-        print("raise ValueError!!!")
-        raise ValueError('Device not found')
-    print( dev.configurations )	
-    
-    
+    # print ("open STM usbdevice")
+    # dev = usb.core.find(idVendor=0x0483, idProduct=0x5740)
+    # #idVendor           0x0483 STMicroelectronics
+    # #idProduct          0x5740 STM32F407
+
+    # # was it found?
+    # if dev is None:
+    #     print("raise ValueError!!!")
+    #     raise ValueError('Device not found')
+    # print( dev.configurations )	
+
 def use_serial():
     print ("List all serial ports:")
     port_names = get_serial_ports()
@@ -79,26 +80,28 @@ def use_serial():
     if not ports:
         print("There is no available serial ports")
         exit
-    
+
+
     #Get correct port name. Need to identify among others if there are many
     #just use first port from the list, using one of 2 options below. TODO: fix that, determine required port somehow
     #port_name = port_names[0]
-    
+
+
     target_port_name = "ttyACM0"
-    
+
+
     for port_name in port_names:
         print(port_name)
         if target_port_name in port_name:
             print("opening " + target_port_name)
-    
-             #Tried with and without the last 3 parameters, and also at 1Mbps, same happens.
+            # Tried with and without the last 3 parameters, and also at 1Mbps,
+            # same happens.
             try:
                 with serial.Serial(port_name) as cdc_device:
                     process_serial_device(cdc_device)
             except serial.serialutil.SerialException as e:
                 print(e)
-                
-	
+
 def process_serial_device(cdc_device):
     #formats for unpacking data from received C structures
     msg_formats = {"IMUData" : "3c9H10c",
@@ -108,21 +111,10 @@ def process_serial_device(cdc_device):
         #line = cdc_device.readline()
         data = cdc_device.read(32)
         print(data)
-            
         decoded_Data = unpack(msg_formats["IMUData"], data)
         print(decoded_Data)
-   
-            
 
-    
+
 if __name__ == "__main__":
-    
     use_usb()
-        
     use_serial()
-    
-    
-    
- 
-        
-        

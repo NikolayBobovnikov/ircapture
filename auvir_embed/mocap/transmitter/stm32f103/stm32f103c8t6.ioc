@@ -1,9 +1,9 @@
 #MicroXplorer Configuration settings - do not modify
-ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_1
-ADC1.IPParameters=Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,NbrOfConversionFlag,master
+ADC1.Channel-8\#ChannelRegularConversion=ADC_CHANNEL_1
+ADC1.IPParameters=Rank-8\#ChannelRegularConversion,Channel-8\#ChannelRegularConversion,SamplingTime-8\#ChannelRegularConversion,NbrOfConversionFlag,master
 ADC1.NbrOfConversionFlag=1
-ADC1.Rank-0\#ChannelRegularConversion=1
-ADC1.SamplingTime-0\#ChannelRegularConversion=ADC_SAMPLETIME_1CYCLE_5
+ADC1.Rank-8\#ChannelRegularConversion=1
+ADC1.SamplingTime-8\#ChannelRegularConversion=ADC_SAMPLETIME_1CYCLE_5
 ADC1.master=1
 Dma.Request0=SPI1_RX
 Dma.Request1=SPI1_TX
@@ -196,7 +196,8 @@ TIM4.Period=(1880-1)
 TIM4.Prescaler=0
 TIM4.TIM_MasterOutputTrigger=TIM_TRGO_OC1
 USB_DEVICE.CLASS_NAME_FS=CDC
-USB_DEVICE.IPParameters=VirtualMode,VirtualModeFS,CLASS_NAME_FS
+USB_DEVICE.IPParameters=VirtualMode,VirtualModeFS,CLASS_NAME_FS,MANUFACTURER_STRING
+USB_DEVICE.MANUFACTURER_STRING=AuvirTech
 USB_DEVICE.VirtualMode=Cdc
 USB_DEVICE.VirtualModeFS=Cdc_FS
 VP_CRC_VS_CRC.Mode=CRC_Activate
