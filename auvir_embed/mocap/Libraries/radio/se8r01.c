@@ -6,10 +6,12 @@
 /// on initialization se8r01 check http://forum.easyelectronics.ru/viewtopic.php?f=9&t=21484
 ///
 
+
 extern SPI_HandleTypeDef hspi1;
 extern char mode;      //r=rx, t=tx
 extern GPIO_TypeDef * GPIO_LED_PORT;
 extern uint16_t GPIO_LED_PIN;
+
 
 uint8_t gtemp[5];
 
@@ -34,7 +36,7 @@ static void nrf24_setup_modules_gpio();
 static void nrf24_ce_set(NRF_Module * radiomodule, GPIO_PinState state);
 static void nrf24_csn_set(NRF_Module * radiomodule, GPIO_PinState state);
 static void radio_settings(NRF_Module * radiomodule);
-static void set_rx_tx_mode(NRF_Module * radiomodule);
+static void set_rx_tx_mode(NRF_Module * radiomodule, char mode);
 
 static void se8r01_switch_bank(NRF_Module * radiomodule, uint8_t bankindex);
 static void se8r01_powerup(NRF_Module * radiomodule);
@@ -241,7 +243,7 @@ static void nrf24_transmitSync(uint8_t* dataout,uint8_t len)
 
 }
 
-void setup(NRF_Module * radiomodule)
+void setup(NRF_Module * radiomodule, char mode)
 {
     nrf24_setup_modules_gpio();
 
@@ -268,13 +270,13 @@ void setup(NRF_Module * radiomodule)
     radio_settings(radiomodule);
 
     // set CONFIG register according to rx/tx mode
-    set_rx_tx_mode(radiomodule);
+    set_rx_tx_mode(radiomodule, mode);
 
     se8r01_calibration(radiomodule);
     se8r01_setup(radiomodule);
 
     // set CONFIG register according to rx/tx mode
-    set_rx_tx_mode(radiomodule);
+    set_rx_tx_mode(radiomodule, mode);
 }
 
 void radio_update_settings(NRF_Module *radiomodule, RadioDevInfo * devinfo)
@@ -480,7 +482,7 @@ static void radio_settings(NRF_Module * radiomodule)
 
 }
 
-static void set_rx_tx_mode(NRF_Module * radiomodule)
+static void set_rx_tx_mode(NRF_Module * radiomodule, char mode)
 {
     if (mode=='r') {
         power_on_rx(radiomodule);

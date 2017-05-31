@@ -71,19 +71,23 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim4;
+extern "C" {
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
+}
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
 // TODO: cleanup when done debugging
+namespace auvir {
 const bool _debug = true;
-TIM_HandleTypeDef *const phtim_envelop = &htim3;
-TIM_HandleTypeDef *const phtim_pwm = &htim2;
 const uint32_t pwm_tim_channel = TIM_CHANNEL_1;
-TIM_HandleTypeDef *const phtim_delay = &htim4;
+extern TIM_HandleTypeDef *const phtim_envelop;
+extern TIM_HandleTypeDef *const phtim_pwm;
+extern TIM_HandleTypeDef *const phtim_delay;
+}
 
 /// interface with radio
 extern NRF_Module default_module;
@@ -117,8 +121,13 @@ void test_stuff();
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 const char mode = 'r'; // 't'
+#ifdef __cplusplus
+}
+#endif
 /* USER CODE END 0 */
 
 int main(void) {
@@ -174,16 +183,16 @@ int main(void) {
   bool use_radio = false;
   if (use_radio) {
     configure_gpio_radio();
-    setup(&default_module);
+    setup(&default_module, mode);
   }
   // envelop
   /// HAL_TIM_Base_Start_IT(phtim_envelop);
   // pwm
-  HAL_TIM_PWM_Start(phtim_pwm, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(auvir::phtim_pwm, TIM_CHANNEL_1);
 
   // TODO: this is requred. Refactor to avoid possible mistakes in the future
   // start usec delay timer
-  HAL_TIM_Base_Start(phtim_delay);
+  HAL_TIM_Base_Start(auvir::phtim_delay);
   // TODO: make more clean TODOs in the future. What the heck is required?!
 
   /* USER CODE END 2 */
@@ -673,12 +682,14 @@ void TIM4_Init_prev(void) {
   * @param  None
   * @retval None
   */
+extern "C" {
 void _Error_Handler(char *file, int line) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   while (1) {
   }
   /* USER CODE END Error_Handler_Debug */
+}
 }
 
 #ifdef USE_FULL_ASSERT

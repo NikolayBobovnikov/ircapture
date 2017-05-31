@@ -268,6 +268,10 @@ typedef struct NRF24_InitTypeDef {
   uint8_t pipe;
 } NRF24_InitTypeDef;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // TODO
 void setup_radio(NRF24_InitTypeDef *settings);
 
@@ -275,7 +279,7 @@ void setup_radio(NRF24_InitTypeDef *settings);
 void nrf_receive_callback();
 
 // interface with radio
-void setup(NRF_Module *radiomodule);
+void setup(NRF_Module *radiomodule, char mode);
 
 void update_radiochannel_settings(NRF_Module *radiomodule, RadioDevInfo *addr);
 
@@ -295,5 +299,9 @@ void TXX(NRF_Module *radiomodule);
 bool nrf24_is_data_ready();
 bool nrf24_is_sending();
 bool nrf24_is_rx_fifo_empty();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
