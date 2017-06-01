@@ -6,26 +6,33 @@
   *
   * COPYRIGHT(c) 2016 STMicroelectronics
   *
-  * Redistribution and use in source and binary forms, with or without modification,
+  * Redistribution and use in source and binary forms, with or without
+  *modification,
   * are permitted provided that the following conditions are met:
   *   1. Redistributions of source code must retain the above copyright notice,
   *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
+  *   2. Redistributions in binary form must reproduce the above copyright
+  *notice,
+  *      this list of conditions and the following disclaimer in the
+  *documentation
   *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
+  *   3. Neither the name of STMicroelectronics nor the names of its
+  *contributors
   *      may be used to endorse or promote products derived from this software
   *      without specific prior written permission.
   *
   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  *ARE
   * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
   * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
   * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
   * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  *LIABILITY,
+  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+  *USE
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
@@ -37,10 +44,10 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 extern "C" {
+#include "infrared.h"
+#include "se8r01.h"
 #include "sensor.h"
 #include "sensor_hub.h"
-#include "se8r01.h"
-#include "infrared.h"
 #include "usbd_cdc_if.h"
 
 #define USE_OLD_MAPPING 1
@@ -58,11 +65,13 @@ TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 const bool _debug = true;
-const TIM_HandleTypeDef* phtim_delay = &htim2;
 
-extern GPIO_TypeDef * GPIO_LED_PORT;
+namespace auvir {
+extern TIM_HandleTypeDef *const phtim_delay = &htim2;
+}
+
+extern GPIO_TypeDef *GPIO_LED_PORT;
 extern uint16_t GPIO_LED_PIN;
-
 
 extern RadioMessage tx_message;
 extern RadioDevInfo radiodevinfo;
@@ -70,7 +79,9 @@ extern SensorData sensordata;
 extern BeamerData beamerdata;
 extern IMUData imudata;
 
-
+namespace auvir {
+extern TIM_HandleTypeDef *const phtim_delay;
+}
 /// ===========================================
 
 /* USER CODE END PV */
@@ -97,16 +108,17 @@ char mode = 'r'; // 't'
 
 /* USER CODE END 0 */
 
-int main(void)
-{
+int main(void) {
 
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+  /* MCU
+   * Configuration----------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
+   */
   HAL_Init();
 
   /* Configure the system clock */
@@ -119,94 +131,57 @@ int main(void)
   MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
-    //TODO: setting the timer. merge with TIM_Init
-    HAL_TIM_Base_Start(&htim2);
+  // TODO: setting the timer. merge with TIM_Init
+  HAL_TIM_Base_Start(&htim2);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-    setup(&default_module);
+  setup(&default_module, mode);
 
-    //wait for usb device is configured
-    while(!is_usb_configured())
-    {
-        //NOP
-    };
+  // wait for usb device is configured
+  while (!is_usb_configured()) {
+    // NOP
+  };
 
-    // sigal that USB is OK ==============
-    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
-    HAL_Delay (300);
-    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
-    HAL_Delay (300);
-    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
-    HAL_Delay (300);
-    HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
-    HAL_Delay (300);
-    //====================================
+  // sigal that USB is OK ==============
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+  HAL_Delay(300);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+  HAL_Delay(300);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+  HAL_Delay(300);
+  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+  HAL_Delay(300);
+  //====================================
 
-    register_usb_device();
+  register_usb_device();
 
+  bool test_usb = false;
 
-    bool test_usb = true;
+  const char *test_str = "Hello, I'm a usbdevice";
+  uint8_t buf[32] = {0};
+  memcpy(&buf[0], test_str, strlen(test_str));
 
-    const char* test_str = "Hello, I'm a usbdevice";
-    uint8_t buf[32] = {0};
-    memcpy(&buf[0], test_str, strlen(test_str));
+  while (1) {
 
+    // listening...
+    // RXX(&default_module);
+    // RXX(&data_module);
+    CDC_Transmit_FS((uint8_t *)test_str, strlen(test_str));
 
-    while (1)
-    {
+    /* USER CODE END WHILE */
 
-        if(test_usb){
-
-            //=================== prepare message for sending
-            // Determine source of packet
-            radio_tx_set_message_header(WhoAmI_UsbDevice, Dest_UsbDevice, Typ_SensorData);
-
-            IMUData imudata;
-            imudata.ax = 1;
-            imudata.ay = 1;
-            imudata.az = 1;
-            imudata.gx = 2;
-            imudata.gy = 2;
-            imudata.gz = 2;
-            imudata.mx = 3;
-            imudata.my = 3;
-            imudata.mz = 3;
-
-            sensordata.sensor_id = 12;
-            set_sensordata_type (&sensordata, SDT_IMUData);
-            set_sensor_data_imu (&sensordata, &imudata);
-
-            radio_tx_set_sensordata(&sensordata);
-            //=====================
-
-            HAL_Delay (1000);
-            uint8_t result = CDC_Transmit_FS((uint8_t *)&tx_message, sizeof(RadioMessage));
-            if(result == USBD_OK){
-                HAL_GPIO_TogglePin (GPIOC,GPIO_PIN_13);
-            }
-
-        }
-
-        //listening...
-        RXX(&default_module);
-        RXX(&data_module);
-
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
-    }
+    /* USER CODE BEGIN 3 */
+  }
   /* USER CODE END 3 */
-
 }
 
 /** System Clock Configuration
 */
-void SystemClock_Config(void)
-{
+void SystemClock_Config(void) {
 
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
@@ -220,8 +195,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
+                                RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -232,7 +207,7 @@ void SystemClock_Config(void)
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
   HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
 
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
 
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
@@ -241,8 +216,7 @@ void SystemClock_Config(void)
 }
 
 /* SPI1 init function */
-void MX_SPI1_Init(void)
-{
+void MX_SPI1_Init(void) {
 
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
@@ -257,12 +231,10 @@ void MX_SPI1_Init(void)
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 10;
   HAL_SPI_Init(&hspi1);
-
 }
 
 /* TIM2 init function */
-void MX_TIM2_Init(void)
-{
+void MX_TIM2_Init(void) {
 
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
@@ -280,7 +252,6 @@ void MX_TIM2_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
-
 }
 
 /** Configure pins as
@@ -290,8 +261,7 @@ void MX_TIM2_Init(void)
         * EVENT_OUT
         * EXTI
 */
-void MX_GPIO_Init(void)
-{
+void MX_GPIO_Init(void) {
 
   GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -305,7 +275,9 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, NRF24_CSN1_Pin|NRF24_CE1_Pin|NRF24_CSN2_Pin|NRF24_CE2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, NRF24_CSN1_Pin | NRF24_CE1_Pin | NRF24_CSN2_Pin |
+                               NRF24_CE2_Pin,
+                    GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_DBG_GPIO_Port, LED_DBG_Pin, GPIO_PIN_RESET);
@@ -316,14 +288,16 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_ONBOARD_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin NRF24_CSN2_Pin NRF24_CE2_Pin */
-  GPIO_InitStruct.Pin = NRF24_CSN1_Pin|NRF24_CE1_Pin|NRF24_CSN2_Pin|NRF24_CE2_Pin;
+  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin NRF24_CSN2_Pin
+   * NRF24_CE2_Pin */
+  GPIO_InitStruct.Pin =
+      NRF24_CSN1_Pin | NRF24_CE1_Pin | NRF24_CSN2_Pin | NRF24_CE2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : NRF24_IRQ1_Pin NRF24_IRQ2_Pin */
-  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin|NRF24_IRQ2_Pin;
+  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin | NRF24_IRQ2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -333,7 +307,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(LED_DBG_GPIO_Port, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -348,13 +321,12 @@ void MX_GPIO_Init(void)
    * @param line: assert_param error line source number
    * @retval None
    */
-void assert_failed(uint8_t* file, uint32_t line)
-{
+void assert_failed(uint8_t *file, uint32_t line) {
   /* USER CODE BEGIN 6 */
-    /* User can add his own implementation to report the file name and line number,
-    ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* User can add his own implementation to report the file name and line
+  number,
+  ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
-
 }
 
 #endif

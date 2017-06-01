@@ -62,10 +62,10 @@ def use_serial():
 
     print("scanning ports")
     for port_name in ports:
-        if port_name.device == "COM9":
-            print("opening " + target_port_name)
+        if port_name is not None:
+            print("name " + port_name.name)
             print("device: " + port_name.device)
-
+            print("manufacturer: " + port_name.manufacturer )
             # Tried with and without the last 3 parameters, and also at 1Mbps,
             # same happens.
             try:
@@ -81,7 +81,7 @@ def process_serial_device(cdc_device):
                    "BeamerData" : "3ccHcHcHcHcHcHcHcHcH" }
     if cdc_device.isOpen():
         print("COM port is open")
-        #data = cdc_device.read(32)
+        data = cdc_device.read(32)
         #line = cdc_device.readline()
         data = cdc_device.read(1)
         print(ord(data))
