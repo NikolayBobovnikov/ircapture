@@ -5,7 +5,7 @@ SET(TOOLCHAIN_PREFIX /usr)
 endif(UNIX)
 
 if(WIN32)
-SET(TOOLCHAIN_PREFIX D:\Software\arm_gcc\5_2_2015q4)
+SET(TOOLCHAIN_PREFIX D:/Software/arm_gcc/5_2_2015q4)
 endif(WIN32)
 
 SET(TARGET_TRIPLET arm-none-eabi)

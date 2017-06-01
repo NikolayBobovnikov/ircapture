@@ -58,10 +58,6 @@
 #define USE_OLD_MAPPING 1
 #include "common.h"
 
-#include <iostream>
-#include <sstream>
-#include <string>
-
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -77,6 +73,10 @@ extern "C" {
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
+}
+
+extern "C" {
+uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len);
 }
 
 /* USER CODE BEGIN PV */
@@ -119,6 +119,10 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void IR_TIM_Init(TIM_HandleTypeDef *p_envelop, TIM_HandleTypeDef *p_pwm);
 
 void test_stuff();
+
+bool is_usb_configured();
+
+void configure_usb();
 
 /* USER CODE END PFP */
 
@@ -170,6 +174,8 @@ int main(void) {
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN 2 */
+  configure_usb();
+
   HAL_ADCEx_Calibration_Start(&hadc1);
 
   // TODO fix IR_TIM_Init function
@@ -204,6 +210,7 @@ int main(void) {
   // prepare buffer for sending over USB
   const char *helloworld_str = "hello world!\n";
   uint8_t buf[64] = {0};
+  // uint8_t buf_adc_val [4] = {0};
 
   while (1) {
 
@@ -212,23 +219,27 @@ int main(void) {
     HAL_ADC_Start(&hadc1);
     while (HAL_ADC_PollForConversion(&hadc1, 100)) {
     }
-    auto adc_val = HAL_ADC_GetValue(&hadc1);
+    uint32_t adc_val = HAL_ADC_GetValue(&hadc1);
     HAL_ADC_Stop(&hadc1);
     if (adc_val < 500) {
       int a = 0;
     }
 
+    // TODO: check if casting below depend on endiannes
+    adc_val = 4000;
+    uint8_t *buf_adc = reinterpret_cast<uint8_t *>(&adc_val);
+    uint32_t restored_adc_val = 0;
+    restored_adc_val = (buf_adc[3] << 24) | (buf_adc[2] << 16) |
+                       (buf_adc[1] << 8) | (buf_adc[0]);
+
     HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
-    HAL_Delay(adc_val / 100);
 
-    std::stringstream ss;
-    ss << adc_val;
-    std::string str = ss.str();
-    for (int i = 0; i < str.size(); i++) {
-      buf[i] = str.at(i);
-    }
+    auto delay_val = adc_val / 10;
+    HAL_Delay(delay_val);
 
-    /// TODO: CDC_Transmit_FS(buf, str.size());
+    uint8_t size = sizeof(uint32_t);
+    CDC_Transmit_FS(&size, 1);
+    // CDC_Transmit_FS((uint8_t *)helloworld_str, strlen(helloworld_str));
 
     /* USER CODE END WHILE */
 
@@ -473,6 +484,7 @@ static void MX_GPIO_Init(void) {
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4,
@@ -489,6 +501,12 @@ static void MX_GPIO_Init(void) {
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins for LED */
+  GPIO_InitStruct.Pin = LED_ONBOARD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_ONBOARD_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */
@@ -610,6 +628,23 @@ else{
 init_data();
 sensor_send_data();
 #endif
+}
+
+bool is_usb_configured() {
+  if (&hUsbDeviceFS == NULL) {
+    return false;
+  }
+  if (hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED) {
+    return false;
+  }
+  return true;
+}
+
+void configure_usb() {
+  // TODO: read more on this process of configuring
+  while (!is_usb_configured()) {
+    // NOP
+  };
 }
 
 void TIM2_Init_pprev(void) {
