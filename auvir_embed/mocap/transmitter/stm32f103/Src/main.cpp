@@ -130,14 +130,13 @@ void configure_usb();
 #ifdef __cplusplus
 extern "C" {
 #endif
-const char mode = 'r'; // 't'
+const char mode = 'r';  // 't'
 #ifdef __cplusplus
 }
 #endif
 /* USER CODE END 0 */
 
 int main(void) {
-
   /* USER CODE BEGIN 1 */
   bool is_transmitter = (mode == 't');
   bool is_receiver = !is_transmitter;
@@ -213,7 +212,6 @@ int main(void) {
   // uint8_t buf_adc_val [4] = {0};
 
   while (1) {
-
     // test_stuff();
 
     HAL_ADC_Start(&hadc1);
@@ -226,7 +224,7 @@ int main(void) {
     }
 
     // TODO: check if casting below depend on endiannes
-    adc_val = 4000;
+    // adc_val = 1234;
     uint8_t *buf_adc = reinterpret_cast<uint8_t *>(&adc_val);
     uint32_t restored_adc_val = 0;
     restored_adc_val = (buf_adc[3] << 24) | (buf_adc[2] << 16) |
@@ -235,10 +233,12 @@ int main(void) {
     HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
 
     auto delay_val = adc_val / 10;
-    HAL_Delay(delay_val);
+    // HAL_Delay(1);
 
     uint8_t size = sizeof(uint32_t);
-    CDC_Transmit_FS(&size, 1);
+    // CDC_Transmit_FS(&size, 1);
+    CDC_Transmit_FS(buf_adc, sizeof(uint32_t));
+
     // CDC_Transmit_FS((uint8_t *)helloworld_str, strlen(helloworld_str));
 
     /* USER CODE END WHILE */
@@ -251,7 +251,6 @@ int main(void) {
 /** System Clock Configuration
 */
 void SystemClock_Config(void) {
-
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInit;
@@ -303,7 +302,6 @@ void SystemClock_Config(void) {
 
 /* ADC1 init function */
 static void MX_ADC1_Init(void) {
-
   ADC_ChannelConfTypeDef sConfig;
 
   /**Common config
@@ -331,7 +329,6 @@ static void MX_ADC1_Init(void) {
 
 /* CRC init function */
 static void MX_CRC_Init(void) {
-
   hcrc.Instance = CRC;
   if (HAL_CRC_Init(&hcrc) != HAL_OK) {
     _Error_Handler(__FILE__, __LINE__);
@@ -340,7 +337,6 @@ static void MX_CRC_Init(void) {
 
 /* SPI1 init function */
 static void MX_SPI1_Init(void) {
-
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
@@ -360,13 +356,12 @@ static void MX_SPI1_Init(void) {
 
 /* TIM2 init function */
 static void MX_TIM2_Init(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_OC_InitTypeDef sConfigOC;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 720;  // 0; //TODO: return to 0
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 1880 - 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -402,7 +397,6 @@ static void MX_TIM2_Init(void) {
 
 /* TIM3 init function */
 static void MX_TIM3_Init(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
 
@@ -429,7 +423,6 @@ static void MX_TIM3_Init(void) {
 
 /* TIM4 init function */
 static void MX_TIM4_Init(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
 
@@ -478,7 +471,6 @@ static void MX_DMA_Init(void) {
         * EXTI
 */
 static void MX_GPIO_Init(void) {
-
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
@@ -521,44 +513,43 @@ void IR_TIM_Init(TIM_HandleTypeDef *p_envelop, TIM_HandleTypeDef *p_pwm) {
 }
 
 void test_stuff() {
-
   uint8_t led8_array[8] = {
-      0b00000001, // 1
-      0b00000010, // 2
-      0b00000100, // 3
-      0b00001000, // 4
-      0b00010000, // 5
-      0b00100000, // 6
-      0b01000000, // 7
-      0b10000000, // 8
+      0b00000001,  // 1
+      0b00000010,  // 2
+      0b00000100,  // 3
+      0b00001000,  // 4
+      0b00010000,  // 5
+      0b00100000,  // 6
+      0b01000000,  // 7
+      0b10000000,  // 8
   };
   uint16_t led16_array[16] = {
-      0b0000000000000001, // 1
-      0b0000000000000010, // 2
-      0b0000000000000100, // 3
-      0b0000000000001000, // 4
-      0b0000000000010000, // 5
-      0b0000000000100000, // 6
-      0b0000000001000000, // 7
-      0b0000000010000000, // 8
-      0b0000000100000000, // 9
-      0b0000001000000000, // 10
-      0b0000010000000000, // 11
-      0b0000100000000000, // 12
-      0b0001000000000000, // 13
-      0b0010000000000000, // 14
-      0b0100000000000000, // 15
-      0b1000000000000000, // 16
+      0b0000000000000001,  // 1
+      0b0000000000000010,  // 2
+      0b0000000000000100,  // 3
+      0b0000000000001000,  // 4
+      0b0000000000010000,  // 5
+      0b0000000000100000,  // 6
+      0b0000000001000000,  // 7
+      0b0000000010000000,  // 8
+      0b0000000100000000,  // 9
+      0b0000001000000000,  // 10
+      0b0000010000000000,  // 11
+      0b0000100000000000,  // 12
+      0b0001000000000000,  // 13
+      0b0010000000000000,  // 14
+      0b0100000000000000,  // 15
+      0b1000000000000000,  // 16
   };
   uint16_t led16_array_tmp[8] = {
-      0b1010101010101010, // 1
-      0b1001001001001001, // 2
-      0b1000100010001000, // 3
-      0b1000010000100001, // 4
-      0b0000000000010000, // 5
-      0b0000000000100000, // 6
-      0b0000000001000000, // 7
-      0b0000000010000000, // 8
+      0b1010101010101010,  // 1
+      0b1001001001001001,  // 2
+      0b1000100010001000,  // 3
+      0b1000010000100001,  // 4
+      0b0000000000010000,  // 5
+      0b0000000000100000,  // 6
+      0b0000000001000000,  // 7
+      0b0000000010000000,  // 8
   };
   uint8_t led_num = 0;
   uint16_t test_msg = 0b1010101010101010;
@@ -624,7 +615,7 @@ else{
 }
 */
 
-#if 0 // TODO
+#if 0  // TODO
 init_data();
 sensor_send_data();
 #endif
@@ -648,7 +639,6 @@ void configure_usb() {
 }
 
 void TIM2_Init_pprev(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
 
@@ -668,7 +658,6 @@ void TIM2_Init_pprev(void) {
 }
 
 void TIM3_Init_prev(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
 
@@ -688,7 +677,6 @@ void TIM3_Init_prev(void) {
 }
 
 void TIM4_Init_prev(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_OC_InitTypeDef sConfigOC;
