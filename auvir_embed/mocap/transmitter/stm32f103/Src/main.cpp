@@ -194,8 +194,9 @@ int main(void) {
   }
   // envelop
   /// HAL_TIM_Base_Start_IT(phtim_envelop);
+
   // pwm
-  HAL_TIM_PWM_Start(auvir::phtim_pwm, TIM_CHANNEL_1);
+  /// HAL_TIM_PWM_Start(auvir::phtim_pwm, TIM_CHANNEL_1);
 
   // TODO: this is requred. Refactor to avoid possible mistakes in the future
   // start usec delay timer
@@ -233,7 +234,7 @@ int main(void) {
     HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
 
     auto delay_val = adc_val / 10;
-    // HAL_Delay(1);
+    // HAL_Delay(5);
 
     uint8_t size = sizeof(uint32_t);
     // CDC_Transmit_FS(&size, 1);
