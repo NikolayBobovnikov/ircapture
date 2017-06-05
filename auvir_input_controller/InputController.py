@@ -95,6 +95,22 @@ class AnalogPlot:
         self.ser.flush()
         self.ser.close()   
 
+def animate_adc_values(cdc_device):
+    analogPlot = AnalogPlot(cdc_device, 1000)
+    # set up animation
+    fig = plt.figure()
+    ax = plt.axes(xlim=(0, 1000), ylim=(0, 4200))
+    a0, = ax.plot([], [])
+    a1, = ax.plot([], [])
+    print("start animation")
+    anim = animation.FuncAnimation(fig, analogPlot.update,
+                                   fargs=(a0, a1), interval=1)
+    # show plot
+    plt.show()
+    # clean up
+    print('exiting.')
+
+
 def use_serial():
     ports = list(list_ports.comports())
     if not ports:
@@ -111,71 +127,39 @@ def use_serial():
         sDesc = port_name[1]
         sHw = port_name[2]
         # if sDesc == 'STM32 Virtual ComPort':
-        if re.match(".*ttyUSB[0-9]|.*ttyACM[0-9]", sPortName):
+        print("port name: [" + sPortName + "]")
+        print("port device: [" + sDesc + "]")
+        print("port hW: [" + sHw + "]")
+        if re.match(".*ttyUSB[0-9]|.*ttyACM[0-9]|COM[0-9]+", sPortName):
             # 'STM32 Virtual ComPort'
             print("port name: [" + sPortName + "]")
             print("port device: [" + sDesc + "]")
             print("port hW: [" + sHw + "]")
             try:
                 with serial.Serial(sPortName) as cdc_device:
-                    # process_serial_device(cdc_device)
-                    analogPlot = AnalogPlot(cdc_device, 1000)
-
-                    # set up animation
-                    fig = plt.figure()
-                    ax = plt.axes(xlim=(0, 1000), ylim=(0, 4200))
-                    a0, = ax.plot([], [])
-                    a1, = ax.plot([], [])
-                    print("start animation")
-                    anim = animation.FuncAnimation(fig, analogPlot.update,
-                                                   fargs=(a0, a1), interval=1)
-
-                    # show plot
-                    plt.show()
-                    # clean up
-                    # analogPlot.close()
-
-                    print('exiting.')
+                    process_serial_device(cdc_device)
+                    # animate_adc_values(cdc_device)
             except Exception as e:
-                print('ouch! error: ' + e)
+                print('ouch! error: ')
+                print(e)
 
 
 def process_serial_device(cdc_device):
     print("start processing serial device")
 
-    data = []
-    # plt.ion()
-    # X = np.linspace(0, 4192,4192)
-    # graph = plt.plot(X,data)[0]
-
-    cdc_device.close()
-    for ind in range(1,10):
-        cdc_device.open()
-        if cdc_device.isOpen():
-            data = []
-            print("port is open: " + cdc_device.name)
-            for i in range(0,1000):
-                # data = cdc_device.read(32)
-                #line = cdc_device.readline()
-                new_data = cdc_device.read(4)
-                # print('int from bytes: ' + str(int.from_bytes(data, byteorder='big')))
-                # print('str(): ' + str(data))
-                # print(struct.unpack('i', data))
-                data.append(struct.unpack('i', new_data)[0])
-            # plt.plot(data)
-            # plt.show()
-            # graph.set_ydata(data)
-            # graph.show()
-            # plt.draw()
-
-        print("stop processing serial device")
-        cdc_device.close()
+    if cdc_device.isOpen():
+        data = []
+        print("port is open: " + cdc_device.name)
+        for i in range(0,10000):
+            new_data = cdc_device.read(4)
+            data.append(struct.unpack('i', new_data)[0])
+        plt.plot(data)
+        plt.show()
+    print("stop processing serial device")
 
 
 if __name__ == "__main__":
     print("version: " + sys.version)
     use_serial()
-    # analogData = AnalogData(100)
-    # analogPlot = AnalogPlot(analogData)
 
 
