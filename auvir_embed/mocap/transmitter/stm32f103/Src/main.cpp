@@ -134,10 +134,69 @@ const char mode = 'r';  // 't'
 #ifdef __cplusplus
 }
 #endif
+
+void pwm() {
+  HAL_Init();
+  SystemClock_Config();
+
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /// Init PWM timer
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_OC_InitTypeDef sConfigOC;
+
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 72;  // 0; //TODO: return to 0
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 1000 - 1;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 300;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  HAL_TIM_MspPostInit(&htim2);
+
+  ///
+  while (1) {
+    HAL_TIM_PWM_Start(auvir::phtim_pwm, TIM_CHANNEL_1);
+    HAL_Delay(10);
+    HAL_TIM_PWM_Stop(auvir::phtim_pwm, TIM_CHANNEL_1);
+    HAL_Delay(10);
+  }
+}
+
 /* USER CODE END 0 */
 
 int main(void) {
   /* USER CODE BEGIN 1 */
+
+  // for uploading to separate mc which lights up LED with PWM
+  pwm();
+
   bool is_transmitter = (mode == 't');
   bool is_receiver = !is_transmitter;
 
