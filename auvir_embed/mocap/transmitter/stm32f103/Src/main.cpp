@@ -195,7 +195,7 @@ int main(void) {
   /* USER CODE BEGIN 1 */
 
   // for uploading to separate mc which lights up LED with PWM
-  pwm();
+  /// pwm();
 
   bool is_transmitter = (mode == 't');
   bool is_receiver = !is_transmitter;
@@ -268,36 +268,33 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
   // prepare buffer for sending over USB
   const char *helloworld_str = "hello world!\n";
-  uint8_t buf[64] = {0};
-  // uint8_t buf_adc_val [4] = {0};
+  uint32_t adc_values[64] = {0};
 
   while (1) {
     // test_stuff();
 
-    HAL_ADC_Start(&hadc1);
-    while (HAL_ADC_PollForConversion(&hadc1, 100)) {
+    for (int i = 0; i < 64; ++i) {
+      HAL_ADC_Start(&hadc1);
+      while (HAL_ADC_PollForConversion(&hadc1, 10)) {
+      }
+      adc_values[i] = HAL_ADC_GetValue(&hadc1);
+      HAL_ADC_Stop(&hadc1);
+
+      // TODO: check if casting below depend on endiannes
+      // adc_val = 1234;
+      /// uint8_t *curr_adc_val_buf = reinterpret_cast<uint8_t
+      /// *>(&adc_values[i]);
+      /// uint32_t restored_adc_val = 0;
+      /// restored_adc_val = (curr_adc_val_buf[3] << 24) |
+      ///                   (curr_adc_val_buf[2] << 16) |
+      ///                   (curr_adc_val_buf[1] << 8) | (curr_adc_val_buf[0]);
     }
-    uint32_t adc_val = HAL_ADC_GetValue(&hadc1);
-    HAL_ADC_Stop(&hadc1);
-    if (adc_val < 500) {
-      int a = 0;
-    }
 
-    // TODO: check if casting below depend on endiannes
-    // adc_val = 1234;
-    uint8_t *buf_adc = reinterpret_cast<uint8_t *>(&adc_val);
-    uint32_t restored_adc_val = 0;
-    restored_adc_val = (buf_adc[3] << 24) | (buf_adc[2] << 16) |
-                       (buf_adc[1] << 8) | (buf_adc[0]);
+    /// HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
 
-    HAL_GPIO_TogglePin(LED_ONBOARD_Port, LED_ONBOARD_Pin);
-
-    auto delay_val = adc_val / 10;
-    // HAL_Delay(5);
-
-    uint8_t size = sizeof(uint32_t);
     // CDC_Transmit_FS(&size, 1);
-    CDC_Transmit_FS(buf_adc, sizeof(uint32_t));
+    CDC_Transmit_FS(reinterpret_cast<uint8_t *>(adc_values),
+                    sizeof(uint32_t) * 64);
 
     // CDC_Transmit_FS((uint8_t *)helloworld_str, strlen(helloworld_str));
 
