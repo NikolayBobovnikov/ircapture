@@ -149,7 +149,7 @@ void pwm() {
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 72;  // 0; //TODO: return to 0
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1000 - 1;
+  htim2.Init.Period = 1000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
     _Error_Handler(__FILE__, __LINE__);
@@ -179,13 +179,10 @@ void pwm() {
   }
 
   HAL_TIM_MspPostInit(&htim2);
+  HAL_TIM_PWM_Start(auvir::phtim_pwm, TIM_CHANNEL_1);
 
   ///
   while (1) {
-    HAL_TIM_PWM_Start(auvir::phtim_pwm, TIM_CHANNEL_1);
-    HAL_Delay(10);
-    HAL_TIM_PWM_Stop(auvir::phtim_pwm, TIM_CHANNEL_1);
-    HAL_Delay(10);
   }
 }
 
@@ -268,12 +265,13 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
   // prepare buffer for sending over USB
   const char *helloworld_str = "hello world!\n";
-  uint32_t adc_values[64] = {0};
+
+  uint32_t adc_values[1000] = {0};
 
   while (1) {
     // test_stuff();
 
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < 1000; ++i) {
       HAL_ADC_Start(&hadc1);
       while (HAL_ADC_PollForConversion(&hadc1, 10)) {
       }
@@ -294,7 +292,7 @@ int main(void) {
 
     // CDC_Transmit_FS(&size, 1);
     CDC_Transmit_FS(reinterpret_cast<uint8_t *>(adc_values),
-                    sizeof(uint32_t) * 64);
+                    sizeof(uint32_t) * 1000);
 
     // CDC_Transmit_FS((uint8_t *)helloworld_str, strlen(helloworld_str));
 

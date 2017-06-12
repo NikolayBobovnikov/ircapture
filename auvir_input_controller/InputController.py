@@ -150,9 +150,8 @@ def process_serial_device(cdc_device):
     if cdc_device.isOpen():
         data = []
         print("port is open: " + cdc_device.name)
-        for i in range(0,100):
-            new_data = cdc_device.read(4 * 64)
-            data.extend(struct.unpack('<%dI' % 64, new_data))
+        new_data = cdc_device.read(4 * 1000)
+        data.extend(struct.unpack('<%dI' % 1000, new_data))
         plt.plot(data)
         plt.show()
     print("stop processing serial device")
