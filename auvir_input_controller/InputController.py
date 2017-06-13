@@ -160,50 +160,66 @@ def process_serial_device(cdc_device):
 
 
 def moving_average(a, n=3) :
+    prefix_array = [0 for x in range(1,n)]
+    npprefix = np.asarray(prefix_array)
+    print(npprefix)
     ret = np.cumsum(a, dtype=np.int32)
+    ret = np.concatenate((npprefix,ret))
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
-def analyze_signal():
-    s1 = np.loadtxt("./data.txt", dtype=np.int32)
-    s2 = signal.medfilt(s1, 3)
-    t = np.arange(0,len(s1),1)
-
-    N = 50
-    average = [int(round(x)) for x in np.convolve(s2, np.ones((N,))/N, mode='valid')]
-
-    signal_med = [0 for x in range(0,N)]
-    window_signal = s2[0 : N-1]
+def get_middle(s, N = 70):
+    signal_med = [np.average(s[0:N]) for x in range(0,N)]
+    window_signal = s.tolist()[0 : N-1]
     curr_max = max(window_signal)
     curr_min = min(window_signal)
 
     for i in range (N, 1000):
         prev = window_signal[0]
-        np.delete(window_signal, [0])
+        window_signal = np.delete(window_signal, [0]).tolist()
+        window_signal.append(s[i])
+        # maximum = max([curr_max, prev])
+        # minimum = min([curr_min, prev])
 
-        maximum = max([curr_max, prev])
-        minimum = min([curr_min, prev])
+        # curr_max = max(curr_max, s2[i])
+        # curr_min = min(curr_min, s2[i])
 
-        np.append(window_signal, s2[i])
-        curr_max = max(maximum, s2[i])
-        curr_min = min(minimum, s2[i])
+        curr_max = max(s[i-N : i])
+        curr_min = min(s[i-N : i])
 
         med = (curr_min + curr_max )/ 2
         signal_med.append(med)
+    return signal_med
+
+def analyze_signal():
+    s1 = np.loadtxt("./data.txt", dtype=np.int32)
+    s2 = signal.medfilt(s1, 5)
+    mov_avg = moving_average(s2, 3)
+    t = np.arange(0,len(s1),1)
+
+    N = 70
+    signal_med = get_middle(s2,70) 
 
     print("signal med size:")
     print(str(len(signal_med)))
 
-    plt.figure(1)
-    plt.plot(t, s1)
-    plt.plot(t, s2, "r")
-    plt.plot(t, signal_med, "g")
+    fig,ax = plt.subplots()
+    # fig.figure(1)
+    ax.plot(t, s1, "bo", label='signal samples')
+    ax.plot(t, s2, "y", label='median filter')
+    ax.plot(t, mov_avg, "r", label='avg of median')
+    ax.plot(t, signal_med, "g", label='min/max middle - threshold')
+    legend = ax.legend(loc='lower center', shadow=True)
+    frame = legend.get_frame()
+    frame.set_facecolor('0.90')
+    
 
     plt.show()
 
 
 if __name__ == "__main__":
     print("version: " + sys.version)    # use_serial()
+    # use_serial()
     analyze_signal()
 
 
