@@ -233,6 +233,7 @@ if __name__ == "__main__":
     plt.autoscale(False)
 
     plt.ion()
+    zero_crossings = []
     while plt.fignum_exists(1) and cdc_device.isOpen():
         plt.clf()
         new_data = cdc_device.read(4 * 1000)
@@ -242,12 +243,22 @@ if __name__ == "__main__":
         t = np.arange(0,len(s1),1)
         signal_med = get_middle(s2,70) 
 
+        pwm_received = np.asarray([-1 if signal_med[x] < mov_avg[x] else 1 for x in range(0,1000)])
+        zero_crossing = ((pwm_received[:-1] * pwm_received[1:]) < 0).sum()
+        zero_crossings.append(zero_crossing)
+
+
+        is_pwm = [1000 if zero_crossing > 40 and zero_crossing < 60 else -100 for x in range(0,1000)]
+
+
         # fig.figure(1)
         plt.plot(t, s1, "bo", label='signal samples')
-        plt.plot(t, s2, "y", label='median filter')
-        plt.plot(t, mov_avg, "r", label='avg of median')
-        plt.plot(t, signal_med, "g", label='min/max middle - threshold')
+        # plt.plot(t, s2, "y", label='median filter')
+        # plt.plot(t, mov_avg, "r", label='avg of median')
+        # plt.plot(t, signal_med, "g", label='min/max middle - threshold')
+        plt.plot(t, is_pwm, "g", label='is pwm detected', linewidth = 3)
         legend = plt.legend(loc='lower center', shadow=True)
         frame = legend.get_frame()
         frame.set_facecolor('0.90')
         plt.pause(0.3)
+    print(np.mean(zero_crossings))
