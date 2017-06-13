@@ -212,7 +212,6 @@ def analyze_signal():
     legend = ax.legend(loc='lower center', shadow=True)
     frame = legend.get_frame()
     frame.set_facecolor('0.90')
-    
 
     plt.show()
 
@@ -220,6 +219,35 @@ def analyze_signal():
 if __name__ == "__main__":
     print("version: " + sys.version)    # use_serial()
     # use_serial()
-    analyze_signal()
+    # analyze_signal()
+    cdc_device = serial.Serial('COM9')
+    # plt.axis([0,1000,0,4192])
+    # axes = plt.gca()
+    # axes.set_autoscale_on(False)
+    # axes.set_xlim([0,1000])
+    # axes.set_ylim([0,4192])
 
+    # Set the limits of the plot
+    plt.xlim(0,1000)
+    plt.ylim(0,4192)
+    plt.autoscale(False)
 
+    plt.ion()
+    while plt.fignum_exists(1) and cdc_device.isOpen():
+        plt.clf()
+        new_data = cdc_device.read(4 * 1000)
+        s1 = np.asarray(struct.unpack('<%dI' % 1000, new_data), dtype=np.int32)
+        s2 = signal.medfilt(s1, 5)
+        mov_avg = moving_average(s2, 3)
+        t = np.arange(0,len(s1),1)
+        signal_med = get_middle(s2,70) 
+
+        # fig.figure(1)
+        plt.plot(t, s1, "bo", label='signal samples')
+        plt.plot(t, s2, "y", label='median filter')
+        plt.plot(t, mov_avg, "r", label='avg of median')
+        plt.plot(t, signal_med, "g", label='min/max middle - threshold')
+        legend = plt.legend(loc='lower center', shadow=True)
+        frame = legend.get_frame()
+        frame.set_facecolor('0.90')
+        plt.pause(0.3)
