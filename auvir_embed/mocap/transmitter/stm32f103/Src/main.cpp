@@ -130,7 +130,7 @@ void configure_usb();
 #ifdef __cplusplus
 extern "C" {
 #endif
-const char mode = 'r';  // 't'
+const char mode = 'r'; // 't'
 #ifdef __cplusplus
 }
 #endif
@@ -147,7 +147,7 @@ void pwm() {
   TIM_OC_InitTypeDef sConfigOC;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 72;  // 0; //TODO: return to 0
+  htim2.Init.Prescaler = 72; // 0; //TODO: return to 0
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 1000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -192,7 +192,7 @@ int main(void) {
   /* USER CODE BEGIN 1 */
 
   // for uploading to separate mc which lights up LED with PWM
-  /// pwm();
+  pwm();
 
   bool is_transmitter = (mode == 't');
   bool is_receiver = !is_transmitter;
@@ -416,7 +416,7 @@ static void MX_TIM2_Init(void) {
   TIM_OC_InitTypeDef sConfigOC;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 720;  // 0; //TODO: return to 0
+  htim2.Init.Prescaler = 720; // 0; //TODO: return to 0
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 1880 - 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -569,42 +569,42 @@ void IR_TIM_Init(TIM_HandleTypeDef *p_envelop, TIM_HandleTypeDef *p_pwm) {
 
 void test_stuff() {
   uint8_t led8_array[8] = {
-      0b00000001,  // 1
-      0b00000010,  // 2
-      0b00000100,  // 3
-      0b00001000,  // 4
-      0b00010000,  // 5
-      0b00100000,  // 6
-      0b01000000,  // 7
-      0b10000000,  // 8
+      0b00000001, // 1
+      0b00000010, // 2
+      0b00000100, // 3
+      0b00001000, // 4
+      0b00010000, // 5
+      0b00100000, // 6
+      0b01000000, // 7
+      0b10000000, // 8
   };
   uint16_t led16_array[16] = {
-      0b0000000000000001,  // 1
-      0b0000000000000010,  // 2
-      0b0000000000000100,  // 3
-      0b0000000000001000,  // 4
-      0b0000000000010000,  // 5
-      0b0000000000100000,  // 6
-      0b0000000001000000,  // 7
-      0b0000000010000000,  // 8
-      0b0000000100000000,  // 9
-      0b0000001000000000,  // 10
-      0b0000010000000000,  // 11
-      0b0000100000000000,  // 12
-      0b0001000000000000,  // 13
-      0b0010000000000000,  // 14
-      0b0100000000000000,  // 15
-      0b1000000000000000,  // 16
+      0b0000000000000001, // 1
+      0b0000000000000010, // 2
+      0b0000000000000100, // 3
+      0b0000000000001000, // 4
+      0b0000000000010000, // 5
+      0b0000000000100000, // 6
+      0b0000000001000000, // 7
+      0b0000000010000000, // 8
+      0b0000000100000000, // 9
+      0b0000001000000000, // 10
+      0b0000010000000000, // 11
+      0b0000100000000000, // 12
+      0b0001000000000000, // 13
+      0b0010000000000000, // 14
+      0b0100000000000000, // 15
+      0b1000000000000000, // 16
   };
   uint16_t led16_array_tmp[8] = {
-      0b1010101010101010,  // 1
-      0b1001001001001001,  // 2
-      0b1000100010001000,  // 3
-      0b1000010000100001,  // 4
-      0b0000000000010000,  // 5
-      0b0000000000100000,  // 6
-      0b0000000001000000,  // 7
-      0b0000000010000000,  // 8
+      0b1010101010101010, // 1
+      0b1001001001001001, // 2
+      0b1000100010001000, // 3
+      0b1000010000100001, // 4
+      0b0000000000010000, // 5
+      0b0000000000100000, // 6
+      0b0000000001000000, // 7
+      0b0000000010000000, // 8
   };
   uint8_t led_num = 0;
   uint16_t test_msg = 0b1010101010101010;
@@ -670,7 +670,7 @@ else{
 }
 */
 
-#if 0  // TODO
+#if 0 // TODO
 init_data();
 sensor_send_data();
 #endif

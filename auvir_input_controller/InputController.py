@@ -15,10 +15,12 @@ import re
 import struct
 from struct import *
 import numpy as np
+from scipy import signal
+from matplotlib import pyplot as plt
+from matplotlib import animation
+
 from time import sleep
 from collections import deque
-from matplotlib import pyplot as plt
-import matplotlib.animation as animation
 import math
 
 # class that holds analog data for N samples
@@ -107,6 +109,7 @@ def animate_adc_values(cdc_device):
                                    fargs=(a0, a1), interval=1)
     # show plot
     plt.show()
+
     # clean up
     print('exiting.')
 
@@ -120,7 +123,6 @@ def use_serial():
     #Get correct port name. Need to identify among others2 if there are many
     #just use first port from the list, using one of 2 options below. TODO: fix that, determine required port somehow
     #port_name = port_names[0]
-
     print("scanning ports")
     for port_name in ports:
         sPortName = port_name[0]
@@ -148,17 +150,60 @@ def process_serial_device(cdc_device):
     print("start processing serial device")
 
     if cdc_device.isOpen():
-        data = []
         print("port is open: " + cdc_device.name)
         new_data = cdc_device.read(4 * 1000)
-        data.extend(struct.unpack('<%dI' % 1000, new_data))
-        plt.plot(data)
+        array = np.asarray(struct.unpack('<%dI' % 1000, new_data), dtype=np.int32)
+        np.savetxt(fname = "./data.txt", X = array)
+        plt.plot(array)
         plt.show()
     print("stop processing serial device")
 
 
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=np.int32)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+def analyze_signal():
+    s1 = np.loadtxt("./data.txt", dtype=np.int32)
+    s2 = signal.medfilt(s1, 3)
+    t = np.arange(0,len(s1),1)
+
+    N = 50
+    average = [int(round(x)) for x in np.convolve(s2, np.ones((N,))/N, mode='valid')]
+
+    signal_med = [0 for x in range(0,N)]
+    window_signal = s2[0 : N-1]
+    curr_max = max(window_signal)
+    curr_min = min(window_signal)
+
+    for i in range (N, 1000):
+        prev = window_signal[0]
+        np.delete(window_signal, [0])
+
+        maximum = max([curr_max, prev])
+        minimum = min([curr_min, prev])
+
+        np.append(window_signal, s2[i])
+        curr_max = max(maximum, s2[i])
+        curr_min = min(minimum, s2[i])
+
+        med = (curr_min + curr_max )/ 2
+        signal_med.append(med)
+
+    print("signal med size:")
+    print(str(len(signal_med)))
+
+    plt.figure(1)
+    plt.plot(t, s1)
+    plt.plot(t, s2, "r")
+    plt.plot(t, signal_med, "g")
+
+    plt.show()
+
+
 if __name__ == "__main__":
-    print("version: " + sys.version)
-    use_serial()
+    print("version: " + sys.version)    # use_serial()
+    analyze_signal()
 
 
