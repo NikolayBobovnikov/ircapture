@@ -1,0 +1,3 @@
+[submodule "auvir_embed/IRis"]
+	path = auvir_embed/IRis
+	url = https://github.com/devttys0/IRis
