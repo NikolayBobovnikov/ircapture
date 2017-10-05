@@ -1,0 +1,35 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#(c) SnapEDA 2016 (snapeda.com)
+#This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0
+#
+# BPW34
+#
+DEF BPW34 D 0 40 Y Y 1 L N
+F0 "D" -350 100 50 H V L BNN
+F1 "BPW34" -350 -150 50 H V L BNN
+F2 "PHODET_BPW34" 0 0 50 H I L BNN
+F3 "950 nm 100 ns %C2%B1 65%C2%B0 Wide Angle Half Sensitivity TO-5 Silicon PIN Photodiode" 0 0 50 H I L BNN "Description"
+F4 "0.62 USD" 0 0 50 H I L BNN "Price"
+F5 "Vishay" 0 0 50 H I L BNN "MF"
+F6 "SMD-2 Vishay" 0 0 50 H I L BNN "Package"
+F7 "BPW34" 0 0 50 H I L BNN "MP"
+F8 "Good" 0 0 50 H I L BNN "Availability"
+DRAW
+P 2 0 0 10 -50 -75 50 0 N
+P 2 0 0 10 50 0 -50 75 N
+P 2 0 0 10 -50 75 -50 -75 N
+P 2 0 0 10 55 75 55 0 N
+P 2 0 0 10 55 0 55 -75 N
+P 2 0 0 6 40 140 80 180 N
+P 2 0 0 6 70 110 110 150 N
+P 3 0 0 6 40 160 60 140 30 130 F
+P 3 0 0 6 70 130 90 110 60 100 F
+P 2 0 0 10 55 0 210 0 N
+P 2 0 0 10 -55 0 -210 0 N
+X A A -300 0 100 R 40 40 0 0 P 
+X C C 300 0 100 L 40 40 0 0 P 
+ENDDRAW
+ENDDEF
+#
+# End Library
