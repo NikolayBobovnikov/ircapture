@@ -48,9 +48,9 @@ SET(SRC_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Src
-    #${I2CDevLib_MPU6050}
-    #${I2CDevLib_I2Cdev}
-    #${radio_lib_dir}
+    ${I2CDevLib_MPU6050}
+    ${I2CDevLib_I2Cdev}
+    ${radio_lib_dir}
     ${COMMON_SRC_DIR}
 )
 
