@@ -4,8 +4,9 @@ SET(STM32_SUPPORTED_FAMILIES F1 F2 F4 CACHE INTERNAL "stm32 supported families")
 
 IF(NOT TOOLCHAIN_PREFIX)
      #SET(TOOLCHAIN_PREFIX "/usr")
-     SET(TOOLCHAIN_PREFIX "D:/Software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32")
-     MESSAGE(STATUS "No TOOLCHAIN_PREFIX specified, using default: " ${TOOLCHAIN_PREFIX})
+     #SET(TOOLCHAIN_PREFIX "D:/Software/gcc-arm-none-eabi-4_9-2015q2-20150609-win32")
+     #MESSAGE(STATUS "No TOOLCHAIN_PREFIX specified, using default: " ${TOOLCHAIN_PREFIX})
+     MESSAGE(ERROR "No TOOLCHAIN_PREFIX specified")
 ENDIF()
 
 IF(NOT TARGET_TRIPLET)
