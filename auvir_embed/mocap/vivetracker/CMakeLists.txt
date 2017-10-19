@@ -54,5 +54,11 @@ SET(SRC_DIRS
     ${COMMON_SRC_DIR}
 )
 
+SET(SRC_DIRS_SYSTEM
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers
+    ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/system
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/system
+)
 
 include(../cmake/CollectSources.cmake)

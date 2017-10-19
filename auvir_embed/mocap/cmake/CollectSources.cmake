@@ -99,6 +99,12 @@ include_directories(
   ${INCLUDE_SRC_DIRS}
   )
 
+#supress warnings from library code
+include_directories(
+  SYSTEM ${SRC_DIRS_SYSTEM}
+  )
+
+
 # Build everything into elf
 ADD_EXECUTABLE(
   ${CMAKE_PROJECT_NAME}

@@ -1,6 +1,6 @@
 #include "infrared.h"
+#include <cstring>
 #include <stdbool.h>
-#include <stdio.h>
 /// ================== Parameters ================
 
 extern TIM_HandleTypeDef htim4;
@@ -43,8 +43,8 @@ uint16_t GPIO_LED_PIN = GPIO_PIN_11;
 extern volatile uint8_t rx_buf[32]; // initialize value
 extern volatile uint8_t tx_buf[32];
 
-void RXX();
-void TXX();
+void RXX(){};
+void TXX(){};
 
 /// ============================== Private function declarations
 /// ==============================
@@ -95,7 +95,7 @@ static inline void decode_bit(uint8_t *data_word) {
   }
 }
 
-inline void irreceiver_timer_up_handler() {
+void irreceiver_timer_up_handler() {
   debug_upd_event();
 
   get_logical_level();
@@ -105,7 +105,7 @@ inline void irreceiver_timer_up_handler() {
   receive_handler();
 }
 
-inline void irreceiver_ic_handler() {
+void irreceiver_ic_handler() {
   if (__HAL_TIM_GET_FLAG(ptim_input_capture, TIM_FLAG_CC1) != RESET) {
     if (__HAL_TIM_GET_IT_SOURCE(ptim_input_capture, TIM_IT_CC1) != RESET) {
       debug_0_to_1_edge();
@@ -562,7 +562,7 @@ static inline void process_received_data() {
     copy_data_frame_to_buffer(&rx_data_frame);
     // TODO: change to the real thing
     const char *test_str = "HelloWireless!\0";
-    memcpy(tx_buf, test_str, strlen(test_str));
+    memcpy((void *)tx_buf, test_str, strlen(test_str));
 
     // TODO: check and remove send_dataready_signal();
 

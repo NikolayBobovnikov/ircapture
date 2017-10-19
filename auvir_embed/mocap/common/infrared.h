@@ -140,6 +140,11 @@ typedef struct MCU_PIN {
 } MCU_PIN;
 
 ///====================== Function prototypes ======================
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void init_data();
 void sensor_send_data();
 void transmit_handler();
@@ -149,5 +154,9 @@ void irreceiver_timer_prob_handler(); // for update timer
 void irreceiver_timer_up_handler();   // for update timer
 void irreceiver_ic_handler();         // for input capture timer
 void setup_ic_timer();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // INFRARED_H

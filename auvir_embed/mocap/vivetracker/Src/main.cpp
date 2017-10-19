@@ -45,6 +45,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_hal.h"
+#include "vivetracker.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -52,11 +53,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c2;
-
 RTC_HandleTypeDef hrtc;
-
 SPI_HandleTypeDef hspi1;
-
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
@@ -83,12 +81,28 @@ static void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN 0 */
 
+/***
+ * Main algorithm
+ * 1. Initialize peripherials
+ * - Test IMU sensor
+ * - Init radio module
+ *      Get address
+ * - Get first readings from IR base station
+ *
+ * LOOP:
+ * 2. Get data from IMU - i2c
+ * 3. Get data from IR base station
+ * - Wait for sync pulse
+ * - Start time clocking
+ * - Decode data frame from base station
+ * - When sweep is detected, get clock numbers
+ * 4. Use DMA to copy IMU/IR data to output buffer
+ * 5. Send IMU/IR data over radio (SPI)
+ ***/
+
 /* USER CODE END 0 */
-
 int main(void) {
-
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU
@@ -135,7 +149,6 @@ int main(void) {
 /** System Clock Configuration
 */
 void SystemClock_Config(void) {
-
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInit;
@@ -185,7 +198,6 @@ void SystemClock_Config(void) {
 
 /* I2C2 init function */
 static void MX_I2C2_Init(void) {
-
   hi2c2.Instance = I2C2;
   hi2c2.Init.ClockSpeed = 100000;
   hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
@@ -202,7 +214,6 @@ static void MX_I2C2_Init(void) {
 
 /* RTC init function */
 static void MX_RTC_Init(void) {
-
   /**Initialize RTC Only
   */
   hrtc.Instance = RTC;
@@ -215,7 +226,6 @@ static void MX_RTC_Init(void) {
 
 /* SPI1 init function */
 static void MX_SPI1_Init(void) {
-
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
@@ -235,7 +245,6 @@ static void MX_SPI1_Init(void) {
 
 /* TIM2 init function */
 static void MX_TIM2_Init(void) {
-
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_IC_InitTypeDef sConfigIC;
 
@@ -277,7 +286,6 @@ static void MX_TIM2_Init(void) {
 
 /* TIM3 init function */
 static void MX_TIM3_Init(void) {
-
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_IC_InitTypeDef sConfigIC;
 
@@ -319,7 +327,6 @@ static void MX_TIM3_Init(void) {
 
 /* TIM4 init function */
 static void MX_TIM4_Init(void) {
-
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_IC_InitTypeDef sConfigIC;
 
@@ -370,7 +377,6 @@ static void MX_TIM4_Init(void) {
         * the Code Generation settings)
 */
 static void MX_GPIO_Init(void) {
-
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
@@ -410,7 +416,8 @@ static void MX_GPIO_Init(void) {
   * @param  None
   * @retval None
   */
-void _Error_Handler(const char *file, int line) {
+void _Error_Handler(__attribute__((unused)) const char *file,
+                    __attribute__((unused)) int line) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   while (1) {
