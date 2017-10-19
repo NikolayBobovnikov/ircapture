@@ -2,8 +2,8 @@
 #define VIVETRACKER_H
 
 class vivetracker {
-
 public:
+
 private:
 };
 
