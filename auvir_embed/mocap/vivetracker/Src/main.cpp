@@ -45,16 +45,18 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_hal.h"
-#include "vivetracker.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "vivetracker.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c2;
+
 RTC_HandleTypeDef hrtc;
+
 SPI_HandleTypeDef hspi1;
+
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
@@ -81,28 +83,12 @@ static void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN 0 */
 
-/***
- * Main algorithm
- * 1. Initialize peripherials
- * - Test IMU sensor
- * - Init radio module
- *      Get address
- * - Get first readings from IR base station
- *
- * LOOP:
- * 2. Get data from IMU - i2c
- * 3. Get data from IR base station
- * - Wait for sync pulse
- * - Start time clocking
- * - Decode data frame from base station
- * - When sweep is detected, get clock numbers
- * 4. Use DMA to copy IMU/IR data to output buffer
- * 5. Send IMU/IR data over radio (SPI)
- ***/
-
 /* USER CODE END 0 */
+
 int main(void) {
+
   /* USER CODE BEGIN 1 */
+
   /* USER CODE END 1 */
 
   /* MCU
@@ -133,8 +119,7 @@ int main(void) {
   MX_SPI1_Init();
 
   /* USER CODE BEGIN 2 */
-  ViveTracker vivetracker(hi2c2, hspi1, htim2, htim3, htim4);
-  vivetracker.init_radio();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -150,6 +135,7 @@ int main(void) {
 /** System Clock Configuration
 */
 void SystemClock_Config(void) {
+
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInit;
@@ -163,7 +149,7 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   /**Initializes the CPU, AHB and APB busses clocks
@@ -176,13 +162,13 @@ void SystemClock_Config(void) {
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   /**Configure the Systick interrupt time
@@ -199,6 +185,7 @@ void SystemClock_Config(void) {
 
 /* I2C2 init function */
 static void MX_I2C2_Init(void) {
+
   hi2c2.Instance = I2C2;
   hi2c2.Init.ClockSpeed = 100000;
   hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
@@ -209,24 +196,26 @@ static void MX_I2C2_Init(void) {
   hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c2) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 }
 
 /* RTC init function */
 static void MX_RTC_Init(void) {
+
   /**Initialize RTC Only
   */
   hrtc.Instance = RTC;
   hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
   hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
   if (HAL_RTC_Init(&hrtc) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 }
 
 /* SPI1 init function */
 static void MX_SPI1_Init(void) {
+
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
@@ -240,12 +229,14 @@ static void MX_SPI1_Init(void) {
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi1) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 }
 
 /* TIM2 init function */
 static void MX_TIM2_Init(void) {
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_IC_InitTypeDef sConfigIC;
 
@@ -254,14 +245,23 @@ static void MX_TIM2_Init(void) {
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 0;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
   if (HAL_TIM_IC_Init(&htim2) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
@@ -269,24 +269,26 @@ static void MX_TIM2_Init(void) {
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
   sConfigIC.ICFilter = 0;
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_4) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 }
 
 /* TIM3 init function */
 static void MX_TIM3_Init(void) {
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_IC_InitTypeDef sConfigIC;
 
@@ -295,14 +297,23 @@ static void MX_TIM3_Init(void) {
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 0;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
   if (HAL_TIM_IC_Init(&htim3) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
@@ -310,24 +321,26 @@ static void MX_TIM3_Init(void) {
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
   sConfigIC.ICFilter = 0;
   if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_2) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_3) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_4) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 }
 
 /* TIM4 init function */
 static void MX_TIM4_Init(void) {
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
   TIM_IC_InitTypeDef sConfigIC;
 
@@ -336,14 +349,23 @@ static void MX_TIM4_Init(void) {
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 0;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK) {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
   if (HAL_TIM_IC_Init(&htim4) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
@@ -351,19 +373,19 @@ static void MX_TIM4_Init(void) {
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
   sConfigIC.ICFilter = 0;
   if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_3) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 
   if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_4) != HAL_OK) {
-    _Error_Handler((__FILE__), __LINE__);
+    _Error_Handler(__FILE__, __LINE__);
   }
 }
 
@@ -378,6 +400,7 @@ static void MX_TIM4_Init(void) {
         * the Code Generation settings)
 */
 static void MX_GPIO_Init(void) {
+
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
@@ -417,8 +440,7 @@ static void MX_GPIO_Init(void) {
   * @param  None
   * @retval None
   */
-void _Error_Handler(__attribute__((unused)) const char *file,
-                    __attribute__((unused)) int line) {
+void _Error_Handler(char *file, int line) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   while (1) {
