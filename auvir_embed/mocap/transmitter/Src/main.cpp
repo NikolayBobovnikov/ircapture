@@ -766,7 +766,7 @@ void TIM4_Init_prev(void) {
   * @retval None
   */
 extern "C" {
-void _Error_Handler(char *file, int line) {
+void _Error_Handler(const char *file, int line) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   while (1) {

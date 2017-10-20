@@ -120,6 +120,28 @@ int main(void) {
 
   /* USER CODE BEGIN 2 */
 
+  /***
+  * Main algorithm
+  * 1. Initialize peripherials
+  * - Test IMU sensor
+  * - Init radio module
+  *      Get address
+  * - Get first readings from IR base station
+  *
+  * LOOP:
+  * 2. Get data from IMU - i2c
+  * 3. Get data from IR base station
+  * - Wait for sync pulse
+  * - Start time clocking
+  * - Decode data frame from base station
+  * - When sweep is detected, get clock numbers
+  * 4. Use DMA to copy IMU/IR data to output buffer
+  * 5. Send IMU/IR data over radio (SPI)
+  ***/
+
+  ViveTracker vivetracker(hi2c2, hspi1, htim2, htim3, htim4);
+  vivetracker.init_radio();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -440,7 +462,7 @@ static void MX_GPIO_Init(void) {
   * @param  None
   * @retval None
   */
-void _Error_Handler(char *file, int line) {
+void _Error_Handler(const char *file, int line) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   while (1) {
