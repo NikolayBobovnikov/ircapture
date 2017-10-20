@@ -43,9 +43,6 @@ uint16_t GPIO_LED_PIN = GPIO_PIN_11;
 extern volatile uint8_t rx_buf[32]; // initialize value
 extern volatile uint8_t tx_buf[32];
 
-void RXX(){};
-void TXX(){};
-
 /// ============================== Private function declarations
 /// ==============================
 
@@ -567,7 +564,7 @@ static inline void process_received_data() {
     // TODO: check and remove send_dataready_signal();
 
     {
-      TXX();
+      // TXX(); TODO: send to radiomodule
       HAL_GPIO_TogglePin(GPIO_LED_PORT, GPIO_LED_PIN);
       // HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
     }

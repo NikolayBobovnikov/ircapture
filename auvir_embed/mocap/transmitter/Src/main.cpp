@@ -130,7 +130,7 @@ void configure_usb();
 #ifdef __cplusplus
 extern "C" {
 #endif
-const char mode = 'r'; // 't'
+const NRF24_Mode mode = NRF24_Mode::Receiver;
 #ifdef __cplusplus
 }
 #endif
@@ -194,9 +194,6 @@ int main(void) {
   // for uploading to separate mc which lights up LED with PWM
   pwm();
 
-  bool is_transmitter = (mode == 't');
-  bool is_receiver = !is_transmitter;
-
   /* USER CODE END 1 */
 
   /* MCU
@@ -246,7 +243,7 @@ int main(void) {
   bool use_radio = false;
   if (use_radio) {
     configure_gpio_radio();
-    setup(&default_module, mode);
+    setup_radio(&default_module, mode);
   }
   // envelop
   /// HAL_TIM_Base_Start_IT(phtim_envelop);

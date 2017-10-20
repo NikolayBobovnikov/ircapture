@@ -183,7 +183,7 @@ int main(void) {
   const char mode = 'r';
 
   if (use_radio) {
-    setup(&default_module, mode);
+    setup_radio(&default_module, mode);
   }
 
   // nrf_without_this_interrupts_not_work();

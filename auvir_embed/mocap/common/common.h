@@ -38,10 +38,17 @@
 #define ShiftReg_STCP_Pin GPIO_PIN_4
 #define ShiftReg_STCP_Port GPIOA
 
-typedef struct GPIO_PIN {
-  GPIO_TypeDef *Port;
-  uint16_t Pin;
-} GPIO_PIN;
+class GPIO_PIN {
+public:
+  GPIO_PIN(GPIO_TypeDef *port, uint16_t pin) : _Port(port), _Pin(pin) {}
+
+  GPIO_TypeDef *Port() { return _Port; }
+  uint16_t Pin() { return _Pin; }
+
+private:
+  GPIO_TypeDef *_Port;
+  uint16_t _Pin;
+};
 
 #ifdef __cplusplus
 extern "C" {

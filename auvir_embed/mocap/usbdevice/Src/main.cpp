@@ -38,6 +38,7 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+#include "mocap_device.h"
 #include "stm32f1xx_hal.h"
 #include "usb_device.h"
 
@@ -139,7 +140,7 @@ int main(void) {
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  setup(&default_module, mode);
+  setup_radio(&default_module, mode);
 
   // wait for usb device is configured
   while (!is_usb_configured()) {

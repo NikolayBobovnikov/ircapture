@@ -133,7 +133,8 @@ int main(void) {
   MX_SPI1_Init();
 
   /* USER CODE BEGIN 2 */
-
+  ViveTracker vivetracker(hi2c2, hspi1, htim2, htim3, htim4);
+  vivetracker.init_radio();
   /* USER CODE END 2 */
 
   /* Infinite loop */

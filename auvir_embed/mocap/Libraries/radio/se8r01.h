@@ -227,36 +227,49 @@
 
 ///==========================================================================
 
-typedef enum {
+enum class TransmissionStatus {
   NRF24_TRANSMISSON_OK,
   NRF24_MESSAGE_LOST,
   NRF24_MESSAGE_SENDING
-} TransmissionStatus;
+};
 
-typedef struct NRF_Module {
-  GPIO_PIN CE;
-  GPIO_PIN CSN;
-  GPIO_PIN IRQ;
-} NRF_Module;
+enum class NRF_PowerState { PowerOFF, PowerON };
 
-typedef enum NRF_PowerState { PowerOFF, PowerON } NRF_PowerState;
-
-typedef enum {
+enum class NRF24_Power {
   Power_plus5dBm1,
   Power_0dBm1,
   Power_minus6dBm1,
   Power_minus12dBm1,
   Power_minus18dBm1
-} NRF24_Power;
+};
 
-typedef enum {
+enum class NRF24_Rate {
   DataRate_2mbps,
   DataRate_1mbps,
   DataRate_500kbps,
   DataRate_250kbps
-} NRF24_Rate;
+};
+
+enum class NRF24_Mode { Receiver, Transmitter };
+
+class NRF_Module {
+public:
+  NRF_Module(GPIO_PIN _ce, GPIO_PIN _csn, GPIO_PIN _irq)
+      : _CE(_ce), _CSN(_csn), _IRQ(_irq) {}
+
+  const GPIO_PIN &CE() { return _CE; }
+  const GPIO_PIN &CSN() { return _CSN; }
+  const GPIO_PIN &IRQ() { return _IRQ; }
+
+private:
+  GPIO_PIN _CE;
+  GPIO_PIN _CSN;
+  GPIO_PIN _IRQ;
+};
+
 // TODO
-typedef struct NRF24_InitTypeDef {
+class NRF24_InitTypeDef {
+public:
   uint8_t frequency;
   NRF24_Power power;
   NRF24_Rate rate;
@@ -266,20 +279,19 @@ typedef struct NRF24_InitTypeDef {
   uint8_t address_width;
   uint8_t num_retries;
   uint8_t pipe;
-} NRF24_InitTypeDef;
-
+};
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// TODO
-void setup_radio(NRF24_InitTypeDef *settings);
+// TODO: create main function with all the knobs and settings
+void setup_radio_full(NRF24_InitTypeDef *settings);
 
 // Need to specify this callback in application code
 void nrf_receive_callback();
 
 // interface with radio
-void setup(NRF_Module *radiomodule, char mode);
+void setup_radio(NRF_Module *radiomodule, NRF24_Mode mode);
 
 void update_radiochannel_settings(NRF_Module *radiomodule, RadioDevInfo *addr);
 
@@ -298,8 +310,9 @@ void TXX(NRF_Module *radiomodule);
 // state check functions
 bool nrf24_is_data_ready();
 bool nrf24_is_sending();
-bool nrf24_is_rx_fifo_empty();
+bool nrf24_is_rx_fifo_empty(NRF_Module *radiomodule);
 
+//================
 #ifdef __cplusplus
 }
 #endif

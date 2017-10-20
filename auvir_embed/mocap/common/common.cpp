@@ -30,7 +30,7 @@ void blink(uint8_t num_blinks, uint16_t delay_ms) {
 }
 
 void blink_pin(GPIO_PIN pin, uint8_t num_blinks, uint16_t delay_ms) {
-  blink_port_pin(pin.Port, pin.Pin, num_blinks, delay_ms);
+  blink_port_pin(pin.Port(), pin.Pin(), num_blinks, delay_ms);
 }
 
 void blink_port_pin(GPIO_TypeDef *Port, uint16_t Pin, uint8_t num_blinks,
