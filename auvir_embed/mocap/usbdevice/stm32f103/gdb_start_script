@@ -1,8 +1,0 @@
-target remote localhost:4242
-monitor reset halt
-load
-monitor reset halt
-break main
-focus cmd
-continue
-

@@ -15,9 +15,11 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/
 SET(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/gcc_stm32.cmake)
 
 #=======================================================================================================
+SET(CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 
 PROJECT(vivetracker)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+MESSAGE(STATUS "Project: " ${PROJECT_NAME} "\nBuild dir: " ${CMAKE_CURRENT_BINARY_DIR})
 ENABLE_LANGUAGE(ASM)
 
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
