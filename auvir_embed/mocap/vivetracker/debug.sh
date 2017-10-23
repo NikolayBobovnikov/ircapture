@@ -14,7 +14,7 @@ cd ..
 ps axf | grep openocd | grep -v grep | awk '{print "kill -9 " $1}' | sh
 
 #start debugger
-#(openocd  -f ./openocd.cfg -c "init" -c "reset halt" -c "flash write_image erase motionsensor_receiver" -c "reset run")
+#(openocd  -f ./openocd.cfg -c "init" -c "reset halt" -c "flash write_image erase vivetracker" -c "reset run")
 
 echo START OPENOCD
 
@@ -23,7 +23,7 @@ echo START OPENOCD
 
 echo START GDB
 
-arm-none-eabi-gdb ./build/motionsensor_receiver -command=../gdb_start_script
+arm-none-eabi-gdb ./build/vivetracker -command=../gdb_start_script
 
 #kill hanging openocd if any
 ps axf | grep openocd | grep -v grep | awk '{print "kill -9 " $1}' | sh

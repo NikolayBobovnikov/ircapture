@@ -63,7 +63,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void _Error_Handler(char *, int);
+void _Error_Handler(const char *, int);
 #ifdef __cplusplus
 }
 #endif
