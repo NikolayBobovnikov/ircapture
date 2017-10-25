@@ -180,7 +180,7 @@ int main(void) {
   bool is_transmitter = (mode == 't');
   bool is_receiver = !is_transmitter;
 
-  const char mode = 'r';
+  const NRF24_Mode mode = NRF24_Mode::Receiver;
 
   if (use_radio) {
     setup_radio(&default_module, mode);

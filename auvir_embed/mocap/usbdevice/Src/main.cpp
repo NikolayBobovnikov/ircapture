@@ -105,7 +105,7 @@ extern uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 extern NRF_Module default_module;
 extern NRF_Module data_module;
 
-char mode = 'r'; // 't'
+const NRF24_Mode mode = NRF24_Mode::Receiver;
 
 /* USER CODE END 0 */
 
