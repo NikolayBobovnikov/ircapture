@@ -124,6 +124,10 @@ bool is_usb_configured();
 
 void configure_usb();
 
+void configure_gpio_shiftreg();
+void shiftreg_send_16bit_data(uint16_t data);
+void shiftreg_send_8bit_data(uint8_t data);
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -610,11 +614,13 @@ void test_stuff() {
   /// check SPI module by reading status register from radio module
   uint8_t s_reg = iRF_BANK0_STATUS;
   uint8_t S = 0;
-  HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, LOW);           // CSN low,
+  HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, GPIO_PIN_RESET);
+  // CSN low,
   initialize SPI communication...
   HAL_SPI_TransmitReceive_IT(&hspi1, &s_reg, &S, 1);
   uint8_t reg_val = HAL_SPI_TransmitReceive_IT(&hspi1, 0, &S, 1);
-  HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, HIGH);          // CSN
+  HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, GPIO_PIN_SET);          //
+  CSN
   high, terminate SPI communication
     */
 

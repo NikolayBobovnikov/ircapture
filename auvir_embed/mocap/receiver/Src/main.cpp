@@ -190,22 +190,24 @@ int main(void) {
   HAL_Delay(100);
 
   if (MPU6050_testConnection()) {
-    HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, HIGH);
+    HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_SET);
   } else {
-    HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, LOW);
+    HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
   }
 
   while (1) {
 
     /*
     GPIO_PinState state = HAL_GPIO_ReadPin (GPIOB, GPIO_PIN_6);
-    if(state == HIGH){
-        HAL_GPIO_WritePin (GPIOB, GPIO_PIN_11, HIGH);
-        HAL_GPIO_WritePin (LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, HIGH);
+    if(state == GPIO_PIN_SET){
+        HAL_GPIO_WritePin (GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+        HAL_GPIO_WritePin (LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin,
+    GPIO_PIN_SET);
     }
     else{
-        HAL_GPIO_WritePin (GPIOB, GPIO_PIN_11, LOW);
-        HAL_GPIO_WritePin (LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, HIGH);
+        HAL_GPIO_WritePin (GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin (LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin,
+    GPIO_PIN_SET);
     }
     */
 

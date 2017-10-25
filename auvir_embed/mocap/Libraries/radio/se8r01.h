@@ -75,8 +75,8 @@
 // RF setup register //
 #define PLL_LOCK 4
 #define RF_DR_LOW 5
-#define RF_DR_HIGH 3
 #define RF_PWR 1 // 2 bits
+#define RF_DR_HIGH 3
 
 // RF_SETUP register (se8r01)
 // Bit 7     | Bit 6    | Bit 5    | Bit 4    | Bit 3     | Bit 2 Bit 1 Bit 0 |
@@ -280,9 +280,6 @@ public:
   uint8_t num_retries;
   uint8_t pipe;
 };
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // TODO: create main function with all the knobs and settings
 void setup_radio_full(NRF24_InitTypeDef *settings);
@@ -313,8 +310,5 @@ bool nrf24_is_sending();
 bool nrf24_is_rx_fifo_empty(NRF_Module *radiomodule);
 
 //================
-#ifdef __cplusplus
-}
-#endif
 
 #endif

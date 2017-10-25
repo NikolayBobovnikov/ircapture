@@ -20,6 +20,7 @@ extern TIM_HandleTypeDef *const phtim_delay = &htim4;
 
 extern const bool _debug;
 extern const bool _is_direct_logic;
+extern SPI_HandleTypeDef hspi1;
 
 const bool _is_direct_logic = true;
 
@@ -64,6 +65,10 @@ static inline void select_next_beamer_channel_index();
 static inline void reset_previous_update_current_beamer_pin();
 static inline void force_envelop_timer_output_on();
 static inline void force_envelop_timer_output_off();
+
+void configure_gpio_shiftreg();
+void shiftreg_send_16bit_data(uint16_t data);
+void shiftreg_send_8bit_data(uint8_t data);
 
 /// ============================== Function definitions
 /// ==============================
@@ -373,4 +378,72 @@ static inline void force_envelop_timer_output_off() {
   } else {
     HAL_TIM_PWM_Start(auvir::phtim_pwm, auvir::pwm_tim_channel);
   }
+}
+
+void configure_gpio_shiftreg() {
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  /*Configure GPIO pin Output Level */
+  /// HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin,
+  /// GPIO_PIN_RESET);
+  /// HAL_GPIO_WritePin(ShiftReg_OE_NOT_Port, ShiftReg_OE_NOT_Pin,
+  /// GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(ShiftReg_STCP_Port, ShiftReg_STCP_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : ShiftReg_MR_NOT_Pin */
+  /// GPIO_InitStruct.Pin = ShiftReg_MR_NOT_Pin;
+  /// GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  /// GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  /// HAL_GPIO_Init(ShiftReg_MR_NOT_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ShiftReg_OE_NOT_Pin */
+  /// GPIO_InitStruct.Pin = ShiftReg_OE_NOT_Pin;
+  /// GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  /// GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  /// HAL_GPIO_Init(ShiftReg_OE_NOT_Port, &GPIO_InitStruct);
+
+  // turn off shift registers
+  /// HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin,
+  /// GPIO_PIN_SET);
+
+  /*Configure GPIO pin : ShiftReg_Expose_Pin */
+  GPIO_InitStruct.Pin = ShiftReg_STCP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ShiftReg_STCP_Port, &GPIO_InitStruct);
+
+  // dont reset shift registers
+  /// HAL_GPIO_WritePin(ShiftReg_MR_NOT_Port, ShiftReg_MR_NOT_Pin,
+  /// GPIO_PIN_SET);
+
+  /*Pin which corresponds to TIM2 CH1 PWM output
+  turn on/offf LEDs
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+*/
+}
+
+void shiftreg_send_16bit_data(uint16_t data) {
+  uint8_t hi = (uint8_t)(data >> 8);
+  uint8_t lo = (uint8_t)(data);
+  uint8_t widedata[] = {lo, hi};
+
+  // HAL_SPI_Transmit_IT(&hspi1, &lo, 1);
+  // HAL_SPI_Transmit_IT(&hspi1, &hi, 1);
+  HAL_SPI_Transmit_IT(&hspi1, &widedata[0], 2);
+
+  HAL_GPIO_WritePin(ShiftReg_STCP_Port, ShiftReg_STCP_Pin, GPIO_PIN_SET);
+  HAL_Delay(1);
+  HAL_GPIO_WritePin(ShiftReg_STCP_Port, ShiftReg_STCP_Pin, GPIO_PIN_RESET);
+}
+
+void shiftreg_send_8bit_data(uint8_t data) {
+  HAL_SPI_Transmit(&hspi1, &data, 1, 10);
+  // turn off shift registers
+  HAL_GPIO_WritePin(ShiftReg_STCP_Port, ShiftReg_STCP_Pin, GPIO_PIN_SET);
+  HAL_Delay(1);
+  HAL_GPIO_WritePin(ShiftReg_STCP_Port, ShiftReg_STCP_Pin, GPIO_PIN_RESET);
 }

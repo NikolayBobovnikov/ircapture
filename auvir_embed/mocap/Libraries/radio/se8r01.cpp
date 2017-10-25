@@ -87,10 +87,10 @@ static void nrf24_write_register(NRF_Module *radiomodule, uint8_t reg,
 //=============== Function definitions
 uint8_t nrf24_get_rx_fifo_pending_data_length(NRF_Module *radiomodule) {
   uint8_t status;
-  nrf24_csn_set(radiomodule, LOW);
+  nrf24_csn_set(radiomodule, GPIO_PIN_RESET);
   SPI_RW(R_RX_PL_WID);
   status = SPI_RW(0x00);
-  nrf24_csn_set(radiomodule, HIGH);
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);
   return status;
 }
 
@@ -145,13 +145,13 @@ TransmissionStatus nrf24_last_messageStatus(NRF_Module *radiomodule) {
 }
 
 void nrf24_powerDown(NRF_Module *radiomodule) {
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
   nrf24_write_register(radiomodule, CONFIG, 0 << PWR_UP);
 }
 
 void nrf24_reset(NRF_Module *radiomodule) {
   // 1)use power down mode (PWR_UP = 0)
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
   nrf24_write_register(radiomodule, CONFIG, 0 << PWR_UP);
 
   // 2)clear data ready flag and data sent flag in status register
@@ -159,9 +159,9 @@ void nrf24_reset(NRF_Module *radiomodule) {
                        (1 << RX_DR) | (1 << TX_DS) | (1 << MAX_RT));
 
   // 3)flush tx/rx buffer
-  nrf24_csn_set(radiomodule, LOW);
+  nrf24_csn_set(radiomodule, GPIO_PIN_RESET);
   SPI_RW(FLUSH_RX);
-  nrf24_csn_set(radiomodule, HIGH);
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);
 
   // 4)write status register as 0x0e;
   nrf24_write_register(radiomodule, STATUS, 0x0E);
@@ -171,7 +171,7 @@ void nrf24_reset(NRF_Module *radiomodule) {
 // Interface functions
 
 static void nrf24_ce_set(NRF_Module *radiomodule, GPIO_PinState state) {
-  assert_param(state == LOW || state == HIGH);
+  assert_param(state == GPIO_PIN_RESET || state == GPIO_PIN_SET);
 #if 0
     HAL_GPIO_WritePin(radiomodule->CE.Port, radiomodule->CE.Pin, state);
 #else
@@ -181,13 +181,13 @@ static void nrf24_ce_set(NRF_Module *radiomodule, GPIO_PinState state) {
 }
 
 static void nrf24_csn_set(NRF_Module *radiomodule, GPIO_PinState state) {
-  assert_param(state == LOW || state == HIGH);
+  assert_param(state == GPIO_PIN_RESET || state == GPIO_PIN_SET);
 #if 0
     HAL_GPIO_WritePin(radiomodule->CSN.Port, radiomodule->CSN.Pin, state);
 #else
   HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, state);
 #endif
-  if (state == HIGH) {
+  if (state == GPIO_PIN_SET) {
     delay_us(100);
   } else {
     delay_us(11);
@@ -214,9 +214,9 @@ static void nrf24_transmitSync(uint8_t *dataout, uint8_t len) {
 void setup_radio(NRF_Module *radiomodule, NRF24_Mode mode) {
 
   // choose required module using SPI
-  nrf24_csn_set(radiomodule, HIGH);
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);
   // disable module (go to STANDBY-1 mode)
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
 
   HAL_Delay(5);
 
@@ -246,9 +246,9 @@ void setup_radio(NRF_Module *radiomodule, NRF24_Mode mode) {
 
 void radio_update_settings(NRF_Module *radiomodule, RadioDevInfo *devinfo) {
   // deselect module using SPI
-  nrf24_csn_set(radiomodule, HIGH);
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);
   // disable module (go to STANDBY-1 mode)
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
 
   // Transmit address
   nrf24_write_register_buf(radiomodule, iRF_BANK0_TX_ADDR,
@@ -262,7 +262,7 @@ void radio_update_settings(NRF_Module *radiomodule, RadioDevInfo *devinfo) {
   nrf24_write_register(radiomodule, iRF_BANK0_RF_CH, devinfo->radio_channel);
 
   // resume listening
-  nrf24_ce_set(radiomodule, HIGH);
+  nrf24_ce_set(radiomodule, GPIO_PIN_SET);
 }
 
 void nrf_receive_handler(NRF_Module *radiomodule) {
@@ -294,14 +294,14 @@ void RXX(NRF_Module *radiomodule) {
 
     // pause receiving. TODO: redundant in the case of polling?
     // set_power(radiomodule, PowerOFF);
-    nrf24_ce_set(radiomodule, LOW);
+    nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
 
     // process data
     nrf_receive_handler(radiomodule);
 
     // resume receiving. TODO: redundant in the case of polling?
     // set_power(radiomodule, PowerON);
-    nrf24_ce_set(radiomodule, HIGH);
+    nrf24_ce_set(radiomodule, GPIO_PIN_SET);
   }
 }
 
@@ -325,7 +325,7 @@ void TXX(NRF_Module *radiomodule) {
                 TX_PLOAD_WIDTH);
 
   // start transmission by toggling SE high for more than 10 us
-  nrf24_ce_set(radiomodule, HIGH);
+  nrf24_ce_set(radiomodule, GPIO_PIN_SET);
 
   //============== TODO: investigate
   delay_us(10);
@@ -345,7 +345,7 @@ void TXX(NRF_Module *radiomodule) {
   }
 #endif
   // stop transmission
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
   //==============
 
   TransmissionStatus tx_status = nrf24_last_messageStatus(radiomodule);
@@ -465,7 +465,7 @@ static void set_rx_tx_mode(NRF_Module *radiomodule, NRF24_Mode mode) {
 
 static bool interrupt_happened(NRF_Module *radiomodule) {
   auto pin = radiomodule->IRQ();
-  return (HAL_GPIO_ReadPin(pin.Port(), pin.Pin()) == LOW);
+  return (HAL_GPIO_ReadPin(pin.Port(), pin.Pin()) == GPIO_PIN_RESET);
 }
 
 static void se8r01_switch_bank(NRF_Module *radiomodule, uint8_t bankindex) {
@@ -576,13 +576,13 @@ static void se8r01_calibration(NRF_Module *radiomodule) {
   //    CE 0
   //    Delay 15 ms
   se8r01_switch_bank(radiomodule, iBANK0);
-  nrf24_ce_set(radiomodule, HIGH);
+  nrf24_ce_set(radiomodule, GPIO_PIN_SET);
   delay_us(30);
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
   HAL_Delay(15);
-  nrf24_ce_set(radiomodule, HIGH);
+  nrf24_ce_set(radiomodule, GPIO_PIN_SET);
   delay_us(30);
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
   HAL_Delay(15);
 }
 
@@ -679,7 +679,7 @@ static void set_power(NRF_Module *radiomodule, NRF_PowerState power_state) {
 }
 
 static void power_on_tx(NRF_Module *radiomodule) {
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
   // CONFIG
   // Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1
   // | Bit 0   |
@@ -701,7 +701,7 @@ static void power_on_rx(NRF_Module *radiomodule) {
   // disabled. By default all IRQ sources are enabled.
   // TODO refactoring//
 
-  nrf24_ce_set(radiomodule, LOW);
+  nrf24_ce_set(radiomodule, GPIO_PIN_RESET);
 
   // CONFIG
   // Bit 7    | Bit 6      | Bit 5      | Bit 4       | Bit 3  | Bit 2 | Bit 1
@@ -714,7 +714,7 @@ static void power_on_rx(NRF_Module *radiomodule) {
                            (1 << PWR_UP) | (1 << PRIM_RX));
   // start listening
   delay_us(10);
-  nrf24_ce_set(radiomodule, HIGH);
+  nrf24_ce_set(radiomodule, GPIO_PIN_SET);
   delay_us(210);
 }
 
@@ -722,28 +722,28 @@ static void power_on_rx(NRF_Module *radiomodule) {
 static void nrf24_write_register(NRF_Module *radiomodule, uint8_t reg,
                                  uint8_t value) {
   delay_us(10);
-  nrf24_csn_set(radiomodule, LOW);
+  nrf24_csn_set(radiomodule, GPIO_PIN_RESET);
   SPI_RW(iRF_CMD_WRITE_REG | (REGISTER_MASK & reg));
   SPI_RW(value);
-  nrf24_csn_set(radiomodule, HIGH);
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);
 }
 
 // Read single register from nrf24 //
 static void nrf24_read_register_buf(NRF_Module *radiomodule, uint8_t reg,
                                     uint8_t *value, uint8_t len) {
-  nrf24_csn_set(radiomodule, LOW);
+  nrf24_csn_set(radiomodule, GPIO_PIN_RESET);
   SPI_Read_Buf(radiomodule, iRF_CMD_READ_REG | (REGISTER_MASK & reg), value,
                len);
-  nrf24_csn_set(radiomodule, HIGH);
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);
 }
 
 // Write to a single register of nrf24 //
 static void nrf24_write_register_buf(NRF_Module *radiomodule, uint8_t reg,
                                      uint8_t *value, uint8_t len) {
-  nrf24_csn_set(radiomodule, LOW);
+  nrf24_csn_set(radiomodule, GPIO_PIN_RESET);
   SPI_Write_Buf(radiomodule, iRF_CMD_WRITE_REG | (REGISTER_MASK & reg), value,
                 len);
-  nrf24_csn_set(radiomodule, HIGH);
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);
 }
 
 static uint8_t SPI_RW(uint8_t tx) {
@@ -754,20 +754,22 @@ static uint8_t SPI_RW(uint8_t tx) {
 
 static uint8_t SPI_RW_Reg(NRF_Module *radiomodule, uint8_t reg, uint8_t value) {
   uint8_t status;
-  nrf24_csn_set(radiomodule, LOW);  // CSN low, init SPI transaction
-  status = SPI_RW(reg);             // select register
-  SPI_RW(value);                    // ..and write value to it..
-  nrf24_csn_set(radiomodule, HIGH); // CSN high again
-  return (status);                  // return nRF24L01 status uint8_t
+  nrf24_csn_set(radiomodule, GPIO_PIN_RESET); // CSN low, init SPI transaction
+  status = SPI_RW(reg);                       // select register
+  SPI_RW(value);                              // ..and write value to it..
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET);   // CSN high again
+  return (status);                            // return nRF24L01 status uint8_t
 }
 
 uint8_t SPI_Read(NRF_Module *radiomodule, uint8_t reg) {
   uint8_t reg_val;
 
-  nrf24_csn_set(radiomodule, LOW);  // CSN low, initialize SPI communication...
-  SPI_RW(reg);                      // Select register to read from..
-  reg_val = SPI_RW(0);              // ..then read register value
-  nrf24_csn_set(radiomodule, HIGH); // CSN high, terminate SPI communication
+  nrf24_csn_set(radiomodule,
+                GPIO_PIN_RESET); // CSN low, initialize SPI communication...
+  SPI_RW(reg);                   // Select register to read from..
+  reg_val = SPI_RW(0);           // ..then read register value
+  nrf24_csn_set(radiomodule,
+                GPIO_PIN_SET); // CSN high, terminate SPI communication
 
   return (reg_val); // return register value
 }
@@ -776,14 +778,15 @@ static uint8_t SPI_Read_Buf(NRF_Module *radiomodule, uint8_t reg, uint8_t *pBuf,
                             uint8_t bytes) {
   uint8_t status, i;
 
-  nrf24_csn_set(radiomodule, LOW); // Set CSN low, init SPI tranaction
+  nrf24_csn_set(radiomodule,
+                GPIO_PIN_RESET); // Set CSN low, init SPI tranaction
   status = SPI_RW(reg); // Select register to write to and read status uint8_t
 
   for (i = 0; i < bytes; i++) {
     pBuf[i] = SPI_RW(0); // Perform SPI_RW to read uint8_t from nRF24L01
   }
 
-  nrf24_csn_set(radiomodule, HIGH); // Set CSN high again
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET); // Set CSN high again
 
   return (status); // return nRF24L01 status uint8_t
 }
@@ -792,14 +795,15 @@ static uint8_t SPI_Write_Buf(NRF_Module *radiomodule, uint8_t reg,
                              uint8_t *pBuf, uint8_t bytes) {
   uint8_t status, i;
 
-  nrf24_csn_set(radiomodule, LOW); // Set CSN low, init SPI tranaction
+  nrf24_csn_set(radiomodule,
+                GPIO_PIN_RESET); // Set CSN low, init SPI tranaction
   status = SPI_RW(reg); // Select register to write to and read status uint8_t
   for (i = 0; i < bytes; i++) // then write all uint8_t in buffer(*pBuf)
   {
     SPI_RW(*pBuf++);
   }
-  nrf24_csn_set(radiomodule, HIGH); // Set CSN high again
-  return (status);                  // return nRF24L01 status uint8_t
+  nrf24_csn_set(radiomodule, GPIO_PIN_SET); // Set CSN high again
+  return (status);                          // return nRF24L01 status uint8_t
 }
 
 void nrf_without_this_interrupts_not_work(NRF_Module *radiomodule) {

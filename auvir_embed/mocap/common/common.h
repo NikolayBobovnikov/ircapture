@@ -6,19 +6,17 @@
 
 #define DELAY_PRESCALER (72 - 1)
 
-#ifndef LOW
-#define LOW GPIO_PIN_RESET
-#endif
-#ifndef HIGH
-#define HIGH GPIO_PIN_SET
+// pin mapping for radio module
+#ifdef USE_OLD_MAPPING
+#define USE_NEW_MAPPING (!USE_OLD_MAPPING)
+#else
+#define USE_NEW_MAPPING 1
 #endif
 
-// pin mapping for radio module
-#define USE_NEW_MAPPING (!USE_OLD_MAPPING)
-#if USE_OLD_MAPPING
-#include "pin_mapping_old.h"
-#else
+#if USE_NEW_MAPPING
 #include "pin_mapping_new.h"
+#else
+#include "pin_mapping_old.h"
 #endif
 
 #define LED_ONBOARD_Pin GPIO_PIN_13
@@ -50,9 +48,6 @@ private:
   uint16_t _Pin;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 void delay_us(uint16_t delay);
 void delay_cycles(uint16_t delay);
 void delay_timer_general(uint16_t prescaler, uint16_t delay);
@@ -63,13 +58,5 @@ void blink_port_pin(GPIO_TypeDef *Port, uint16_t Pin, uint8_t num_blinks,
                     uint16_t delay_ms);
 
 void configure_gpio_radio();
-
-void configure_gpio_shiftreg();
-
-void shiftreg_send_16bit_data(uint16_t data);
-void shiftreg_send_8bit_data(uint8_t data);
-#ifdef __cplusplus
-}
-#endif
 
 #endif // H_COMMON
