@@ -57,6 +57,4 @@ void blink_gpiopin(GPIO_PIN pin, uint8_t num_blinks, uint16_t delay_ms);
 void blink_port_pin(GPIO_TypeDef *Port, uint16_t Pin, uint8_t num_blinks,
                     uint16_t delay_ms);
 
-void configure_gpio_radio();
-
 #endif // H_COMMON

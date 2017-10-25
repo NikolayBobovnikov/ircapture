@@ -309,6 +309,9 @@ bool nrf24_is_data_ready();
 bool nrf24_is_sending();
 bool nrf24_is_rx_fifo_empty(NRF_Module *radiomodule);
 
+// configure GPIO pins using parameter *.h file with pin mappings
+void configure_gpio_radio();
+
 //================
 
 #endif

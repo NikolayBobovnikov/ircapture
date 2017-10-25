@@ -41,28 +41,3 @@ void blink_port_pin(GPIO_TypeDef *Port, uint16_t Pin, uint8_t num_blinks,
     HAL_Delay(delay_ms);
   }
 }
-
-void configure_gpio_radio() {
-  GPIO_InitTypeDef GPIO_InitStruct;
-
-  HAL_GPIO_WritePin(NRF24_CSN1_Port, NRF24_CSN1_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(NRF24_CE1_Port, NRF24_CE1_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
-  GPIO_InitStruct.Pin = NRF24_CSN1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(NRF24_CSN1_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : NRF24_CSN1_Pin NRF24_CE1_Pin DBG_OUT_1_Pin */
-  GPIO_InitStruct.Pin = NRF24_CE1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(NRF24_CE1_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : NRF24_IRQ1_Pin */
-  GPIO_InitStruct.Pin = NRF24_IRQ1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(NRF24_IRQ1_Port, &GPIO_InitStruct);
-}
