@@ -22,7 +22,7 @@ void my_test() {
 const ReturnValue &ViveTracker::init_imu() { return _result; }
 
 const ReturnValue &ViveTracker::init_radio() {
-  configure_gpio_radio();
+  // configure_gpio_radio();
   setup_radio(&default_module, NRF24_Mode::Receiver);
 
   return _result;

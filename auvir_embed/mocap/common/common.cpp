@@ -5,6 +5,8 @@
 
 extern TIM_HandleTypeDef *phtim_delay;
 
+GPIO_InitTypeDef GPIO_PIN::GPIO_InitStruct;
+
 namespace auvir {
 extern TIM_HandleTypeDef *const phtim_delay;
 }
