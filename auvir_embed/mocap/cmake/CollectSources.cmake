@@ -41,7 +41,7 @@ SET(ALL_PROJECT_HEADERS "")
 SET(INCLUDE_SRC_DIRS "")
 # include source/include files recursively
 foreach (_dir ${SRC_DIRS})
-  file(GLOB_RECURSE LIB_SOURCES "${_dir}/*.c" "${_dir}/*.cpp" "${_dir}/*.s")
+  file(GLOB_RECURSE LIB_SOURCES "${_dir}/*.c" "${_dir}/*.cpp" "${_dir}/*.s" "${_dir}/*.ld")
   file(GLOB_RECURSE LIB_HEADERS "${_dir}/*.h")
 
   # filter out temporary files etc, like .#main.cpp
@@ -49,7 +49,7 @@ foreach (_dir ${SRC_DIRS})
     SET(_file_filtered "")
     get_filename_component(_filedir ${_file} PATH)
     #filter source code file names by regex - c++,c,asm files
-    string(REGEX MATCHALL "${_filedir}/[A-Za-z0-9_]+.(cpp|c|s)" _file_filtered ${_file})
+    string(REGEX MATCHALL "${_filedir}/[A-Za-z0-9_]+.(cpp|c|s|ld)" _file_filtered ${_file})
     list(APPEND ALL_PROJECT_SOURCES ${_file_filtered})
   endforeach()
 
