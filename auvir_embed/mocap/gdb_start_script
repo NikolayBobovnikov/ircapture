@@ -1,16 +1,29 @@
 target remote localhost:3331
-monitor reset halt
+#monitor reset halt
 monitor halt
-monitor flash protect 0 0 63 off
-monitor halt
-monitor stm32f1x unlock 0
+monitor stm32x mass_erase 0
+monitor mww 0xe0042004 0x00000007
+monitor mww 0xe0042008 0x00001800
+
+#monitor flash protect 0 0 63 off
+#monitor halt
+#monitor stm32f1x unlock 0
 
 load
 monitor reset halt
 monitor mdw 0x40022020
+break HAL_Init
+continue
 
-disconnect
-target remote localhost:3331
-monitor reset halt
-break main
+
+
+#proc stm32_default_examine_end {} {
+#  # Enable debug during low power modes (uses more power)
+#  mww 0xe0042004 0x00000007 ;# DBGMCU_CR = DBG_STANDBY | DBG_STOP |
+#  DBG_SLEEP
+#
+#  # Stop watchdog counters during halt
+#  mww 0xe0042008 0x00001800 ;# DBGMCU_APB1_FZ = DBG_IWDG_STOP |
+#  DBG_WWDG_STOP
+#}
 

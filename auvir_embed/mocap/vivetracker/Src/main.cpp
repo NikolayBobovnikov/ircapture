@@ -88,6 +88,15 @@ static void MX_SPI1_Init(void);
 
 int main(void) {
 
+#if 1
+  // enable debugging in low power modes
+  HAL_DBGMCU_EnableDBGSleepMode();
+  HAL_DBGMCU_EnableDBGStopMode();
+  HAL_DBGMCU_EnableDBGStandbyMode();
+#endif
+
+  // DBGMCU_Config(DBGMCU_SLEEP | DBGMCU_STOP | DBGMCU_STANDBY, ENABLE)
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -143,8 +152,8 @@ int main(void) {
   * 1. Button pressed/released
   ***/
 
-  ViveTracker vivetracker(hi2c2, hspi1, htim2, htim3, htim4);
-  auto result = vivetracker.init_radio();
+  // ViveTracker vivetracker(hi2c2, hspi1, htim2, htim3, htim4);
+  // auto result = vivetracker.init_radio();
 
   /* USER CODE END 2 */
 
