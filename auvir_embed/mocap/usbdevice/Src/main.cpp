@@ -80,9 +80,6 @@ extern SensorData sensordata;
 extern BeamerData beamerdata;
 extern IMUData imudata;
 
-namespace auvir {
-extern TIM_HandleTypeDef *const phtim_delay;
-}
 /// ===========================================
 
 /* USER CODE END PV */
@@ -110,7 +107,6 @@ const NRF24_Mode mode = NRF24_Mode::Receiver;
 /* USER CODE END 0 */
 
 int main(void) {
-
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -167,7 +163,6 @@ int main(void) {
   memcpy(&buf[0], test_str, strlen(test_str));
 
   while (1) {
-
     // listening...
     // RXX(&default_module);
     // RXX(&data_module);
@@ -183,7 +178,6 @@ int main(void) {
 /** System Clock Configuration
 */
 void SystemClock_Config(void) {
-
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInit;
@@ -218,7 +212,6 @@ void SystemClock_Config(void) {
 
 /* SPI1 init function */
 void MX_SPI1_Init(void) {
-
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
@@ -236,7 +229,6 @@ void MX_SPI1_Init(void) {
 
 /* TIM2 init function */
 void MX_TIM2_Init(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
 
@@ -263,7 +255,6 @@ void MX_TIM2_Init(void) {
         * EXTI
 */
 void MX_GPIO_Init(void) {
-
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
@@ -276,9 +267,9 @@ void MX_GPIO_Init(void) {
   HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, NRF24_CSN1_Pin | NRF24_CE1_Pin | NRF24_CSN2_Pin |
-                               NRF24_CE2_Pin,
-                    GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(
+      GPIOA, NRF24_CSN1_Pin | NRF24_CE1_Pin | NRF24_CSN2_Pin | NRF24_CE2_Pin,
+      GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_DBG_GPIO_Port, LED_DBG_Pin, GPIO_PIN_RESET);

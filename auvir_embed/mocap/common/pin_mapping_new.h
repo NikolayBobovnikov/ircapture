@@ -12,16 +12,18 @@
 #define NRF24_IRQ1_Port GPIOB
 
 // pins for NRF24 module#2 (optional, for usbdevice which is using both modules)
-// TODO: define USING_SECOND_RADIO_MODULE
+// todo: define it somewhere else?
+#define USING_SECOND_RADIO_MODULE 1
+
 #ifdef USING_SECOND_RADIO_MODULE
-#define NRF24_CSN2_Pin
-#define NRF24_CSN2_Port
+#define NRF24_CSN2_Pin GPIO_PIN_4
+#define NRF24_CSN2_Port GPIOA
 
-#define NRF24_CE2_Pin
-#define NRF24_CE2_Port
+#define NRF24_CE2_Pin GPIO_PIN_5
+#define NRF24_CE2_Port GPIOA
 
-#define NRF24_IRQ2_Pin
-#define NRF24_IRQ2_Port
+#define NRF24_IRQ2_Pin GPIO_PIN_12
+#define NRF24_IRQ2_Port GPIOB
 #endif
 
 // PWM generation: move from TIM4 to TIM2 CH1 (pin A0, check it)
@@ -30,4 +32,4 @@
 // CE   A0
 // IRQ  C14
 
-#endif // PING_MAPPING_NEW_H
+#endif  // PING_MAPPING_NEW_H

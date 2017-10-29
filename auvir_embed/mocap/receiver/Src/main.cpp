@@ -41,12 +41,12 @@
 #include "stm32f1xx_hal.h"
 
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
 #include "MPU6050.h"
 #include "common.h"
 #include "infrared.h"
 #include "se8r01.h"
 #include "sensor.h"
-#include <stdbool.h>
 #define USE_OLD_MAPPING 1
 
 // TODO: cleanup when done debugging
@@ -71,7 +71,9 @@ extern uint16_t IR_IN_Gpio_Pin = GPIO_PIN_10;
 
 TIM_HandleTypeDef *ptim_input_capture = &htim4;
 TIM_HandleTypeDef *ptim_data_read = &htim3;
-TIM_HandleTypeDef *phtim_delay = &htim2;
+namespace auvir {
+extern TIM_HandleTypeDef *const phtim_delay = &htim2;
+}
 
 extern const bool _is_direct_logic;
 const bool _debug = true;
@@ -79,9 +81,6 @@ const bool _debug = true;
 extern GPIO_TypeDef *GPIO_LED_PORT;
 extern uint16_t GPIO_LED_PIN;
 
-namespace auvir {
-extern TIM_HandleTypeDef *const phtim_delay = &htim2;
-}
 /// ===========================================
 
 /* USER CODE END PV */
@@ -124,11 +123,10 @@ IMUData imudata = {0};
 HAL_StatusTypeDef status;
 extern DataFrame_t rx_data_frame;
 
-const char mode = 'r'; // 't'
+const char mode = 'r';  // 't'
 /* USER CODE END 0 */
 
 int main(void) {
-
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -165,7 +163,7 @@ int main(void) {
   //// start usec delay timer
   HAL_TIM_Base_Start(&htim2);
 
-  bool enable_IR_timers = true; // TODO
+  bool enable_IR_timers = true;  // TODO
   if (enable_IR_timers) {
     setup_ic_timer();
     HAL_TIM_Base_Start_IT(ptim_data_read);
@@ -196,7 +194,6 @@ int main(void) {
   }
 
   while (1) {
-
     /*
     GPIO_PinState state = HAL_GPIO_ReadPin (GPIOB, GPIO_PIN_6);
     if(state == GPIO_PIN_SET){
@@ -213,7 +210,7 @@ int main(void) {
 
     if (use_radio) {
       if (is_receiver) {
-        RXX(&default_module); // - this is called on IRQ
+        RXX(&default_module);  // - this is called on IRQ
       } else if (is_transmitter) {
         //=================== prepare message for sending
         // Determine source of packet
@@ -244,7 +241,6 @@ int main(void) {
 /** System Clock Configuration
 */
 void SystemClock_Config(void) {
-
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
@@ -278,7 +274,6 @@ void SystemClock_Config(void) {
 
 /* CRC init function */
 static void MX_CRC_Init(void) {
-
   hcrc.Instance = CRC;
   if (HAL_CRC_Init(&hcrc) != HAL_OK) {
     Error_Handler();
@@ -287,7 +282,6 @@ static void MX_CRC_Init(void) {
 
 /* I2C1 init function */
 static void MX_I2C1_Init(void) {
-
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
@@ -304,7 +298,6 @@ static void MX_I2C1_Init(void) {
 
 /* SPI1 init function */
 static void MX_SPI1_Init(void) {
-
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
@@ -324,7 +317,6 @@ static void MX_SPI1_Init(void) {
 
 /* TIM2 init function */
 static void MX_TIM2_Init(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
 
@@ -351,7 +343,6 @@ static void MX_TIM2_Init(void) {
 
 /* TIM3 init function */
 static void MX_TIM3_Init(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
 
@@ -378,7 +369,6 @@ static void MX_TIM3_Init(void) {
 
 /* TIM4 init function */
 static void MX_TIM4_Init(void) {
-
   TIM_ClockConfigTypeDef sClockSourceConfig;
   TIM_SlaveConfigTypeDef sSlaveConfig;
   TIM_MasterConfigTypeDef sMasterConfig;
@@ -439,7 +429,6 @@ static void MX_TIM4_Init(void) {
         * EXTI
 */
 static void MX_GPIO_Init(void) {
-
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */

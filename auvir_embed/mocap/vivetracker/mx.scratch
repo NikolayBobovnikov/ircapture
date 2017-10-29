@@ -17,10 +17,6 @@
 	   <include></include>
     </Aincludes>
 	<Cincludes>
-	   		<include>Drivers\STM32F1xx_HAL_Driver\Inc</include>
-	   		<include>Drivers\STM32F1xx_HAL_Driver\Inc\Legacy</include>
-	   		<include>Drivers\CMSIS\Device\ST\STM32F1xx\Include</include>
-	   		<include>Drivers\CMSIS\Include</include>
     </Cincludes>
 </inctoremove>
 
@@ -83,12 +79,6 @@
 						</file>
 						<file>
 							<name>Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c</name>
-						</file>
-						<file>
-							<name>Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rtc.c</name>
-						</file>
-						<file>
-							<name>Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rtc_ex.c</name>
 						</file>
 						<file>
 							<name>Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c</name>
@@ -154,10 +144,6 @@
                                 </file>
 
                                 <file>
-                                 <name>Src/rtc.c</name>
-                                </file>
-
-                                <file>
                                  <name>Src/spi.c</name>
                                 </file>
 
@@ -181,15 +167,6 @@
                     <name>main.c</name>
                                     <file>
                                             <name>Src/main.c</name>
-                                    </file>
-                    </group>
-        </group>
-               <group>
-        <name>Src</name>
-                    <group>
-                    <name>rtc.c</name>
-                                    <file>
-                                            <name>Src/rtc.c</name>
                                     </file>
                     </group>
         </group>

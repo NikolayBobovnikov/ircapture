@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : RTC.h
+  * File Name          : TIM.h
   * Description        : This file provides code for the configuration
-  *                      of the RTC instances.
+  *                      of the TIM instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -37,8 +37,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __rtc_H
-#define __rtc_H
+#ifndef __tim_H
+#define __tim_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -51,15 +51,21 @@
 
 /* USER CODE END Includes */
 
-extern RTC_HandleTypeDef hrtc;
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-extern void _Error_Handler(const char *, int);
+extern void _Error_Handler(char *, int);
 
-void MX_RTC_Init(void);
+void MX_TIM1_Init(void);
+void MX_TIM2_Init(void);
+void MX_TIM3_Init(void);
+void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
@@ -68,7 +74,7 @@ void MX_RTC_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ rtc_H */
+#endif /*__ tim_H */
 
 /**
   * @}

@@ -3,8 +3,6 @@
 
 #include "common.h"
 
-extern TIM_HandleTypeDef *phtim_delay;
-
 GPIO_InitTypeDef GPIO_PIN::GPIO_InitStruct;
 
 namespace auvir {
