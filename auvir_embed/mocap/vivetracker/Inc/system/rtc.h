@@ -1,14 +1,16 @@
 /**
   ******************************************************************************
-  * @file    system_stm32f10x.h
-  * @author  MCD Application Team
-  * @version V4.2.0
-  * @date    31-March-2017
-  * @brief   CMSIS Cortex-M3 Device Peripheral Access Layer System Header File.
+  * File Name          : RTC.h
+  * Description        : This file provides code for the configuration
+  *                      of the RTC instances.
   ******************************************************************************
-  * @attention
+  ** This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
+  * COPYRIGHT(c) 2017 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -34,83 +36,46 @@
   *
   ******************************************************************************
   */
-
-/** @addtogroup CMSIS
-  * @{
-  */
-
-/** @addtogroup stm32f10x_system
-  * @{
-  */  
-  
-/**
-  * @brief Define to prevent recursive inclusion
-  */
-#ifndef __SYSTEM_STM32F10X_H
-#define __SYSTEM_STM32F10X_H
-
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __rtc_H
+#define __rtc_H
 #ifdef __cplusplus
  extern "C" {
-#endif 
+#endif
 
-/** @addtogroup STM32F10x_System_Includes
-  * @{
-  */
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f1xx_hal.h"
+#include "main.h"
 
-/**
-  * @}
-  */
+/* USER CODE BEGIN Includes */
 
+/* USER CODE END Includes */
 
-/** @addtogroup STM32F10x_System_Exported_types
-  * @{
-  */
+extern RTC_HandleTypeDef hrtc;
 
-extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
-extern const uint8_t  AHBPrescTable[16U];  /*!< AHB prescalers table values */
-extern const uint8_t  APBPrescTable[8U];   /*!< APB prescalers table values */
+/* USER CODE BEGIN Private defines */
 
-/**
-  * @}
-  */
+/* USER CODE END Private defines */
 
-/** @addtogroup STM32F10x_System_Exported_Constants
-  * @{
-  */
+extern void _Error_Handler(const char *, int);
 
-/**
-  * @}
-  */
+void MX_RTC_Init(void);
 
-/** @addtogroup STM32F10x_System_Exported_Macros
-  * @{
-  */
+/* USER CODE BEGIN Prototypes */
 
-/**
-  * @}
-  */
-
-/** @addtogroup STM32F10x_System_Exported_Functions
-  * @{
-  */
-  
-extern void SystemInit(void);
-extern void SystemCoreClockUpdate(void);
-/**
-  * @}
-  */
+/* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /*__SYSTEM_STM32F10X_H */
+#endif /*__ rtc_H */
 
 /**
   * @}
   */
-  
+
 /**
   * @}
-  */  
+  */
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,14 +1,16 @@
 /**
   ******************************************************************************
-  * @file    system_stm32f10x.h
-  * @author  MCD Application Team
-  * @version V4.2.0
-  * @date    31-March-2017
-  * @brief   CMSIS Cortex-M3 Device Peripheral Access Layer System Header File.
+  * File Name          : RTC.c
+  * Description        : This file provides code for the configuration
+  *                      of the RTC instances.
   ******************************************************************************
-  * @attention
+  ** This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
+  * COPYRIGHT(c) 2017 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -35,82 +37,76 @@
   ******************************************************************************
   */
 
-/** @addtogroup CMSIS
-  * @{
-  */
+/* Includes ------------------------------------------------------------------*/
+#include "rtc.h"
 
-/** @addtogroup stm32f10x_system
-  * @{
-  */  
-  
-/**
-  * @brief Define to prevent recursive inclusion
-  */
-#ifndef __SYSTEM_STM32F10X_H
-#define __SYSTEM_STM32F10X_H
+/* USER CODE BEGIN 0 */
 
-#ifdef __cplusplus
- extern "C" {
-#endif 
+/* USER CODE END 0 */
 
-/** @addtogroup STM32F10x_System_Includes
-  * @{
-  */
+RTC_HandleTypeDef hrtc;
 
-/**
-  * @}
-  */
+/* RTC init function */
+void MX_RTC_Init(void)
+{
 
+    /**Initialize RTC Only 
+    */
+  hrtc.Instance = RTC;
+  hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+  hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
-/** @addtogroup STM32F10x_System_Exported_types
-  * @{
-  */
-
-extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
-extern const uint8_t  AHBPrescTable[16U];  /*!< AHB prescalers table values */
-extern const uint8_t  APBPrescTable[8U];   /*!< APB prescalers table values */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32F10x_System_Exported_Constants
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32F10x_System_Exported_Macros
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32F10x_System_Exported_Functions
-  * @{
-  */
-  
-extern void SystemInit(void);
-extern void SystemCoreClockUpdate(void);
-/**
-  * @}
-  */
-
-#ifdef __cplusplus
 }
-#endif
 
-#endif /*__SYSTEM_STM32F10X_H */
+void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
+{
+
+  if(rtcHandle->Instance==RTC)
+  {
+  /* USER CODE BEGIN RTC_MspInit 0 */
+
+  /* USER CODE END RTC_MspInit 0 */
+    HAL_PWR_EnableBkUpAccess();
+    /* Enable BKP CLK enable for backup registers */
+    __HAL_RCC_BKP_CLK_ENABLE();
+    /* RTC clock enable */
+    __HAL_RCC_RTC_ENABLE();
+  /* USER CODE BEGIN RTC_MspInit 1 */
+
+  /* USER CODE END RTC_MspInit 1 */
+  }
+}
+
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
+{
+
+  if(rtcHandle->Instance==RTC)
+  {
+  /* USER CODE BEGIN RTC_MspDeInit 0 */
+
+  /* USER CODE END RTC_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_RTC_DISABLE();
+  /* USER CODE BEGIN RTC_MspDeInit 1 */
+
+  /* USER CODE END RTC_MspDeInit 1 */
+  }
+} 
+
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
 
 /**
   * @}
   */
-  
+
 /**
   * @}
-  */  
+  */
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
