@@ -22,12 +22,16 @@ NRF_Module default_module =
                GPIO_PIN_OUTPUT(NRF24_CSN1_Port, NRF24_CSN1_Pin,
                                GPIO_MODE::OUTPUT_PP, GPIO_SPEED::FREQ_HIGH),
                GPIO_PIN_INPUT(NRF24_IRQ1_Port, NRF24_IRQ1_Pin, GPIO_PULL::UP));
+
+#ifdef USING_SECOND_RADIO_MODULE
 NRF_Module data_module =
     NRF_Module(GPIO_PIN_OUTPUT(NRF24_CE2_Port, NRF24_CE2_Pin,
                                GPIO_MODE::OUTPUT_PP, GPIO_SPEED::FREQ_HIGH),
                GPIO_PIN_OUTPUT(NRF24_CSN2_Port, NRF24_CSN2_Pin,
                                GPIO_MODE::OUTPUT_PP, GPIO_SPEED::FREQ_HIGH),
                GPIO_PIN_INPUT(NRF24_IRQ2_Port, NRF24_IRQ2_Pin, GPIO_PULL::UP));
+#endif
+
 // Define a static TX address
 const uint8_t Sensor_Beamer_DefaultAddress[TX_ADR_WIDTH] = {0x10, 0x20, 0x30,
                                                             0xab, 0xab};
