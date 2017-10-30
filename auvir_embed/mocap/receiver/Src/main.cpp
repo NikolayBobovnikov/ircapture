@@ -188,9 +188,9 @@ int main(void) {
   HAL_Delay(100);
 
   if (MPU6050_testConnection()) {
-    HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, GPIO_PIN_SET);
   } else {
-    HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
   }
 
   while (1) {
@@ -198,12 +198,12 @@ int main(void) {
     GPIO_PinState state = HAL_GPIO_ReadPin (GPIOB, GPIO_PIN_6);
     if(state == GPIO_PIN_SET){
         HAL_GPIO_WritePin (GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-        HAL_GPIO_WritePin (LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin,
+        HAL_GPIO_WritePin (LED_ONBOARD_Port, LED_ONBOARD_Pin,
     GPIO_PIN_SET);
     }
     else{
         HAL_GPIO_WritePin (GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin (LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin,
+        HAL_GPIO_WritePin (LED_ONBOARD_Port, LED_ONBOARD_Pin,
     GPIO_PIN_SET);
     }
     */
@@ -438,7 +438,7 @@ static void MX_GPIO_Init(void) {
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_ONBOARD_GPIO_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_ONBOARD_Port, LED_ONBOARD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | LED_DBG_Pin, GPIO_PIN_RESET);
@@ -447,7 +447,7 @@ static void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = LED_ONBOARD_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_ONBOARD_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED_ONBOARD_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB10 */
   GPIO_InitStruct.Pin = GPIO_PIN_10;
@@ -465,7 +465,7 @@ static void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pin = LED_DBG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(LED_DBG_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED_DBG_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */

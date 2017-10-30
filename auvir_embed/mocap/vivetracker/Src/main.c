@@ -100,19 +100,14 @@ int main(void)
   MX_TIM3_Init();
 
   /* USER CODE BEGIN 2 */
-  vivetracker_initialize();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-      vivetracker_loop();
+  vivetracker_loop();
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
-  }
   /* USER CODE END 3 */
 
 }
