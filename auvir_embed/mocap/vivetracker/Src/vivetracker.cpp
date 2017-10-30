@@ -3,9 +3,9 @@
 #include "spi.h"
 #include "tim.h"
 
+#include <cstring>
 #include "se8r01.h"
 #include "vivetracker.h"
-#include <cstring>
 
 // radio
 extern NRF_Module default_module;
@@ -47,17 +47,15 @@ extern "C" {
 
 // vivetracker main loop
 void vivetracker_loop() {
-
   // main global object
-  ViveTracker vivetracker(hi2c2, hspi1, htim1, htim2, htim3, htim4);
+  ViveTracker vivetracker(hi2c2, hspi1, htim1, htim2, htim3, htim4,
+                          LED_DBG_Port, LED_DBG_Pin);
 
   while (true) {
     // TODO
-    ViveTracker::my_led_pin.Toggle();
-    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-
-    HAL_Delay(100);
+    vivetracker.my_led_pin.Toggle();
+    HAL_Delay(1000);
   }
 }
 
-} // extern "C"
+}  // extern "C"

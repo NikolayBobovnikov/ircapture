@@ -50,7 +50,7 @@ enum class GPIO_PULL { UP = GPIO_PULLUP, DOWN = GPIO_PULLDOWN };
 // creates and configures gpio pin
 // TODO: specialize input, output pins
 class GPIO_PIN {
-public:
+ public:
   GPIO_PIN(GPIO_TypeDef *port, uint16_t pin, GPIO_MODE mode, GPIO_SPEED speed,
            GPIO_PULL pull)
       : _Port(port), _Pin(pin) {
@@ -64,26 +64,30 @@ public:
     HAL_GPIO_Init(port, &GPIO_InitStruct);
   }
 
-  GPIO_PIN &operator=(GPIO_PIN &&) = default;
+  GPIO_PIN(const GPIO_PIN &other) {
+    _Pin = other.Pin();
+    _Port = other.Port();
+  }
 
+  GPIO_PIN &operator=(GPIO_PIN &&) = default;
   GPIO_TypeDef *Port() const { return _Port; }
   uint16_t Pin() const { return _Pin; }
   void Toggle() { HAL_GPIO_TogglePin(_Port, _Pin); }
 
-private:
+ private:
   GPIO_TypeDef *_Port;
   uint16_t _Pin;
   static GPIO_InitTypeDef GPIO_InitStruct;
 };
 
 class GPIO_PIN_INPUT : public GPIO_PIN {
-public:
+ public:
   GPIO_PIN_INPUT(GPIO_TypeDef *port, uint16_t pin, GPIO_PULL pull)
       : GPIO_PIN(port, pin, GPIO_MODE::INPUT, GPIO_SPEED::FREQ_LOW, pull) {}
 };
 
 class GPIO_PIN_OUTPUT : public GPIO_PIN {
-public:
+ public:
   GPIO_PIN_OUTPUT(GPIO_TypeDef *port, uint16_t pin,
                   GPIO_MODE mode = GPIO_MODE::OUTPUT_PP,
                   GPIO_SPEED speed = GPIO_SPEED::FREQ_LOW)
@@ -99,4 +103,4 @@ void blink_gpiopin(GPIO_PIN pin, uint8_t num_blinks, uint16_t delay_ms);
 void blink_port_pin(GPIO_TypeDef *Port, uint16_t Pin, uint8_t num_blinks,
                     uint16_t delay_ms);
 
-#endif // H_COMMON
+#endif  // H_COMMON
