@@ -23,6 +23,12 @@
 
 #define NRF24_IRQ2_Pin GPIO_PIN_12
 #define NRF24_IRQ2_Port GPIOB
+
+// pins for MPU6050 module
+// MPU6050_ADDRESS_AD0
+#define MPU6050_AD0_Pin GPIO_PIN_1
+#define MPU6050_AD0_Port GPIOA
+
 #endif
 
 // LED pins for debugging and nice blinking

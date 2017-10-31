@@ -41,9 +41,6 @@ THE SOFTWARE.
 // TODO: include depending on chip family
 #include "stm32f1xx_hal.h"
 
-// Hold pointer to inited HAL I2C device
-I2C_HandleTypeDef *I2Cdev_hi2c;
-
 // 1000ms default read timeout (modify with "I2Cdev::readTimeout = [ms];")
 #define I2CDEV_DEFAULT_READ_TIMEOUT 1000
 

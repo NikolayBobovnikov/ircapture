@@ -32,6 +32,10 @@ THE SOFTWARE.
 
 #include "I2Cdev.h"
 
+// Hold pointer to inited HAL I2C device
+// to be defined and inited in user code
+I2C_HandleTypeDef *I2Cdev_hi2c;
+
 /** Default timeout value for read operations.
  * Set this to 0 to disable timeout detection.
  */
