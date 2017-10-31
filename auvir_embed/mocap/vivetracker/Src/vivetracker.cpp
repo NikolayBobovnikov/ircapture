@@ -3,10 +3,10 @@
 #include "spi.h"
 #include "tim.h"
 
+#include <cstring>
 #include "MPU6050.h"
 #include "se8r01.h"
 #include "vivetracker.h"
-#include <cstring>
 
 // radio
 extern NRF_Module default_module;
@@ -56,34 +56,20 @@ void vivetracker_loop() {
   }
 }
 
-} // extern "C"
+}  // extern "C"
 
 MPU6050Sensor::MPU6050Sensor()
     : _gpio_MPU6050_AD0(MPU6050_AD0_Port, MPU6050_AD0_Pin) {
-
   // init i2c dev library
   I2Cdev_hi2c = &hi2c1;
-  setAD0(GPIO_STATE::LOW);
 
   MPU6050_initialize();
 
-  uint8_t new_device_id = 0x34;
+  setAD0(GPIO_STATE::HIGH);
 
-  // I2Cdev_readBits(devAddr, MPU6050_RA_WHO_AM_I, MPU6050_WHO_AM_I_BIT,
-  // MPU6050_WHO_AM_I_LENGTH, buffer, 0);
-  uint8_t reg = MPU6050_RA_WHO_AM_I;
-  uint8_t data;
-  /*
-  HAL_I2C_Master_Transmit(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW, &reg, 1, 100);
-  if (HAL_I2C_Master_Receive(I2Cdev_hi2c, MPU6050_ADDRESS_AD0_LOW, &data, 1,
-                             100) == HAL_OK) {
-    int a = 0;
-  }
-  */
-
-  MPU6050_setDeviceID(new_device_id); //(0b110100, 0x34).
-
+  // MPU6050_setAddress(MPU6050_ADDRESS_AD0_HIGH);
   uint8_t deviceid = MPU6050_getDeviceID();
+
   if (MPU6050_testConnection()) {
     // TODO
   } else {
@@ -93,15 +79,15 @@ MPU6050Sensor::MPU6050Sensor()
 
 void MPU6050Sensor::setAD0(GPIO_STATE state) const {
   switch (state) {
-  case GPIO_STATE::HIGH: {
-    _gpio_MPU6050_AD0.Set(GPIO_STATE::HIGH);
-    MPU6050_setAddress(MPU6050_ADDRESS_AD0_HIGH);
-    break;
-  }
-  case GPIO_STATE::LOW: {
-    _gpio_MPU6050_AD0.Set(GPIO_STATE::HIGH);
-    MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
-    break;
-  }
+    case GPIO_STATE::HIGH: {
+      _gpio_MPU6050_AD0.Set(GPIO_STATE::HIGH);
+      MPU6050_setAddress(MPU6050_ADDRESS_AD0_HIGH);
+      break;
+    }
+    case GPIO_STATE::LOW: {
+      _gpio_MPU6050_AD0.Set(GPIO_STATE::HIGH);
+      MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
+      break;
+    }
   }
 }
