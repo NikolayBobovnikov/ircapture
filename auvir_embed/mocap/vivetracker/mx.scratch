@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-<ProjectName>D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\vivetracker\\vivetracker</ProjectName>
-<CMSIS>Drivers\CMSIS</CMSIS>
-<HAL_Driver>C:\Users\nbobovnikov\STM32Cube\Repository\STM32Cube_FW_F1_V1.6.0\Drivers\CMSIS</HAL_Driver>
+<ProjectName>/home/nick/work/dev/auvir/auvir_embed/mocap/vivetracker/\vivetracker</ProjectName>
+<CMSIS>Drivers/CMSIS</CMSIS>
+<HAL_Driver>/home/nick/STM32Cube/Repository//STM32Cube_FW_F1_V1.6.0/Drivers/CMSIS</HAL_Driver>
 
 <Toolchain>Makefile</Toolchain>
 <Version>0</Version>
@@ -59,10 +59,10 @@
     
 	<Cincludes>
 	   <include>Inc</include>
-	   <include>Drivers\STM32F1xx_HAL_Driver\Inc</include>
-	   <include>Drivers\STM32F1xx_HAL_Driver\Inc\Legacy</include>
-	   <include>Drivers\CMSIS\Device\ST\STM32F1xx\Include</include>
-	   <include>Drivers\CMSIS\Include</include>
+	   <include>Drivers/STM32F1xx_HAL_Driver/Inc</include>
+	   <include>Drivers/STM32F1xx_HAL_Driver/Inc/Legacy</include>
+	   <include>Drivers/CMSIS/Device/ST/STM32F1xx/Include</include>
+	   <include>Drivers/CMSIS/Include</include>
 
     </Cincludes>
       </config>
@@ -132,35 +132,98 @@
 	    <group>
 	      <name>User</name>  
                                 <file>
-                                 <name>Src\main.c</name>
+                                 <name>Src/main.c</name>
                                 </file>
 
                                 <file>
-                                 <name>Src\gpio.c</name>
+                                 <name>Src/gpio.c</name>
                                 </file>
 
                                 <file>
-                                 <name>Src\i2c.c</name>
+                                 <name>Src/i2c.c</name>
                                 </file>
 
                                 <file>
-                                 <name>Src\spi.c</name>
+                                 <name>Src/spi.c</name>
                                 </file>
 
                                 <file>
-                                 <name>Src\tim.c</name>
+                                 <name>Src/tim.c</name>
                                 </file>
 
                                 <file>
-                                 <name>Src\stm32f1xx_it.c</name>
+                                 <name>Src/stm32f1xx_it.c</name>
                                 </file>
 
                                 <file>
-                                 <name>Src\stm32f1xx_hal_msp.c</name>
+                                 <name>Src/stm32f1xx_hal_msp.c</name>
                                 </file>
 
 
 
+               <group>
+        <name>Src</name>
+                    <group>
+                    <name>main.c</name>
+                                    <file>
+                                            <name>Src/main.c</name>
+                                    </file>
+                    </group>
+        </group>
+               <group>
+        <name>Src</name>
+                    <group>
+                    <name>tim.c</name>
+                                    <file>
+                                            <name>Src/tim.c</name>
+                                    </file>
+                    </group>
+        </group>
+               <group>
+        <name>Src</name>
+                    <group>
+                    <name>i2c.c</name>
+                                    <file>
+                                            <name>Src/i2c.c</name>
+                                    </file>
+                    </group>
+        </group>
+               <group>
+        <name>Src</name>
+                    <group>
+                    <name>spi.c</name>
+                                    <file>
+                                            <name>Src/spi.c</name>
+                                    </file>
+                    </group>
+        </group>
+               <group>
+        <name>Src</name>
+                    <group>
+                    <name>stm32f1xx_it.c</name>
+                                    <file>
+                                            <name>Src/stm32f1xx_it.c</name>
+                                    </file>
+                    </group>
+        </group>
+               <group>
+        <name>Src</name>
+                    <group>
+                    <name>gpio.c</name>
+                                    <file>
+                                            <name>Src/gpio.c</name>
+                                    </file>
+                    </group>
+        </group>
+               <group>
+        <name>Src</name>
+                    <group>
+                    <name>stm32f1xx_hal_msp.c</name>
+                                    <file>
+                                            <name>Src/stm32f1xx_hal_msp.c</name>
+                                    </file>
+                    </group>
+        </group>
 
 </group> 
   </group>

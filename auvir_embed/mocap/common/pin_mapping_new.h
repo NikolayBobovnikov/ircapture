@@ -44,4 +44,4 @@
 // CE   A0
 // IRQ  C14
 
-#endif // PING_MAPPING_NEW_H
+#endif  // PING_MAPPING_NEW_H

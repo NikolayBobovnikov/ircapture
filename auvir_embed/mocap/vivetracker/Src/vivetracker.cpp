@@ -62,12 +62,10 @@ MPU6050Sensor::MPU6050Sensor()
     : _gpio_MPU6050_AD0(MPU6050_AD0_Port, MPU6050_AD0_Pin) {
   // init i2c dev library
   I2Cdev_hi2c = &hi2c1;
-
   MPU6050_initialize();
 
   setAD0(GPIO_STATE::HIGH);
-
-  // MPU6050_setAddress(MPU6050_ADDRESS_AD0_HIGH);
+  uint8_t id = 0x34;
   uint8_t deviceid = MPU6050_getDeviceID();
 
   if (MPU6050_testConnection()) {
@@ -78,14 +76,13 @@ MPU6050Sensor::MPU6050Sensor()
 }
 
 void MPU6050Sensor::setAD0(GPIO_STATE state) const {
+  _gpio_MPU6050_AD0.Set(state);
   switch (state) {
     case GPIO_STATE::HIGH: {
-      _gpio_MPU6050_AD0.Set(GPIO_STATE::HIGH);
       MPU6050_setAddress(MPU6050_ADDRESS_AD0_HIGH);
       break;
     }
     case GPIO_STATE::LOW: {
-      _gpio_MPU6050_AD0.Set(GPIO_STATE::HIGH);
       MPU6050_setAddress(MPU6050_ADDRESS_AD0_LOW);
       break;
     }

@@ -1,6 +1,6 @@
 #TODO: autodetect arm gcc
 if(UNIX)
-SET(TOOLCHAIN_PREFIX /usr)
+SET(TOOLCHAIN_PREFIX ~/software/arm-gcc/gcc-arm-none-eabi-6-2017-q2-update)
 endif(UNIX)
 
 if(WIN32)
