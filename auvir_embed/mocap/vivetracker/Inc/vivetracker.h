@@ -31,12 +31,12 @@
 enum class VT_ReturnValue { OK, IMU_init_error, radio_init_error };
 
 class MPU6050Sensor {
- public:
-  MPU6050Sensor();
+public:
+  MPU6050Sensor(I2C_HandleTypeDef *hi2c);
 
   void setAD0(GPIO_STATE state) const;
 
- private:
+private:
   const GPIO_PIN_OUTPUT _gpio_MPU6050_AD0;
   static constexpr uint8_t DEVICE_ID = 0x34;
 };
@@ -46,18 +46,18 @@ class MPU6050Sensor {
  * TODO: when add actions, update descripiton
  */
 class ViveTracker {
- public:
-  ViveTracker(I2C_HandleTypeDef _h_i2c2, SPI_HandleTypeDef _h_spi1,
+public:
+  ViveTracker(I2C_HandleTypeDef _h_i2c, SPI_HandleTypeDef _h_spi,
               TIM_HandleTypeDef _h_tim1, TIM_HandleTypeDef _h_tim2,
               TIM_HandleTypeDef _h_tim3, TIM_HandleTypeDef _h_tim4)
-      : _gpio_led_dbg(LED_DBG_Port, LED_DBG_Pin) {}
+      : _gpio_led_dbg(LED_DBG_Port, LED_DBG_Pin), _imu_sensor(&_h_i2c) {}
 
   const VT_ReturnValue &init_imu() const;
   const VT_ReturnValue &init_radio() const;
 
   void ToggleDebugLED() const { _gpio_led_dbg.Toggle(); }
 
- private:
+private:
   const GPIO_PIN_OUTPUT _gpio_led_dbg;
   const MPU6050Sensor _imu_sensor;
 
@@ -66,4 +66,4 @@ class ViveTracker {
 
 void nop();
 
-#endif  // VIVETRACKER_H
+#endif // VIVETRACKER_H

@@ -1,4 +1,5 @@
 build/
+build-*/
 auvir_model/build/
 auvir_embed/build/
 auvir_embed/toolchain/

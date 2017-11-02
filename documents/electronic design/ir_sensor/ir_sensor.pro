@@ -1,4 +1,4 @@
-update=22/07/2016 11:22:05
+update=02/11/2017 20:17:38
 version=1
 last_client=kicad
 [pcbnew]
@@ -27,7 +27,7 @@ NetIExt=net
 version=1
 [eeschema]
 version=1
-LibDir=../lib
+LibDir=../lib;../lib/footprints.pretty
 [eeschema/libraries]
 LibName1=ir_sensor-rescue
 LibName2=power
