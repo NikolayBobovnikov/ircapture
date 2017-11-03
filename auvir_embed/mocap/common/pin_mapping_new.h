@@ -59,8 +59,8 @@ A13
 #define NRF24_CE1_Pin GPIO_PIN_9
 #define NRF24_CE1_Port GPIOA
 
-#define NRF24_IRQ1_Pin GPIO_PIN_10
-#define NRF24_IRQ1_Port GPIOA
+#define NRF24_IRQ1_Pin GPIO_PIN_12
+#define NRF24_IRQ1_Port GPIOB
 
 // pins for MPU6050 module
 // MPU6050_ADDRESS_AD0
