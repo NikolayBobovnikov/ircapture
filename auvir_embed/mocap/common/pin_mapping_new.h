@@ -1,6 +1,52 @@
 #ifndef PING_MAPPING_NEW_H
 #define PING_MAPPING_NEW_H
 
+/*
+
+NRF24:
+A8   OUT  CSN
+A9   OUT  CE
+A10  IN   IRQ
+
+MPU6050:
+A4   OUT  MPU5060_AD0
+A5   IN   MPU5060_INT
+
+LED:
+A0   OUT  LED_DBG
+C13  OUT  LED_ONBOARD
+
+Input capture:
+A15  tim2
+B3   tim2
+A2   tim2
+A3   tim2
+A6   tim3
+A7   tim3
+B0   tim3
+B1   tim3
+B6   tim4
+B7   tim4
+B8   tim4
+B9   tim4
+
+I2C:
+B10 SCL
+B11 SDA
+
+SPI:
+B13 SCK
+B14 MISO
+B15 MOSI
+
+USB:
+A11
+A12
+
+SWD Debugging:
+A13
+*/
+
 // pins for NRF24 module#1
 /*
  * CSN A8 OUT
