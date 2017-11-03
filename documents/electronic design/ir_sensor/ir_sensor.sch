@@ -64,8 +64,8 @@ Text GLabel 1400 1400 0    60   Input ~ 0
 I2C_SDA
 Text GLabel 1400 1250 0    60   Input ~ 0
 I2C_SCL
-Text Notes 6250 3550 0    60   ~ 0
- * A8 OUT  CSN \n * A9 OUT  CE  \n * A10 IN  IRQ \n * A4 OUT  MPU5060_AD0 \n * A5 IN   MPU5060_INT \n * C13 OUT LED_ONBOARD \n * A0 OUT  LED_DBG  \n\nA15 tim2\nB3   tim2\nA2   tim2\nA3   tim2\nA6   tim3\nA7   tim3\nB0   tim3\nB1   tim3\nB6   tim4\nB7   tim4\nB8   tim4\nB9   tim4\n\nI2C:\nB10 SCL\nB11 SDA\n\nSPI:\nB13 SCK\nB14 MISO\nB15 MOSI\n\n
+Text Notes 6200 3800 0    60   ~ 0
+ * A8 OUT  CSN \n * A9 OUT  CE  \n * B12 IN  IRQ \n * A4 OUT  MPU5060_AD0 \n * A5 IN   MPU5060_INT \n * C13 OUT LED_ONBOARD \n * A0 OUT  LED_DBG  \n\nA15 tim2\nB3   tim2\nA2   tim2\nA3   tim2\nA6   tim3\nA7   tim3\nB0   tim3\nB1   tim3\nB6   tim4\nB7   tim4\nB8   tim4\nB9   tim4\n\nI2C:\nB10 SCL\nB11 SDA\n\nSPI:\nB13 SCK\nB14 MISO\nB15 MOSI\n\nUSB:\nA11\nA12\n
 Text GLabel 5150 1900 2    60   Input ~ 0
 AD0
 Text GLabel 2200 1250 2    60   Input ~ 0
@@ -142,7 +142,6 @@ Text GLabel 2200 2150 2    60   Input ~ 0
 SPI_SCK
 Text GLabel 2200 2450 2    60   Input ~ 0
 SPI_MISO
-NoConn ~ 4300 1600
 NoConn ~ 4300 1900
 NoConn ~ 4300 2000
 NoConn ~ 5150 2700
@@ -278,7 +277,6 @@ input_12
 Text GLabel 5150 2300 2    60   Input ~ 0
 LED_DBG
 NoConn ~ 5150 2200
-NoConn ~ 4300 1500
 Text GLabel 1300 3200 0    60   Input ~ 0
 input_1
 Text GLabel 1300 3300 0    60   Input ~ 0
@@ -519,4 +517,14 @@ F 3 "" H 2700 4250 50  0000 C CNN
 	0    -1   -1   0   
 $EndComp
 NoConn ~ 4300 1400
+Text GLabel 4550 3550 0    60   Input ~ 0
+USB_DP
+Text GLabel 4550 3650 0    60   Input ~ 0
+USB_DM
+NoConn ~ 4550 3550
+NoConn ~ 4550 3650
+Text GLabel 4300 1500 0    60   Input ~ 0
+USB_DM
+Text GLabel 4300 1600 0    60   Input ~ 0
+USB_DP
 $EndSCHEMATC
