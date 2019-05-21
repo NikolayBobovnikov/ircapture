@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
 <ProjectName>D:\nbobovnikov\home\dev\auvir\auvir_embed\mocap\vivetracker\\vivetracker</ProjectName>
+<ProjectNature>C</ProjectNature> 
 <CMSIS>Drivers\CMSIS</CMSIS>
-<HAL_Driver>C:\Users\nbobovnikov\STM32Cube\Repository\STM32Cube_FW_F1_V1.6.0\Drivers\CMSIS</HAL_Driver>
-
+<HAL_Driver>C:\Users\nbobovnikov\STM32Cube\Repository\STM32Cube_FW_F1_V1.6.1\Drivers\CMSIS</HAL_Driver>
 <Toolchain>Makefile</Toolchain>
 <Version>0</Version>
 
 <filestoremove>
-	<file>
-	   		<name>Src\main.c</name>
-	   		<name>Src\gpio.c</name>
-	   		<name>Src\i2c.c</name>
-	   		<name>Src\spi.c</name>
-	   		<name>Src\tim.c</name>
-	   		<name>Src\stm32f1xx_it.c</name>
-	   		<name>Src\stm32f1xx_hal_msp.c</name>
-	</file>
+    <file>
+    <name>Src\system_stm32f1xx.c</name>
+    </file>
 </filestoremove>
 
 <inctoremove>
@@ -24,10 +18,6 @@
 	   <include></include>
     </Aincludes>
 	<Cincludes>
-	   		<include>Drivers/STM32F1xx_HAL_Driver/Inc</include>
-	   		<include>Drivers/STM32F1xx_HAL_Driver/Inc/Legacy</include>
-	   		<include>Drivers/CMSIS/Device/ST/STM32F1xx/Include</include>
-	   		<include>Drivers/CMSIS/Include</include>
     </Cincludes>
 </inctoremove>
 
@@ -42,7 +32,7 @@
 			
     <usedDebug>true</usedDebug>
     	<debugprobe>swd</debugprobe>
-    <optimization></optimization>
+    <optimization>2</optimization>
     <icfloc>0</icfloc>
     <Adefines>
         <define></define>
@@ -143,7 +133,7 @@
 		    <group>
 		    	<name>CMSIS</name>
 							<file>
-								<name>Src/system_stm32f1xx.c</name>
+								<name>\Src/system_stm32f1xx.c</name>
 							</file>
 		    	</group>
 	  </group>   
